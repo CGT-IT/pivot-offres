@@ -306,6 +306,24 @@ class Pivot_Index_Builder {
 	}
 
 	/**
+	 * Un index déjà publié contient-il au moins une offre ?
+	 *
+	 * @param string $listing_id Identifiant.
+	 * @return bool
+	 */
+	private static function has_populated_index( $listing_id ) {
+		foreach ( Pivot_I18n::languages() as $lang ) {
+			$existing = self::read( $listing_id, $lang );
+
+			if ( is_array( $existing ) && (int) pivot_get( $existing, 'count', 0 ) > 0 ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Oublie l'état de construction, sans toucher aux index déjà publiés.
 	 *
 	 * @param string $listing_id Identifiant.
@@ -850,6 +868,30 @@ class Pivot_Index_Builder {
 		$records    = isset( $state['records'] ) ? $state['records'] : array();
 		$facets     = array();
 		$types      = array();
+
+		// Une moisson vide n'écrase jamais un index garni.
+		//
+		// PIVOT peut répondre correctement mais sans offre : requête mal cadrée,
+		// incident passager, quota. Dans ce cas `pagesCount` vaut 1, start()
+		// tombait directement ici, et l'index publié devenait `count: 0` —
+		// la page de listing se vidait jusqu'à ce que quelqu'un s'en aperçoive.
+		// Reconstruire à vide se demande explicitement, en supprimant d'abord
+		// l'index (c'est ce que fait « recommencer » depuis l'administration).
+		if ( ! $records && self::has_populated_index( $listing_id ) ) {
+			Pivot_Logger::error(
+				sprintf(
+					'Reconstruction de « %s » sans aucune offre : index précédent conservé.',
+					$listing_id
+				),
+				array( 'service' => 'index' )
+			);
+
+			$state['done'] = true;
+
+			self::clear_state( $listing_id );
+
+			return $state;
+		}
 
 		// Les types d'offres réellement présents alimentent le sélecteur de
 		// champs de l'écran d'édition.

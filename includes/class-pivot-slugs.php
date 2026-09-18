@@ -108,6 +108,62 @@ class Pivot_Slugs {
 	}
 
 	/**
+	 * Écarte les offres que PIVOT ne renvoie plus depuis longtemps.
+	 *
+	 * Le registre ne connaissait aucune borne : une entrée par offre et par
+	 * langue, conservée pour toujours, sans expiration. Sur ce site il pesait
+	 * déjà 800 Ko. Une offre retirée de PIVOT n'a plus d'adresse à figer ;
+	 * passé un délai large, son entrée ne sert plus à rien.
+	 *
+	 * Le délai est volontairement long : tant qu'une page de listing est
+	 * reconstruite — toutes les six heures par défaut —, ses offres sont revues
+	 * et leur date rafraîchie. Seules celles réellement disparues vieillissent.
+	 *
+	 * @param array $map Registre.
+	 * @return array
+	 */
+	private static function prune( $map ) {
+		/**
+		 * Délai au-delà duquel une offre jamais revue quitte le registre.
+		 *
+		 * @param int $ttl Durée en secondes.
+		 */
+		$ttl = (int) apply_filters( 'pivot_slug_registry_ttl', YEAR_IN_SECONDS );
+
+		if ( $ttl < 1 ) {
+			return $map;
+		}
+
+		$now     = time();
+		$dropped = 0;
+
+		foreach ( $map as $key => $entry ) {
+			// Les entrées d'avant l'introduction de « seen » n'ont pas de date :
+			// on leur en donne une maintenant plutôt que de les écarter.
+			$seen = (int) pivot_get( $entry, 'seen', 0 );
+
+			if ( ! $seen ) {
+				$map[ $key ]['seen'] = (int) pivot_get( $entry, 'since', $now );
+				continue;
+			}
+
+			if ( ( $now - $seen ) > $ttl ) {
+				unset( $map[ $key ] );
+				$dropped++;
+			}
+		}
+
+		if ( $dropped ) {
+			Pivot_Logger::info(
+				sprintf( '%d adresse(s) retirées du registre : offres absentes de PIVOT depuis plus d\'un an.', $dropped ),
+				array( 'service' => 'index' )
+			);
+		}
+
+		return $map;
+	}
+
+	/**
 	 * Note le nom actuel d'une offre pendant une construction d'index.
 	 *
 	 * @param string $code Code PIVOT.
@@ -152,9 +208,14 @@ class Pivot_Slugs {
 					'natural' => $entry['natural'],
 					'slug'    => $entry['natural'],
 					'since'   => time(),
+					'seen'    => time(),
 				);
 				continue;
 			}
+
+			// Date de dernière rencontre : c'est elle qui permet de distinguer
+			// une offre encore publiée d'une offre disparue de PIVOT.
+			$map[ $key ]['seen'] = time();
 
 			$known = $map[ $key ];
 
@@ -185,6 +246,8 @@ class Pivot_Slugs {
 				$map[ $key ]['since'] = time();
 			}
 		}
+
+		$map = self::prune( $map );
 
 		self::$map     = $map;
 		self::$pending = array();

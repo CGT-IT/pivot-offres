@@ -168,12 +168,63 @@ class Pivot_Logger {
 	public static function purge() {
 		global $wpdb;
 
-		$days = max( 1, (int) pivot_settings( 'logs_retention', 7 ) );
+		$days  = max( 1, (int) pivot_settings( 'logs_retention', 7 ) );
 		$table = self::table();
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL
-		return (int) $wpdb->query(
+		$deleted = (int) $wpdb->query(
 			$wpdb->prepare( "DELETE FROM {$table} WHERE created_at < DATE_SUB(NOW(), INTERVAL %d DAY)", $days )
+		);
+
+		return $deleted + self::enforce_row_cap();
+	}
+
+	/**
+	 * Plafonne le journal en nombre de lignes.
+	 *
+	 * La rétention ne bornait que dans le temps. Or une panne de PIVOT produit
+	 * une erreur par offre et par tentative, toutes les quinze minutes : de quoi
+	 * écrire des millions de lignes bien avant que les sept jours ne s'écoulent,
+	 * et faire enfler la base sans que personne ne le voie venir. On garde les
+	 * plus récentes, qui sont les seules utiles au diagnostic.
+	 *
+	 * @return int Nombre de lignes supprimées.
+	 */
+	private static function enforce_row_cap() {
+		global $wpdb;
+
+		/**
+		 * Nombre maximal de lignes conservées dans le journal.
+		 *
+		 * @param int $max Plafond.
+		 */
+		$max   = (int) apply_filters( 'pivot_logs_max_rows', 50000 );
+		$table = self::table();
+
+		if ( $max < 1 ) {
+			return 0;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL
+		$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" );
+
+		if ( $total <= $max ) {
+			return 0;
+		}
+
+		// Date de la dernière ligne à conserver : tout ce qui est plus ancien part.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL
+		$cutoff = $wpdb->get_var(
+			$wpdb->prepare( "SELECT created_at FROM {$table} ORDER BY created_at DESC LIMIT 1 OFFSET %d", $max - 1 )
+		);
+
+		if ( ! $cutoff ) {
+			return 0;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL
+		return (int) $wpdb->query(
+			$wpdb->prepare( "DELETE FROM {$table} WHERE created_at < %s", $cutoff )
 		);
 	}
 

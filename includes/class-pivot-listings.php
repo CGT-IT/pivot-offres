@@ -360,9 +360,18 @@ class Pivot_Listings {
 
 		Pivot_Rewrites::instance()->schedule_flush();
 
+		// Tout ce que l'index recopie doit provoquer sa reconstruction. Le titre,
+		// le nombre d'offres par page et l'affichage de la carte sont écrits dans
+		// le fichier d'index et relus par le JavaScript : sans eux dans cette
+		// liste, modifier le titre d'une page laissait l'ancien s'afficher
+		// jusqu'à l'expiration du cache, six heures plus tard par défaut.
 		$structure_changed = ! $existing
 			|| $existing['query_code'] !== $clean['query_code']
 			|| (int) $existing['content'] !== (int) $clean['content']
+			|| (int) $existing['per_page'] !== (int) $clean['per_page']
+			|| (int) $existing['show_map'] !== (int) $clean['show_map']
+			|| $existing['title'] !== $clean['title']
+			|| wp_json_encode( $existing['titles'] ) !== wp_json_encode( $clean['titles'] )
 			|| wp_json_encode( $existing['filters'] ) !== wp_json_encode( $clean['filters'] );
 
 		if ( $structure_changed ) {

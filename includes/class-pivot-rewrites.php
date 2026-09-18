@@ -198,6 +198,17 @@ class Pivot_Rewrites {
 			$request = trim( (string) wp_parse_url( $uri, PHP_URL_PATH ), '/' );
 		}
 
+		// Coupe court avant tout le reste. Ce filtre tourne sur chaque requête
+		// publique du site, et la détection du préfixe de langue ci-dessous
+		// interroge l'extension de traduction puis compile une expression
+		// régulière — un travail inutile sur l'immense majorité des pages, qui
+		// n'ont rien à voir avec les anciennes adresses. Le test porte sur la
+		// présence du segment n'importe où, pour laisser passer /nl/details/…
+		// dont le préfixe n'a pas encore été retiré.
+		if ( false === stripos( $request, 'details/' ) ) {
+			return;
+		}
+
 		$lang = '';
 
 		// Retire un éventuel préfixe de langue.

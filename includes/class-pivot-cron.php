@@ -28,7 +28,12 @@ class Pivot_Cron {
 		add_action( 'pivot_continue_index', array( $this, 'continue_index' ) );
 		add_action( 'pivot_daily_maintenance', array( $this, 'maintenance' ) );
 
-		self::schedule_events();
+		// La planification est faite à l'activation. Le filet de sécurité, pour
+		// les installations où elle aurait été perdue, se pose en administration
+		// seulement : appelé depuis le constructeur, il valait deux lectures de
+		// la table des tâches sur chaque requête publique, chaque appel REST et
+		// chaque admin-ajax déclenché par un autre plugin.
+		add_action( 'admin_init', array( __CLASS__, 'schedule_events' ) );
 	}
 
 	/**

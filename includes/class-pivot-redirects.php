@@ -19,6 +19,9 @@ class Pivot_Redirects {
 
 	const OPTION = 'pivot_redirects';
 
+	/** Compteur autochargé, pour ne pas charger la table sur chaque page. */
+	const COUNT_OPTION = 'pivot_redirects_count';
+
 	/** @var Pivot_Redirects|null */
 	private static $instance = null;
 
@@ -53,6 +56,27 @@ class Pivot_Redirects {
 	 */
 	public static function save( $map ) {
 		update_option( self::OPTION, $map, false );
+
+		// Compteur autochargé, lu à chaque page publique à la place de la table
+		// elle-même. Voir maybe_redirect().
+		update_option( self::COUNT_OPTION, count( (array) $map ), true );
+	}
+
+	/**
+	 * Nombre de redirections enregistrées, sans charger la table.
+	 *
+	 * @return int
+	 */
+	private static function count() {
+		$count = get_option( self::COUNT_OPTION, false );
+
+		if ( false === $count ) {
+			// Première lecture depuis la mise à jour : on calcule une fois.
+			$count = count( self::all() );
+			update_option( self::COUNT_OPTION, $count, true );
+		}
+
+		return (int) $count;
 	}
 
 	/**
@@ -126,6 +150,15 @@ class Pivot_Redirects {
 			return;
 		}
 
+		// La table n'est pas autochargée : la charger revient à une requête SQL
+		// plus une désérialisation complète, sur chaque page publique, pour un
+		// unique isset(). Or elle contient une entrée par offre et par langue —
+		// des milliers sur un site fourni. Le compteur, lui, est autochargé et
+		// tient dans la requête que WordPress fait de toute façon.
+		if ( ! self::count() ) {
+			return;
+		}
+
 		$map = self::all();
 		if ( ! $map ) {
 			return;
@@ -140,13 +173,46 @@ class Pivot_Redirects {
 
 		$target = self::freshen( $map[ $path ] );
 
+		// wp_safe_redirect, et non wp_redirect : cette table associe d'anciennes
+		// adresses du site à leurs nouvelles, elle n'a pas vocation à envoyer
+		// ailleurs. Une cible hors du domaine est presque toujours une erreur de
+		// saisie — et à défaut, elle transformerait le site en tremplin de
+		// redirection. Le refus est journalisé plutôt que silencieux.
+		$host = wp_parse_url( $target, PHP_URL_HOST );
+
+		if ( $host && ! in_array( strtolower( $host ), self::allowed_hosts(), true ) ) {
+			Pivot_Logger::error(
+				sprintf( 'Redirection refusée : %1$s pointe hors du site, vers %2$s.', $path, $target ),
+				array( 'service' => 'redirect', 'endpoint' => $path )
+			);
+
+			return;
+		}
+
 		Pivot_Logger::debug(
 			sprintf( 'Redirection 301 : %s vers %s', $path, $target ),
 			array( 'service' => 'redirect', 'endpoint' => $path )
 		);
 
-		wp_redirect( $target, 301 ); // phpcs:ignore WordPress.Security.SafeRedirect
+		wp_safe_redirect( $target, 301 );
 		exit;
+	}
+
+	/**
+	 * Domaines vers lesquels la table peut rediriger.
+	 *
+	 * @return array
+	 */
+	private static function allowed_hosts() {
+		$hosts = array( strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) ) );
+
+		/**
+		 * Permet d'autoriser des domaines supplémentaires pour la table de
+		 * redirections, par exemple un site partenaire.
+		 *
+		 * @param array $hosts Domaines autorisés, en minuscules.
+		 */
+		return array_filter( (array) apply_filters( 'pivot_redirect_allowed_hosts', $hosts ) );
 	}
 
 	/**

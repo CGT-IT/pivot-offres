@@ -76,12 +76,52 @@ class Pivot_Templates {
 			return;
 		}
 
+		if ( 'listing' === $context['kind'] && $this->page_out_of_range( $context ) ) {
+			// Au-delà de la dernière page, la grille sortait vide avec un
+			// code 200 : un contenu pauvre que les moteurs indexent, et autant
+			// d'adresses sans valeur. Une 404 franche est la bonne réponse.
+			$wp_query->set_404();
+			status_header( 404 );
+			nocache_headers();
+			return;
+		}
+
 		$wp_query->is_404      = false;
 		$wp_query->is_home     = false;
 		$wp_query->is_singular = false;
 		$wp_query->is_archive  = false;
 
 		status_header( 200 );
+	}
+
+	/**
+	 * La page demandée dépasse-t-elle la dernière page de résultats ?
+	 *
+	 * Répond non tant que l'index n'est pas construit : on ne sait pas encore
+	 * combien il y a d'offres, et le gabarit affichera son message d'attente.
+	 *
+	 * @param array $context Contexte courant.
+	 * @return bool
+	 */
+	private function page_out_of_range( $context ) {
+		$page = (int) pivot_get( $context, 'page', 1 );
+
+		if ( $page <= 1 ) {
+			return false;
+		}
+
+		$listing = pivot_get( $context, 'listing', array() );
+		$index   = Pivot_Index_Builder::read( pivot_get( $listing, 'id', '' ), $this->lang() );
+
+		if ( ! is_array( $index ) ) {
+			return false;
+		}
+
+		$total = (int) pivot_get( $index, 'count', 0 );
+		$per   = max( 1, (int) pivot_get( $listing, 'per_page', 12 ) );
+		$pages = $total ? (int) ceil( $total / $per ) : 1;
+
+		return $page > $pages;
 	}
 
 	/**

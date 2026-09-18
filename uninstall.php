@@ -21,6 +21,7 @@ $pivot_options = array(
 	'pivot_settings',            // Pivot_Settings::OPTION
 	'pivot_listings',            // Pivot_Listings::OPTION
 	'pivot_redirects',           // Pivot_Redirects::OPTION
+	'pivot_redirects_count',     // Pivot_Redirects::COUNT_OPTION
 	'pivot_types',               // Pivot_Types::OPTION
 	'pivot_field_rules',         // Pivot_Fields::RULES_OPTION
 	'pivot_cache_secret',        // Pivot_Cache::SECRET_OPTION

@@ -232,12 +232,19 @@
 			} );
 		} );
 
+		// La pagination s'écrit dans le chemin, « /page/2/ », comme celle rendue
+		// par le serveur. Elle s'écrivait ici « ?page=2 » : en arrivant sur
+		// /liste/page/2/ le script réécrivait aussitôt l'adresse en /liste/?page=2,
+		// ce qui donnait deux URL pour un même contenu, dont une seule connue de
+		// la balise canonique.
+		var base = config.baseUrl.replace( /\/+$/, '' ) + '/';
+
 		if ( state.page > 1 ) {
-			params.set( 'page', state.page );
+			base += 'page/' + state.page + '/';
 		}
 
 		var query = params.toString();
-		var url = config.baseUrl + ( query ? '?' + query : '' );
+		var url = base + ( query ? '?' + query : '' );
 
 		if ( replace ) {
 			window.history.replaceState( null, '', url );

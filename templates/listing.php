@@ -1,0 +1,188 @@
+<?php
+/**
+ * Gabarit d'une page de listing.
+ *
+ * La première page est rendue côté serveur à partir de l'index de la langue
+ * courante : moteurs de recherche et visiteurs sans JavaScript voient des
+ * offres et des liens. Le script prend ensuite la main pour la recherche, les
+ * filtres, la carte et la pagination, sans jamais rappeler PIVOT.
+ *
+ * Pour personnaliser, copiez ce fichier dans votre thème sous
+ * pivot-offres/listing.php.
+ *
+ * @package Pivot_Offres
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+$pivot_templates = Pivot_Templates::instance();
+$pivot_context   = $pivot_templates->context();
+$pivot_listing   = pivot_get( $pivot_context, 'listing', array() );
+$pivot_lang      = Pivot_I18n::current();
+$pivot_page      = max( 1, (int) pivot_get( $pivot_context, 'page', 1 ) );
+
+$pivot_index   = Pivot_Index_Builder::ensure( $pivot_listing, $pivot_lang );
+$pivot_items   = (array) pivot_get( $pivot_index, 'items', array() );
+$pivot_filters = (array) pivot_get( $pivot_index, 'filters', array() );
+$pivot_total   = count( $pivot_items );
+$pivot_per     = max( 1, (int) pivot_get( $pivot_listing, 'per_page', 12 ) );
+$pivot_pages   = $pivot_total ? (int) ceil( $pivot_total / $pivot_per ) : 1;
+$pivot_slice   = array_slice( $pivot_items, ( $pivot_page - 1 ) * $pivot_per, $pivot_per );
+$pivot_map     = ! empty( $pivot_listing['show_map'] ) && 'none' !== pivot_settings( 'map_provider', 'leaflet' );
+$pivot_search  = ! empty( $pivot_listing['search_enabled'] );
+$pivot_base    = Pivot_Listings::url( $pivot_listing, $pivot_lang );
+$pivot_intro   = Pivot_Listings::intro( $pivot_listing, $pivot_lang );
+
+get_header();
+?>
+
+<div class="pivot-listing" id="pivot-listing"
+	data-listing="<?php echo esc_attr( pivot_get( $pivot_listing, 'id', '' ) ); ?>"
+	data-lang="<?php echo esc_attr( $pivot_lang ); ?>">
+
+	<header class="pivot-listing-header">
+		<h1 class="pivot-listing-title"><?php echo esc_html( Pivot_Listings::title( $pivot_listing, $pivot_lang ) ); ?></h1>
+
+		<?php if ( $pivot_intro ) : ?>
+			<div class="pivot-listing-intro"><?php echo wp_kses_post( wpautop( $pivot_intro ) ); ?></div>
+		<?php endif; ?>
+	</header>
+
+	<?php if ( $pivot_search || $pivot_filters ) : ?>
+		<form class="pivot-criteria" id="pivot-criteria" method="get" action="<?php echo esc_url( $pivot_base ); ?>">
+			<h2 class="pivot-criteria-title screen-reader-text"><?php esc_html_e( 'Critères de recherche', 'pivot-offres' ); ?></h2>
+
+			<?php if ( $pivot_search ) : ?>
+				<p class="pivot-field pivot-field-search">
+					<label for="pivot-q"><?php echo esc_html( Pivot_Listings::search_label( $pivot_listing, $pivot_lang ) ); ?></label>
+					<input type="search" id="pivot-q" name="q" autocomplete="off"
+						placeholder="<?php esc_attr_e( 'Nom, localité, mot-clé…', 'pivot-offres' ); ?>"
+						value="<?php echo esc_attr( isset( $_GET['q'] ) ? sanitize_text_field( wp_unslash( $_GET['q'] ) ) : '' ); // phpcs:ignore WordPress.Security.NonceVerification ?>" />
+				</p>
+			<?php endif; ?>
+
+			<div class="pivot-filters-zone" id="pivot-filters">
+				<?php
+				foreach ( $pivot_filters as $pivot_filter ) :
+					$pivot_key     = pivot_get( $pivot_filter, 'key', '' );
+					$pivot_type    = pivot_get( $pivot_filter, 'type', 'select' );
+					$pivot_options = (array) pivot_get( $pivot_filter, 'options', array() );
+					$pivot_current = isset( $_GET[ $pivot_key ] ) ? sanitize_text_field( wp_unslash( $_GET[ $pivot_key ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+
+					if ( ! $pivot_key ) {
+						continue;
+					}
+
+					if ( in_array( $pivot_type, array( 'select', 'multiselect' ), true ) && ! $pivot_options ) {
+						continue;
+					}
+					?>
+					<div class="pivot-field pivot-field-<?php echo esc_attr( $pivot_type ); ?>" data-filter="<?php echo esc_attr( $pivot_key ); ?>">
+						<?php if ( 'multiselect' === $pivot_type ) : ?>
+							<fieldset>
+								<legend><?php echo esc_html( pivot_get( $pivot_filter, 'label', $pivot_key ) ); ?></legend>
+								<?php foreach ( $pivot_options as $pivot_option ) : ?>
+									<label class="pivot-check">
+										<input type="checkbox" name="<?php echo esc_attr( $pivot_key ); ?>[]"
+											value="<?php echo esc_attr( pivot_get( $pivot_option, 'v', '' ) ); ?>" />
+										<span><?php echo esc_html( pivot_get( $pivot_option, 'l', '' ) ); ?></span>
+										<?php if ( pivot_get( $pivot_option, 'n' ) ) : ?>
+											<em class="pivot-count"><?php echo esc_html( (int) $pivot_option['n'] ); ?></em>
+										<?php endif; ?>
+									</label>
+								<?php endforeach; ?>
+							</fieldset>
+
+						<?php elseif ( 'text' === $pivot_type ) : ?>
+							<label for="pivot-f-<?php echo esc_attr( $pivot_key ); ?>"><?php echo esc_html( pivot_get( $pivot_filter, 'label', $pivot_key ) ); ?></label>
+							<input type="text" id="pivot-f-<?php echo esc_attr( $pivot_key ); ?>"
+								name="<?php echo esc_attr( $pivot_key ); ?>"
+								value="<?php echo esc_attr( $pivot_current ); ?>"
+								placeholder="<?php echo esc_attr( pivot_get( $pivot_filter, 'placeholder', '' ) ); ?>" />
+
+						<?php elseif ( 'toggle' === $pivot_type ) : ?>
+							<label class="pivot-check">
+								<input type="checkbox" name="<?php echo esc_attr( $pivot_key ); ?>" value="1" <?php checked( $pivot_current, '1' ); ?> />
+								<span><?php echo esc_html( pivot_get( $pivot_filter, 'label', $pivot_key ) ); ?></span>
+							</label>
+
+						<?php else : ?>
+							<label for="pivot-f-<?php echo esc_attr( $pivot_key ); ?>"><?php echo esc_html( pivot_get( $pivot_filter, 'label', $pivot_key ) ); ?></label>
+							<select id="pivot-f-<?php echo esc_attr( $pivot_key ); ?>" name="<?php echo esc_attr( $pivot_key ); ?>">
+								<option value=""><?php esc_html_e( 'Toutes', 'pivot-offres' ); ?></option>
+								<?php foreach ( $pivot_options as $pivot_option ) : ?>
+									<option value="<?php echo esc_attr( pivot_get( $pivot_option, 'v', '' ) ); ?>" <?php selected( $pivot_current, pivot_get( $pivot_option, 'v', '' ) ); ?>>
+										<?php
+										echo esc_html( pivot_get( $pivot_option, 'l', '' ) );
+										if ( pivot_get( $pivot_option, 'n' ) ) {
+											echo ' (' . esc_html( (int) $pivot_option['n'] ) . ')';
+										}
+										?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+						<?php endif; ?>
+					</div>
+				<?php endforeach; ?>
+			</div>
+
+			<p class="pivot-criteria-actions">
+				<button type="submit" class="pivot-button"><?php esc_html_e( 'Filtrer', 'pivot-offres' ); ?></button>
+				<button type="reset" class="pivot-button pivot-button-ghost" id="pivot-reset"><?php esc_html_e( 'Effacer les filtres', 'pivot-offres' ); ?></button>
+			</p>
+		</form>
+	<?php endif; ?>
+
+	<?php if ( $pivot_map ) : ?>
+		<section class="pivot-map-zone" aria-label="<?php esc_attr_e( 'Carte des offres', 'pivot-offres' ); ?>">
+			<div id="pivot-map" class="pivot-map"
+				data-zoom="<?php echo esc_attr( (int) pivot_get( $pivot_listing, 'map_zoom', 9 ) ); ?>"
+				data-center="<?php echo esc_attr( pivot_get( $pivot_listing, 'map_center', '' ) ); ?>"></div>
+		</section>
+	<?php endif; ?>
+
+	<p class="pivot-results-count" id="pivot-count" role="status">
+		<?php
+		printf(
+			/* translators: %d : nombre d'offres. */
+			esc_html( _n( '%d offre', '%d offres', $pivot_total, 'pivot-offres' ) ),
+			(int) $pivot_total
+		);
+		?>
+	</p>
+
+	<div class="pivot-grid" id="pivot-grid">
+		<?php
+		if ( $pivot_slice ) {
+			foreach ( $pivot_slice as $pivot_item ) {
+				$pivot_templates->part( 'card', array( 'item' => $pivot_item ) );
+			}
+		} else {
+			echo '<p class="pivot-empty-results">' . esc_html__( 'Aucune offre à afficher pour le moment.', 'pivot-offres' ) . '</p>';
+		}
+		?>
+	</div>
+
+	<?php if ( $pivot_pages > 1 ) : ?>
+		<nav class="pivot-pagination" id="pivot-pagination" aria-label="<?php esc_attr_e( 'Pagination des offres', 'pivot-offres' ); ?>">
+			<?php
+			echo wp_kses_post(
+				paginate_links(
+					array(
+						'base'      => trailingslashit( $pivot_base ) . 'page/%#%/',
+						'format'    => '',
+						'current'   => $pivot_page,
+						'total'     => $pivot_pages,
+						'prev_text' => esc_html__( 'Précédent', 'pivot-offres' ),
+						'next_text' => esc_html__( 'Suivant', 'pivot-offres' ),
+					)
+				)
+			);
+			?>
+		</nav>
+	<?php endif; ?>
+
+</div>
+
+<?php
+get_footer();

@@ -1,0 +1,683 @@
+/**
+ * Styles des écrans d'administration PIVOT.
+ */
+
+.pivot-wrap .pivot-empty {
+	max-width: 640px;
+	margin-top: 1rem;
+	padding: 2rem;
+	border: 1px dashed #c3c4c7;
+	border-radius: 6px;
+	background: #fff;
+}
+
+.pivot-badge {
+	display: inline-block;
+	padding: 0.1em 0.5em;
+	border-radius: 3px;
+	background: #f0f0f1;
+	color: #50575e;
+	font-size: 11px;
+	vertical-align: middle;
+}
+
+.pivot-badge-off {
+	background: #fcf0f1;
+	color: #8a2424;
+}
+
+/* ------------------------------------------------------------------ filtres */
+
+.pivot-filters {
+	max-width: 900px;
+}
+
+.pivot-filter-row {
+	margin-bottom: 0.75rem;
+	padding: 1rem;
+	border: 1px solid #dcdcde;
+	border-left: 4px solid #2271b1;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.pivot-filter-grid {
+	display: grid;
+	grid-template-columns: repeat( auto-fit, minmax( 170px, 1fr ) );
+	gap: 0.75rem;
+}
+
+.pivot-filter-grid label,
+.pivot-filter-options {
+	display: block;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.pivot-filter-grid input,
+.pivot-filter-grid select,
+.pivot-filter-options textarea {
+	width: 100%;
+	margin-top: 0.25rem;
+	font-weight: 400;
+}
+
+.pivot-filter-options {
+	margin-top: 0.75rem;
+}
+
+.pivot-filter-actions {
+	margin: 0.5rem 0 0;
+}
+
+.pivot-remove-filter {
+	color: #b32d2e;
+}
+
+/* --------------------------------------------------------------- progression */
+
+.pivot-progress {
+	max-width: 420px;
+	height: 8px;
+	margin-top: 0.5rem;
+	overflow: hidden;
+	border-radius: 4px;
+	background: #dcdcde;
+}
+
+.pivot-progress-bar {
+	width: 0;
+	height: 100%;
+	background: #2271b1;
+	transition: width 0.3s ease;
+}
+
+.pivot-rebuild-status {
+	margin-left: 0.5rem;
+	color: #50575e;
+}
+
+/* -------------------------------------------------------------------- journal */
+
+.pivot-log-filters {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 1rem 0;
+}
+
+.pivot-logs-table .pivot-endpoint {
+	display: inline-block;
+	max-width: 100%;
+	overflow-wrap: anywhere;
+	font-size: 11px;
+}
+
+.pivot-log-message {
+	color: #b32d2e;
+	font-size: 12px;
+}
+
+.pivot-level {
+	display: inline-block;
+	padding: 0.1em 0.5em;
+	border-radius: 3px;
+	font-size: 11px;
+	text-transform: uppercase;
+}
+
+.pivot-level-debug {
+	background: #f0f0f1;
+	color: #646970;
+}
+
+.pivot-level-info {
+	background: #edf6ff;
+	color: #1d5a8a;
+}
+
+.pivot-level-warn {
+	background: #fcf9e8;
+	color: #8a6116;
+}
+
+.pivot-level-error {
+	background: #fcf0f1;
+	color: #8a2424;
+}
+
+.pivot-clear-logs {
+	margin-top: 1rem;
+}
+
+/* ---------------------------------------------------------------------- outils */
+
+.pivot-tool-actions {
+	margin-top: 1rem;
+}
+
+.pivot-inline-form {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+
+.pivot-cache-table {
+	max-width: 620px;
+	margin-bottom: 1rem;
+}
+
+/* ------------------------------------------------------------------ langues */
+
+.pivot-lang-tag {
+	display: inline-block;
+	min-width: 2.2em;
+	padding: 0.1em 0.4em;
+	border-radius: 3px;
+	background: #f0f0f1;
+	color: #3c434a;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-align: center;
+}
+
+.pivot-lang-tag.is-missing {
+	background: #fcf9e8;
+	color: #8a6116;
+}
+
+.pivot-lang-choice {
+	display: inline-block;
+	margin-right: 1rem;
+}
+
+.pivot-lang-heading {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-top: 1.5rem;
+}
+
+.pivot-filter-i18n {
+	margin-top: 0.75rem;
+	padding-top: 0.5rem;
+	border-top: 1px solid #f0f0f1;
+}
+
+.pivot-filter-i18n > summary {
+	color: #2271b1;
+	cursor: pointer;
+	font-size: 12px;
+}
+
+.pivot-filter-lang {
+	display: grid;
+	grid-template-columns: 3rem 1fr 1fr;
+	gap: 0.75rem;
+	align-items: start;
+	margin-top: 0.75rem;
+}
+
+.pivot-filter-lang label {
+	display: block;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.pivot-filter-lang input,
+.pivot-filter-lang textarea {
+	width: 100%;
+	margin-top: 0.25rem;
+	font-weight: 400;
+}
+
+.pivot-facet-values {
+	margin-top: 0.75rem;
+}
+
+.pivot-facet-values > summary {
+	color: #50575e;
+	cursor: pointer;
+	font-size: 12px;
+}
+
+.pivot-facet-list {
+	max-height: 160px;
+	overflow-y: auto;
+	padding: 0.5rem;
+	border: 1px solid #dcdcde;
+	border-radius: 3px;
+	background: #f6f7f7;
+	line-height: 2;
+}
+
+@media ( max-width: 782px ) {
+	.pivot-filter-lang {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* --------------------------------------------------- sélecteur de champs */
+
+.pivot-filter-urn {
+	position: relative;
+}
+
+.pivot-pick-field {
+	display: inline-block;
+	margin-top: 0.25rem;
+	font-size: 11px;
+	font-weight: 400;
+}
+
+.pivot-field-picker {
+	margin-top: 0.75rem;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #f6f7f7;
+}
+
+.pivot-field-picker-head {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	align-items: center;
+	padding: 0.75rem;
+	border-bottom: 1px solid #dcdcde;
+}
+
+.pivot-field-picker-head label {
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.pivot-field-search-wrap {
+	flex: 1;
+	min-width: 180px;
+}
+
+.pivot-field-search {
+	width: 100%;
+}
+
+.pivot-close-picker {
+	margin-left: auto;
+	color: #50575e;
+}
+
+.pivot-field-results {
+	max-height: 300px;
+	overflow-y: auto;
+	padding: 0.5rem;
+}
+
+.pivot-field-cat {
+	margin: 0.75rem 0 0.25rem;
+	color: #646970;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+.pivot-field-cat:first-child {
+	margin-top: 0;
+}
+
+.pivot-field-item {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: baseline;
+	width: 100%;
+	padding: 0.4rem 0.5rem;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	background: transparent;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.pivot-field-item:hover,
+.pivot-field-item:focus-visible {
+	border-color: #2271b1;
+	background: #fff;
+}
+
+.pivot-field-label {
+	font-weight: 600;
+}
+
+.pivot-field-item code {
+	color: #646970;
+	font-size: 11px;
+	background: transparent;
+}
+
+.pivot-field-type-tag {
+	margin-left: auto;
+	padding: 0.05em 0.4em;
+	border-radius: 3px;
+	background: #edf6ff;
+	color: #1d5a8a;
+	font-size: 11px;
+}
+
+.pivot-field-empty {
+	margin: 0;
+	padding: 1rem;
+	color: #646970;
+	text-align: center;
+}
+
+/* --------------------------------------------------- critères suggérés */
+
+.pivot-suggestions {
+	max-width: 900px;
+	margin: 1rem 0 1.5rem;
+	padding: 1rem;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #f6f7f7;
+}
+
+.pivot-suggestions-head {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	align-items: baseline;
+}
+
+.pivot-suggestions-head h3 {
+	margin: 0;
+	font-size: 14px;
+}
+
+.pivot-suggestions-refresh {
+	margin-left: auto;
+	color: #2271b1;
+	font-size: 12px;
+}
+
+.pivot-suggestions-status,
+.pivot-suggestions-empty {
+	margin: 0.5rem 0 0;
+	color: #646970;
+	font-size: 12px;
+}
+
+.pivot-suggestions-note {
+	margin: 0.75rem 0 0;
+	padding: 0.5rem 0.75rem;
+	border-left: 3px solid #2271b1;
+	background: #fff;
+	font-size: 12px;
+}
+
+.pivot-suggestions-list {
+	display: grid;
+	grid-template-columns: repeat( auto-fill, minmax( 260px, 1fr ) );
+	gap: 0.6rem;
+	margin-top: 0.9rem;
+}
+
+.pivot-suggestion {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	padding: 0.6rem 0.7rem;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.pivot-suggestion.is-added {
+	opacity: 0.55;
+}
+
+.pivot-suggestion-main {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 0.15rem;
+	min-width: 0;
+}
+
+.pivot-suggestion-label {
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+.pivot-suggestion-meta {
+	color: #2271b1;
+	font-size: 11px;
+}
+
+.pivot-suggestion-examples {
+	overflow: hidden;
+	color: #646970;
+	font-size: 11px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.pivot-suggestion-add {
+	flex-shrink: 0;
+}
+
+.pivot-generation-table {
+	max-width: 100%;
+	margin-bottom: 1rem;
+}
+
+.pivot-generation-table code {
+	font-size: 11px;
+	overflow-wrap: anywhere;
+}
+
+.pivot-generation-table td {
+	vertical-align: top;
+}
+
+.pivot-generation-decision {
+	margin: 1rem 0 1.5rem;
+	padding: 0.9rem 1rem;
+	border-left: 4px solid #2271b1;
+	background: #f6f7f7;
+}
+
+.pivot-generation-decision .description {
+	margin: 0.6rem 0 0;
+}
+
+/* ------------------------------------------------------ types d'offres */
+
+.pivot-type-card {
+	max-width: 900px;
+	margin-bottom: 1rem;
+	padding: 1rem 1.25rem;
+	border: 1px solid #dcdcde;
+	border-left: 4px solid #2271b1;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.pivot-type-card h2 {
+	margin: 0 0 0.5rem;
+	font-size: 15px;
+}
+
+.pivot-type-id {
+	color: #646970;
+	font-family: monospace;
+	font-size: 11px;
+	font-weight: 400;
+}
+
+.pivot-type-family {
+	margin: 0 0 0.5rem;
+}
+
+.pivot-type-origin {
+	color: #646970;
+	font-size: 12px;
+}
+
+.pivot-type-origin-manual {
+	color: #8a6d00;
+}
+
+.pivot-type-used {
+	display: block;
+	margin-top: 0.15rem;
+	color: #646970;
+	font-size: 11px;
+}
+
+.pivot-type-used-theme {
+	color: #007017;
+}
+
+.pivot-type-extras code {
+	font-size: 11px;
+}
+
+
+
+
+
+
+/* -------------------------------------------- constructeur de shortcode */
+
+.pivot-sc-source {
+	margin: 0 0 0.75rem 1.75rem;
+}
+
+.pivot-sc-result {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: center;
+	max-width: 900px;
+}
+
+.pivot-sc-result input {
+	flex: 1;
+	min-width: 300px;
+	font-weight: 600;
+}
+
+.pivot-sc-copied {
+	color: #007017;
+	font-size: 12px;
+}
+
+.pivot-sc-hints {
+	margin-top: 0.5rem;
+}
+
+.pivot-sc-hints > summary {
+	color: #2271b1;
+	cursor: pointer;
+	font-size: 12px;
+}
+
+.pivot-sc-hints code {
+	font-size: 11px;
+}
+
+.pivot-sc-preview {
+	max-width: 1100px;
+	padding: 1rem;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+}
+
+
+
+
+
+.pivot-type-templates {
+	margin: 0.5rem 0;
+	border-collapse: collapse;
+}
+
+.pivot-type-templates th {
+	padding: 0.2rem 1rem 0.2rem 0;
+	color: #50575e;
+	font-size: 12px;
+	text-align: left;
+	vertical-align: top;
+	white-space: nowrap;
+}
+
+.pivot-type-templates td {
+	padding: 0.2rem 0;
+}
+
+.pivot-type-templates code {
+	font-size: 11px;
+}
+
+/* Écran « Champs affichés ». */
+
+.pivot-field-group {
+	margin: 1.2rem 0;
+	padding: 0.8rem 1rem;
+	background: #fff;
+	border: 1px solid #dcdcde;
+}
+
+.pivot-field-group h2 {
+	margin: 0 0 0.5rem;
+	font-size: 14px;
+}
+
+.pivot-field-list {
+	display: grid;
+	grid-template-columns: repeat( auto-fill, minmax( 320px, 1fr ) );
+	gap: 0.1rem 1.5rem;
+	margin: 0;
+}
+
+.pivot-field-list:empty {
+	display: none;
+}
+
+.pivot-field-toggle {
+	margin: 0 0 0.4rem;
+	font-size: 14px;
+}
+
+.pivot-field-subgroup {
+	margin: 0.7rem 0 0;
+	padding: 0.5rem 0 0 0.9rem;
+	border-left: 3px solid #dcdcde;
+}
+
+.pivot-field-subgroup .pivot-field-toggle {
+	font-size: 13px;
+}
+
+.pivot-field-search {
+	margin: 0.5rem 0 1rem;
+}
+
+.pivot-field-list li {
+	margin: 0;
+	padding: 0.15rem 0;
+}
+
+.pivot-field-list code {
+	color: #646970;
+	font-size: 11px;
+}
+
+.pivot-field-excluded .pivot-field-list li {
+	color: #646970;
+}

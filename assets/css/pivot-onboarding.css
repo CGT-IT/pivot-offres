@@ -1,0 +1,145 @@
+/**
+ * Visite guidée de l'administration.
+ */
+
+.pivot-tour {
+	display: none;
+}
+
+.pivot-tour.is-open {
+	display: block;
+}
+
+/* Le projecteur : un cadre clair autour de la cible, et une ombre démesurée
+   qui assombrit tout le reste de la page. */
+.pivot-tour-spotlight {
+	position: fixed;
+	z-index: 100000;
+	border-radius: 4px;
+	box-shadow: 0 0 0 2px #2271b1, 0 0 0 9999px rgba( 0, 0, 0, 0.55 );
+	pointer-events: none;
+	transition: top 0.2s ease, left 0.2s ease, width 0.2s ease, height 0.2s ease;
+}
+
+.pivot-tour-bubble {
+	position: fixed;
+	z-index: 100001;
+	box-sizing: border-box;
+	width: min( 380px, calc( 100vw - 24px ) );
+	padding: 1.1rem 1.2rem 0.9rem;
+	border-radius: 6px;
+	background: #fff;
+	box-shadow: 0 8px 30px rgba( 0, 0, 0, 0.3 );
+}
+
+.pivot-tour-bubble.is-centered {
+	top: 50%;
+	left: 50%;
+	transform: translate( -50%, -50% );
+}
+
+/* La flèche pointe la cible ; sa position horizontale est calculée en JS. */
+.pivot-tour-bubble.is-below::before,
+.pivot-tour-bubble.is-above::before {
+	content: "";
+	position: absolute;
+	left: var( --pivot-arrow, 50% );
+	width: 0;
+	height: 0;
+	margin-left: -8px;
+	border-right: 8px solid transparent;
+	border-left: 8px solid transparent;
+}
+
+.pivot-tour-bubble.is-below::before {
+	top: -8px;
+	border-bottom: 8px solid #fff;
+}
+
+.pivot-tour-bubble.is-above::before {
+	bottom: -8px;
+	border-top: 8px solid #fff;
+}
+
+.pivot-tour-title {
+	margin: 0 1.5rem 0.4rem 0;
+	font-size: 15px;
+	line-height: 1.3;
+}
+
+.pivot-tour-text {
+	margin: 0 0 1rem;
+	color: #3c434a;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+.pivot-tour-foot {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 0.6rem;
+	border-top: 1px solid #f0f0f1;
+}
+
+.pivot-tour-progress {
+	color: #646970;
+	font-size: 12px;
+}
+
+.pivot-tour-actions {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin-left: auto;
+}
+
+.pivot-tour-skip {
+	color: #646970;
+	font-size: 12px;
+}
+
+.pivot-tour-close {
+	position: absolute;
+	top: 0.4rem;
+	right: 0.5rem;
+	padding: 0 0.3rem;
+	border: 0;
+	background: transparent;
+	color: #646970;
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.pivot-tour-close:hover,
+.pivot-tour-close:focus-visible {
+	color: #1d2327;
+}
+
+.pivot-tour-replay {
+	margin-left: 0.75rem;
+	font-size: 13px !important;
+	font-weight: 400;
+	vertical-align: middle;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.pivot-tour-spotlight {
+		transition: none;
+	}
+}
+
+.pivot-filter-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	align-items: center;
+}
+
+.pivot-tour-start-filters {
+	color: #2271b1;
+	font-size: 13px;
+}

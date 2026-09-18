@@ -1,0 +1,2271 @@
+# Copyright (C) 2026
+# This file is distributed under the GPL-2.0-or-later license.
+msgid ""
+msgstr ""
+"Project-Id-Version: PIVOT Offres 1.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: pivot-offres\n"
+"Language: \n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: pivot-offres.php
+msgid "Activation impossible"
+msgstr ""
+
+#: pivot-offres.php
+msgid "PIVOT Offres ne peut pas fonctionner sur ce site :"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "PIVOT Offres est actif, mais une étape d'installation a échoué :"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Désactivez puis réactivez le plugin après avoir corrigé le problème."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "La configuration linguistique du site a changé."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "PIVOT Offres suit désormais %1$s, pour les langues %2$s. Les index ont été marqués comme périmés : ils se reconstruisent d'eux-mêmes, ou immédiatement depuis Cache et outils."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Pensez à traduire le titre et l'URL de chaque page de listing, ainsi que le libellé de vos critères : sans traduction saisie, ils reprennent la langue par défaut."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Voir les pages de listing"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Enregistrer les permaliens"
+msgstr ""
+
+#: admin/class-pivot-admin.php includes/class-pivot-shortcodes.php
+msgid "PIVOT Offres"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "PIVOT"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Pages de listing"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Ajouter une page"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Insérer des offres"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Shortcode"
+msgstr ""
+
+#: admin/class-pivot-admin.php admin/class-pivot-types-admin.php
+msgid "Types d'offres"
+msgstr ""
+
+#: admin/class-pivot-admin.php admin/class-pivot-fields-admin.php
+msgid "Champs affichés"
+msgstr ""
+
+#: admin/class-pivot-admin.php admin/class-pivot-settings.php
+msgid "Réglages PIVOT"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Réglages"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Cache et redirections"
+msgstr ""
+
+#: admin/class-pivot-admin.php admin/class-pivot-tools.php
+msgid "Cache et outils"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Journal des appels"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Journal"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Reconstruction en cours…"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Index reconstruit."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "La reconstruction a échoué."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "%1$d offres traitées sur %2$d"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Supprimer cette page de listing ? Les offres PIVOT ne sont pas touchées."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Chargement des champs…"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Les champs n'ont pas pu être chargés. Vérifiez la connexion à PIVOT dans les réglages."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Aucun champ ne correspond."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Choisissez un type d'offre pour voir ses champs."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "présent dans cette page"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Copié"
+msgstr ""
+
+#: admin/class-pivot-admin.php admin/class-pivot-listing-edit.php
+msgid "Analyse des offres…"
+msgstr ""
+
+#: admin/class-pivot-admin.php admin/class-pivot-tools.php
+msgid "Ajouter"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Ajouté"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "%1$d valeurs · %2$d %% des offres"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "oui / non · %d %% des offres"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Déduit de %1$d offres analysées sur %2$d."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Aucun critère ne se dégage de ces offres. Ajoutez-en un sur mesure."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "L'analyse a échoué : %s"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Richesse des données passée sur « Complet » : ce critère porte sur un champ PIVOT."
+msgstr ""
+
+#: admin/class-pivot-admin.php admin/class-pivot-fields-admin.php admin/class-pivot-listing-edit.php admin/class-pivot-settings.php admin/class-pivot-shortcode-admin.php admin/class-pivot-tools.php admin/class-pivot-types-admin.php
+msgid "Vous n'avez pas accès à cet écran."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Aucune page de listing pour l'instant."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Une page de listing associe une URL de votre site à une requête pré-programmée PIVOT. Créez-en une pour publier vos premières offres."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Créer la première page"
+msgstr ""
+
+#: admin/class-pivot-admin.php admin/class-pivot-listing-edit.php admin/class-pivot-shortcode-admin.php
+msgid "Titre"
+msgstr ""
+
+#: admin/class-pivot-admin.php admin/class-pivot-listing-edit.php
+msgid "URL"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Requête"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Par page"
+msgstr ""
+
+#: admin/class-pivot-admin.php admin/class-pivot-listing-edit.php
+msgid "Carte"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Filtres"
+msgstr ""
+
+#: admin/class-pivot-admin.php admin/class-pivot-settings.php
+msgid "Langues"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Index"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "inactive"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Modifier"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Reconstruire l'index"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Supprimer"
+msgstr ""
+
+#: admin/class-pivot-admin.php admin/class-pivot-tools.php includes/class-pivot-fields.php includes/class-pivot-suggestions.php
+msgid "Oui"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "URL propre à cette langue"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Pas d'URL traduite : le chemin par défaut est réutilisé"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "%1$d offres, il y a %2$s"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "jamais construit"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Page de listing supprimée."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Index reconstruit : %d offres."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "La reconstruction se poursuit en arrière-plan. Rechargez cette page dans une minute pour voir le total."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Journal vidé : %d lignes supprimées."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Journal des appels PIVOT"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Les entrées sont conservées %d jours, puis supprimées automatiquement."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "La journalisation est désactivée dans les réglages : aucune nouvelle entrée n'est enregistrée."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Tous les niveaux"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Débogage"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Information"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Avertissement"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Erreur"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Rechercher une URL ou un message"
+msgstr ""
+
+#: admin/class-pivot-admin.php templates/listing.php
+msgid "Filtrer"
+msgstr ""
+
+#: admin/class-pivot-admin.php admin/class-pivot-tools.php
+msgid "Date"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Niveau"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Service"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Appel"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "HTTP"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Durée"
+msgstr ""
+
+#: admin/class-pivot-admin.php admin/class-pivot-tools.php
+msgid "Poids"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Aucune entrée pour ces critères."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Vider le journal"
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "%d réglage s'écarte des règles d'origine."
+msgid_plural "%d réglages s'écartent des règles d'origine."
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "Réglages effacés : les règles d'origine s'appliquent à nouveau."
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "Réglages enregistrés."
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "Les fiches détail suivent immédiatement. Les vignettes et les descriptifs des listings viennent des index : reconstruisez-les pour que le changement s'y voie."
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "Aller à Cache et outils"
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "Décochez un champ pour qu'il cesse d'apparaître sur les fiches et les vignettes. Il reste utilisable comme critère de recherche : masquer n'est pas exclure."
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "Décocher une catégorie masque tout ce qu'elle contient en une seule règle. Vous pouvez ensuite rétablir un champ précis à l'intérieur."
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "Aucun champ connu pour l'instant."
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "La liste vient de la structure des types rencontrés dans vos pages de listing : elle se remplit après la première construction d'index."
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "Chercher un champ"
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "libellé ou urn"
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "%1$d champs masqués sur %2$d."
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "Enregistrer les champs affichés"
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "Revenir aux règles d'origine"
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "réglé ici"
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "Champs écartés partout"
+msgstr ""
+
+#: admin/class-pivot-fields-admin.php
+msgid "Filtres de catégorisation propres à chaque opérateur, champs Cirkwi et champs dépréciés. Ils ne décrivent pas l'offre : ils ne sont ni affichables ni utilisables comme critère, et ne se règlent pas ici."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Ajouter une page de listing"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Modifier la page de listing"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Page enregistrée."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Créer la page"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Enregistrer les modifications"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Identité de la page"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Ces champs concernent la langue par défaut (%s). Les autres langues se remplissent plus bas, dans la section Traductions."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Affiché en haut de la page et repris par défaut comme titre pour les moteurs de recherche."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Un ou plusieurs segments, par exemple sejourner/hotels. L'adresse est créée par le plugin : aucune page WordPress à publier."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Publication"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Rendre cette page accessible aux visiteurs"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Ouvrir"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php admin/class-pivot-shortcode-admin.php
+msgid "Aperçu"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Offres affichées"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Code de requête"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Code de la requête pré-programmée créée dans PIVOT. C'est elle qui détermine quelles offres apparaissent ici."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Paramètres de la requête"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Une paire nom=valeur par ligne, si la requête PIVOT attend des paramètres variables (long, lat, radius…)."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Résumé — nom, adresse, géolocalisation, média par défaut"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Complet — tous les champs de l'offre, nécessaire pour filtrer sur un champ PIVOT"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Complet avec offres liées"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php admin/class-pivot-onboarding.php
+msgid "Richesse des données"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Le mode résumé construit l'index plus vite ; le mode complet est indispensable dès qu'un filtre porte sur un champ PIVOT."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Tri"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "croissant"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "décroissant"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Urn du champ de tri. Laissez vide pour conserver l'ordre renvoyé par PIVOT."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Durée de cache propre"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php admin/class-pivot-settings.php
+msgid "minutes"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Laissez 0 pour utiliser la durée définie dans les réglages généraux."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Mise en page"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Offres par page"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "La pagination est gérée dans le navigateur : changer de page ne déclenche aucun appel à PIVOT."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Afficher une carte qui pointe les offres de la page"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Seules les offres géolocalisées apparaissent sur la carte ; les autres restent dans la liste."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Cadrage de la carte"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Latitude, longitude et niveau de zoom initial. Laissez le centre vide pour cadrer automatiquement sur les offres affichées."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Recherche libre"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Proposer un champ de recherche"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Rechercher une offre, une localité…"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Texte d'introduction"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Affiché sous le titre, avant les critères de recherche."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php templates/listing.php
+msgid "Critères de recherche"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Chaque critère devient un contrôle affiché au-dessus des résultats. Les valeurs proposées sont calculées à partir des offres de la page, avec les libellés traduits que PIVOT renvoie."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Ajouter un critère sur mesure"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php admin/class-pivot-onboarding.php
+msgid "Comment régler un critère ?"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Critères suggérés"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Réanalyser les offres"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Enregistrez la page une première fois : les critères possibles seront déduits des offres que votre requête renvoie."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Libellé"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php includes/class-pivot-listings.php includes/class-pivot-suggestions.php
+msgid "Localité"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php admin/class-pivot-tools.php
+msgid "Source"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Urn du champ"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Parcourir les champs disponibles"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Contrôle"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Clé d'URL"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "calculée"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Traductions de ce critère"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Les valeurs sont traduites par PIVOT. Complétez ci-dessous uniquement ce que vous voulez remplacer : une ligne « valeur|texte » par traduction à corriger."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Traductions de valeurs"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "namur|Namen"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Valeurs disponibles pour ce critère (%d)"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php includes/class-pivot-listings.php includes/class-pivot-suggestions.php
+msgid "Type d'offre"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "chargement…"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Filtrer les champs"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Fermer"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Retirer ce critère"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Référencement"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Titre pour les moteurs"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Laissez vide pour reprendre le titre de la page."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Méta description"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Environ 155 caractères."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Traductions"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Un champ laissé vide reprend la langue par défaut. Les offres elles-mêmes sont traduites par PIVOT : seuls les textes de la page sont à saisir ici."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Chemin propre à cette langue. Vide : le chemin de la langue par défaut est réutilisé."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Libellé de recherche"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Index de la page"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "%1$d offres indexées en %3$d langue(s), dernière reconstruction il y a %2$s."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Cet index n'a pas encore été construit. Il le sera à la première visite, ou dès maintenant avec le bouton ci-dessous."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Reconstruire maintenant"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Insérer ces offres ailleurs"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Collez ce shortcode dans une page ou un article pour y afficher quelques vignettes de cette sélection, sans carte ni critères. Il réutilise l'index déjà construit : aucun appel supplémentaire à PIVOT."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Pour restreindre à un critère :"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Attributs : nombre, colonnes, tri (defaut, nom, aleatoire), titre, filtre, lien=\"oui\" pour ajouter un lien vers cette page."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Découvrir les pages de listing"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Bienvenue dans PIVOT Offres"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Cette extension publie vos offres touristiques sans jamais les copier en base de données. Cette visite dure une minute et montre comment publier votre première page."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Créer une page"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Une page de listing associe une adresse de votre site à une requête pré-programmée PIVOT. C'est le point de départ : tout part d'ici."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Vos pages"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Chaque ligne résume une page : son adresse, sa requête, le nombre d'offres par page, les langues publiées et la date du dernier index."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "L'index"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "L'index est le fichier qui alimente la recherche du visiteur. Il se reconstruit tout seul, mais ce lien le force immédiatement — pratique après avoir modifié une requête dans PIVOT."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "À faire en premier"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Si ce n'est pas encore fait, ouvrez les réglages pour saisir votre clé ws_key et tester la connexion. Sans elle, aucune offre ne remontera."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Comprendre les champs affichés"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Ce que montre une fiche"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "PIVOT renvoie bien plus de champs qu'une fiche ne devrait en montrer. Cet écran décide lesquels sont visibles par vos visiteurs."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Masquer n'est pas exclure"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Un champ décoché disparaît des fiches et des vignettes, mais reste utilisable comme critère de recherche. Les champs déjà décochés sont ceux que l'extension masque par défaut : vous pouvez les rétablir."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Toute une catégorie d'un coup"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "La case d'une catégorie commande tous ses champs, et n'enregistre qu'une seule règle. Décochez-la, puis recochez le champ que vous voulez garder : c'est la façon la plus courte d'exprimer « tout sauf celui-ci »."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Retrouver un champ"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Un type d'offre peut compter plus de cent champs. Tapez quelques lettres du libellé ou de l'urn pour ne garder que les lignes concernées."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Ce qui ne se règle pas ici"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Les filtres de catégorisation et les champs Cirkwi ne décrivent pas l'offre. Ils sont écartés partout, y compris du filtrage, et sont listés ici seulement pour que vous ne les cherchiez pas ailleurs."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Après l'enregistrement"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Les fiches détail suivent tout de suite. Les vignettes et les descriptifs des listings viennent des index : reconstruisez-les depuis Cache et outils pour que le changement s'y voie."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Découvrir cet écran"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Configurer une page de listing"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Cinq réglages suffisent pour une page qui fonctionne. Voyons-les dans l'ordre."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "L'adresse de la page"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Saisissez un ou plusieurs segments, par exemple sejourner/hotels. L'adresse est créée par l'extension : vous n'avez aucune page WordPress à publier."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "La requête PIVOT"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Collez ici le code de la requête pré-programmée créée dans PIVOT, de la forme QRY-00-0000-0000. C'est elle qui détermine quelles offres apparaissent."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Le mode résumé construit l'index plus vite. Passez au mode complet dès qu'un critère de recherche porte sur un champ PIVOT : sans lui, ces champs ne sont pas renvoyés."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "La carte"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Cochez pour afficher une carte qui pointe les offres de la page. Seules les offres géolocalisées y figurent ; les autres restent dans la liste."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Les critères suggérés"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Le plugin lit un échantillon de vos offres et propose les critères qui ont un sens : ceux dont les valeurs sont assez variées pour filtrer, et assez répandues pour concerner les offres. Un clic sur Ajouter pose le critère entièrement réglé."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Un critère sur mesure"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Si rien ne convient dans les suggestions, ce bouton ouvre un critère vierge à régler à la main."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Un guide détaillé pour les critères"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Un critère se règle sur cinq champs. Ce bouton ouvre une visite qui les passe un par un, avec ce que chacun change pour le visiteur."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Enregistrer"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "À l'enregistrement, l'index se reconstruit si la requête ou les critères ont changé. La page est alors visible à l'adresse choisie."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Anatomie d'un critère"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Un critère associe une donnée des offres à un contrôle affiché au visiteur. Les critères suggérés remplissent ces cinq champs pour vous ; cette visite explique ce que chacun fait, pour les cas où vous voulez les régler vous-même."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "1. Libellé"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Le texte affiché au-dessus du contrôle, dans la langue par défaut. Les autres langues se saisissent plus bas, dans le repli « Traductions de ce critère »."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "2. Source"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "D'où vient la donnée. Localité, commune, code postal, province et type d'offre sont lus dans l'adresse de l'offre, sans rien configurer. « Champ PIVOT » ouvre tout le reste : catégorie, équipements, labels, capacités."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "3. Urn du champ"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Uniquement pour la source « Champ PIVOT » : l'identifiant du champ dans le modèle de données, de la forme urn:fld:catdec. Ce champ disparaît pour les autres sources."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Ne retenez aucune urn"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Ce lien ouvre le catalogue lu dans le thesaurus : les champs groupés par catégorie, avec leur libellé traduit. Les types d'offres réellement présents dans cette page sont proposés en tête. Un clic remplit l'urn, le libellé et le contrôle adapté."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "4. Contrôle"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Ce que manipule le visiteur. Liste déroulante pour un choix unique, cases à cocher pour cumuler plusieurs valeurs, saisie libre pour une recherche partielle, interrupteur pour un champ oui/non. Le catalogue de champs le présélectionne correctement."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "5. Clé d'URL"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Le nom du paramètre dans l'adresse : ?province=namur. Laissez vide, il est calculé. Cette clé est identique dans toutes les langues, ce qui rend un lien filtré partageable entre versions linguistiques."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Traduire le critère"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "PIVOT traduit déjà les valeurs. Ce repli ne sert qu'à corriger : un libellé par langue, et une ligne « valeur|texte » par traduction à remplacer. Les valeurs disponibles y sont listées après la première construction de l'index."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Retirer un critère"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Le critère disparaît du formulaire ; rien n'est perdu tant que vous n'enregistrez pas. Les offres, elles, ne sont jamais touchées."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Une fois enregistré"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Un critère sur un champ PIVOT exige la richesse « Complet » plus haut, sinon le champ n'est pas renvoyé et la liste de valeurs reste vide. Reconstruisez ensuite l'index pour voir les valeurs apparaître."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Découvrir les réglages"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Stage ou production"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Chaque environnement a son adresse et sa clé. Basculer de l'un à l'autre ne demande rien d'autre : les caches sont vidés automatiquement."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "La clé ws_key"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Fournie par le CGT. Elle n'apparaît jamais dans le journal. Une clé n'accepte qu'un seul opérateur touristique, et se désactive si elle est utilisée depuis plusieurs adresses IP."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Vérifier tout de suite"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Ce bouton envoie un appel libre au thesaurus, puis un appel authentifié. Il vous dit précisément lequel des deux échoue."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Les langues"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Rien à choisir ici : le plugin suit l'extension de traduction du site et publie une page par langue. PIVOT fournit les libellés en français, néerlandais, anglais et allemand ; une langue qu'il ne couvre pas reprend la langue par défaut."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Les durées de cache"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Aucune offre n'est écrite en base. Ces durées décident à quelle fréquence les fichiers de cache sont renouvelés ; vous pouvez toujours les vider à la main depuis Cache et outils."
+msgstr ""
+
+#: admin/class-pivot-onboarding.php templates/listing.php
+msgid "Suivant"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php templates/listing.php
+msgid "Précédent"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Terminer"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Passer le guide"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Fermer le guide"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Revoir le guide"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Étape %1$d sur %2$d"
+msgstr ""
+
+#: admin/class-pivot-onboarding.php
+msgid "Visite guidée"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Connexion à PIVOT"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Choisissez l'environnement interrogé et enregistrez la clé correspondante. Chaque environnement a sa propre clé : basculer de l'un à l'autre ne demande aucune autre modification."
+msgstr ""
+
+#: admin/class-pivot-settings.php admin/class-pivot-tools.php
+msgid "Environnement actif"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Stage (recette)"
+msgstr ""
+
+#: admin/class-pivot-settings.php admin/class-pivot-tools.php
+msgid "Production"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "URL du service — stage"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Clé ws_key — stage"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "URL du service — production"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Clé ws_key — production"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Délai d'attente (secondes)"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Au-delà de ce délai, l'appel est abandonné et l'erreur est journalisée."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Le plugin ne gère pas les langues lui-même : il suit l'extension de traduction installée sur le site. Les libellés des offres, eux, viennent toujours de PIVOT, qui les fournit en français, néerlandais, anglais et allemand."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Extension détectée"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Liens alternates"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Publier les balises hreflang entre versions linguistiques"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Les pages du plugin ne sont pas des articles WordPress : les extensions de traduction ne publient pas leurs alternates. Laissez cette case cochée sur un site multilingue."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Durées de cache"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Aucune offre n'est enregistrée en base de données. Tout est mis en cache dans des fichiers JSON, renouvelés automatiquement à l'expiration des durées ci-dessous, et réinitialisables à tout moment depuis l'écran Cache et outils."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Listes d'offres"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Fréquence de reconstruction de l'index qui alimente les pages de listing."
+msgstr ""
+
+#: admin/class-pivot-settings.php admin/class-pivot-tools.php
+msgid "Fiches détail"
+msgstr ""
+
+#: admin/class-pivot-settings.php admin/class-pivot-tools.php
+msgid "Thesaurus"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Types d'offres, structures de champs, libellés et localités. Ces données bougent rarement : une durée longue est recommandée."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Erreurs"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Durée pendant laquelle une offre introuvable n'est pas redemandée au service."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Offres par appel"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Taille des lots lors de la construction d'un index. Réduisez cette valeur si votre hébergeur coupe les requêtes longues."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Livraison de l'index au navigateur"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Fichier statique (recommandé)"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Route REST"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Le fichier statique évite de charger WordPress à chaque affichage de liste. Passez en REST si votre dossier uploads n'est pas servi directement."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Affichage et URL"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Réglages communs à toutes les pages générées par le plugin."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Préfixe des pages détail"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Les fiches seront publiées sous %s."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Préfixe traduit"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Facultatif : un préfixe propre à chaque langue, par exemple aanbod en néerlandais. Une langue laissée vide reprend le préfixe ci-dessus."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Si une offre est renommée"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "L'adresse suit le nouveau nom"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "L'adresse ne change plus"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Dans les deux cas l'ancienne adresse continue de fonctionner et redirige en 301 : le code PIVOT termine toujours le segment. Suivre le nom garde des adresses parlantes ; les figer évite qu'une correction de faute de frappe ne déplace une page déjà référencée."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Anciennes URL /details/CODE"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Rediriger en 301 vers la nouvelle URL"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Afficher la fiche directement à cette adresse"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "La forme /details/CODEPIVOT&type=IDTYPE reste comprise dans les deux cas : les liens existants et les référencements externes continuent de fonctionner."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Taille des vignettes"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Données structurées"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Publier le balisage schema.org (JSON-LD) sur les listes et les fiches"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Cartographie"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "La carte s'affiche uniquement sur les pages de listing où vous l'avez activée."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Moteur de carte"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Leaflet + fond de carte au choix"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Aucune carte"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "URL des tuiles"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Mention du fournisseur"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Regroupement"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Regrouper les points proches en grappes"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Journalisation"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Le journal enregistre les appels au webservice pour faciliter le diagnostic. Il ne conserve jamais la clé ws_key."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Activer le journal"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Enregistrer les appels à PIVOT"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Niveau enregistré"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Tout, y compris les lectures en cache"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Appels réseau et erreurs"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Avertissements et erreurs"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Erreurs seulement"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Conservation (jours)"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Une tâche quotidienne supprime les entrées plus anciennes."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "PIVOT fournit les contenus dans cette langue"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "PIVOT ne fournit pas cette langue : les contenus reprendront la langue par défaut"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Langue par défaut : %s. Une page de listing et une fiche existent dans chacune de ces langues."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Le site est monolingue. Installez et configurez une extension de traduction pour publier vos offres en plusieurs langues : le plugin la suivra sans autre réglage."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "heures"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "jours"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Environnement changé : tous les caches ont été vidés."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Enregistrer les réglages"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Vérifier la connexion"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Envoie un appel libre au thesaurus puis un appel authentifié au service query, avec les réglages enregistrés."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Tester la connexion"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Insérer des offres dans une page"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Réglez ce que vous voulez afficher, copiez le shortcode obtenu et collez-le dans une page ou un article. Il produit une liste de vignettes : ni carte, ni critères de recherche."
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Quelles offres"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Celles d'une page de listing"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Reprend l'index déjà construit : aucun appel supplémentaire à PIVOT."
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Aucune page de listing active pour l'instant."
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Celles d'une requête PIVOT"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Une sélection que je choisis"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Codes séparés par des virgules. L'ordre saisi est l'ordre affiché."
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Présentation"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Offres"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Colonnes"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Ordre"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Celui de PIVOT"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Alphabétique"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Aléatoire"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Restreindre"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "province:namur"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Facultatif. Forme cle:valeur, plusieurs séparées par une barre verticale. Les clés sont celles des critères de la page choisie."
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Habillage"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Nos coups de cœur"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Ajouter un lien vers la page de listing"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Votre shortcode"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Copier"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Rendu avec les styles de l'extension. Votre thème peut le présenter différemment."
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Clés et valeurs disponibles"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "%d redirection"
+msgid_plural "%d redirections"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-pivot-tools.php
+msgid "%d adresse déjà gérée par le plugin, ignorée"
+msgid_plural "%d adresses déjà gérées par le plugin, ignorées"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-pivot-tools.php
+msgid "%d inchangée"
+msgid_plural "%d inchangées"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-pivot-tools.php
+msgid "Enregistrer cette redirection"
+msgid_plural "Enregistrer ces %d redirections"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-pivot-tools.php
+msgid "Cache vidé : %d fichiers supprimés. Les prochaines visites rechargeront les données depuis PIVOT."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Cache du thesaurus réinitialisé : %d fichiers supprimés."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Cache des fiches vidé : %d fichiers supprimés."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Reconstruction lancée pour toutes les pages actives. Elle se poursuit en arrière-plan."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Indiquez le code de la requête à traiter."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Simulation terminée : %d redirections seraient créées. Rien n'a été enregistré."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "%1$d redirections enregistrées. La table en compte %2$d au total."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Simulation abandonnée. Rien n'a été enregistré."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Redirection ajoutée."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Redirection refusée : vérifiez que la source et la cible sont différentes et non vides."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Redirection supprimée."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Relevé des renommages effacé."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Registre des adresses vidé. Les fiches repartiront du nom actuel de chaque offre à la prochaine construction d'index."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Les visites guidées vous seront reproposées à votre prochaine visite de chaque écran."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Table de redirections vidée."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Index des pages de listing"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "États de construction"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Réponses brutes"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Cache"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Les offres ne sont jamais écrites en base de données : elles vivent dans ces fichiers, renouvelés automatiquement."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Contenu"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Fichiers"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Réinitialiser le cache du thesaurus"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Vider les fiches détail"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Reconstruire tous les index"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Tout vider"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Redirections 301"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "La forme /details/CODEPIVOT&type=IDTYPE est déjà reconnue sans configuration. Cet outil sert à couvrir d'autres anciennes adresses, par lot, à partir des offres d'une requête."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Requête à parcourir"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Toutes les offres retournées par cette requête recevront une redirection vers leur nouvelle fiche."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Gabarits des anciennes URL"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Jetons disponibles : {code}, {type}, {slug}, {lang}. Chaque gabarit pointe vers la fiche dans sa langue : une seule passe suffit pour tout le site. Une langue laissée vide est ignorée."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Inutile de viser /details/ : cette forme est déjà reconnue par le plugin, les entrées correspondantes sont ignorées."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Mode"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Simuler sans enregistrer"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Générer les redirections"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Ajouter une redirection"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "/ancienne-page"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Table actuelle (%d)"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Cible"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Retirer"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "%d autres redirections ne sont pas affichées. Exportez la table pour la consulter en entier."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Exporter"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Vider la table"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Aucune redirection enregistrée."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Aperçu de ce qui serait créé"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Redirections créées"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "destinations en %s"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Offre"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Langue"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Ancienne adresse"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Nouvelle adresse"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "%d autres ne sont pas affichées ici."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Abandonner"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Rien n'a encore été écrit. La simulation reste disponible tant que vous n'avez pas tranché, même si vous quittez cet écran."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Offres renommées"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Aucun changement de dénomination relevé depuis la mise en service. Les renommages faits dans PIVOT apparaîtront ici après la reconstruction de l'index."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Ces offres ont changé de nom dans PIVOT. Leur adresse est figée : elle n'a pas bougé."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Ces offres ont changé de nom dans PIVOT, et leur adresse a suivi. L'ancienne redirige en 301 vers la nouvelle ; pensez à prévenir vos partenaires si vous leur aviez communiqué un lien."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Ancien nom"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Nouveau nom"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Adresse"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "inchangée"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Effacer ce relevé"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Réinitialiser le registre des adresses"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Aide"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Les visites guidées s'ouvrent une seule fois par écran et par personne. Le bouton présent en haut de chaque écran permet de les revoir à tout moment ; celui-ci les remet à zéro pour votre compte."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Revoir les visites guidées"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Diagnostic"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Version du plugin"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Stage"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "URL du service"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Clé enregistrée"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Non"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Dossier de cache"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Racine du site"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Pages actives"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Gestion des langues"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Langues publiées"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Prochaine reconstruction"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "non planifiée"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "URL par langue"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "contenus non traduits par PIVOT"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "identique"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Les langues %1$s reçoivent la même adresse que la langue par défaut : %2$s ne distingue pas les URL que le plugin fabrique, car elles ne correspondent à aucun contenu WordPress. Vérifiez sa configuration d'URL, ou fournissez l'adresse attendue avec le filtre pivot_language_url. En attendant, une seule balise hreflang est publiée plutôt que plusieurs identiques."
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "Familles enregistrées."
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "Rien n'a été enregistré : les familles de PIVOT n'ont pas pu être lues."
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "La famille décide du gabarit utilisé pour la fiche et pour la vignette. Elle vient du thesaurus de PIVOT ; vous pouvez la corriger ici pour un type qui mérite un traitement à part."
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "Cet écran ne compose aucun visuel : il indique quel fichier de gabarit s'applique, pour que votre développeur sache où écrire. Le gabarit le plus précis disponible l'emporte toujours."
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "Les familles n'ont pas pu être lues dans le thesaurus de PIVOT. Sans elles, tous les types passent par le gabarit commun."
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "Vérifiez la connexion dans Réglages, puis réinitialisez le cache du thesaurus depuis Cache et outils. Aucune famille de remplacement n'est inventée : elle ne correspondrait à aucun de vos gabarits."
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "Aucun type rencontré pour l'instant."
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "Les types apparaissent ici après la première construction d'index d'une page de listing : ce sont ceux que vos requêtes renvoient réellement."
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "Enregistrer les familles"
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "Famille"
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "corrigée ici — PIVOT classe ce type dans « %s »"
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "telle que PIVOT la déclare"
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "Fiche détail"
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "Vignette"
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "en service : %s, dans votre thème"
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "en service : le gabarit commun du plugin"
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "À placer dans un dossier pivot-offres/ de votre thème. Le premier fichier trouvé est utilisé."
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "Champs embarqués dans la vignette :"
+msgstr ""
+
+#: admin/class-pivot-types-admin.php
+msgid "Déclarés par le filtre pivot_card_fields. Ils voyagent dans l'index ; c'est au gabarit de vignette de les afficher."
+msgstr ""
+
+#: templates/detail.php templates/examples/detail-hebergement.php
+msgid "Cette offre n'est plus disponible."
+msgstr ""
+
+#: templates/detail.php
+msgid "Fil d'Ariane"
+msgstr ""
+
+#: templates/detail.php
+msgid "Contact"
+msgstr ""
+
+#: templates/detail.php
+msgid "Site web"
+msgstr ""
+
+#: templates/detail.php
+msgid "Situation"
+msgstr ""
+
+#: templates/detail.php
+msgid "Voir sur la carte"
+msgstr ""
+
+#: templates/detail.php
+msgid "← Retour aux résultats"
+msgstr ""
+
+#: templates/detail.php
+msgid "Référence PIVOT"
+msgstr ""
+
+#: templates/listing.php
+msgid "%d offre"
+msgid_plural "%d offres"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/listing.php
+msgid "Nom, localité, mot-clé…"
+msgstr ""
+
+#: includes/class-pivot-templates.php templates/listing.php
+msgid "Toutes"
+msgstr ""
+
+#: includes/class-pivot-templates.php templates/listing.php
+msgid "Effacer les filtres"
+msgstr ""
+
+#: templates/listing.php
+msgid "Carte des offres"
+msgstr ""
+
+#: templates/listing.php
+msgid "Aucune offre à afficher pour le moment."
+msgstr ""
+
+#: templates/listing.php
+msgid "Pagination des offres"
+msgstr ""
+
+#: templates/examples/card-evenement.php
+msgid "+ %d autre date"
+msgid_plural "+ %d autres dates"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-pivot-templates.php templates/examples/card-evenement.php templates/parts/card.php
+msgid "Voir la fiche"
+msgstr ""
+
+#: templates/examples/detail-hebergement.php
+msgid "Chambres"
+msgstr ""
+
+#: templates/examples/detail-hebergement.php
+msgid "Capacité"
+msgstr ""
+
+#: templates/examples/detail-hebergement.php
+msgid "Classement"
+msgstr ""
+
+#: includes/class-pivot-client.php
+msgid "Aucune clé ws_key n'est enregistrée pour cet environnement. Ajoutez-la dans Réglages PIVOT."
+msgstr ""
+
+#: includes/class-pivot-client.php
+msgid "Le service thesaurus est injoignable : %s"
+msgstr ""
+
+#: includes/class-pivot-client.php
+msgid "Le service répond, mais aucune clé ws_key n'est enregistrée pour cet environnement."
+msgstr ""
+
+#: includes/class-pivot-client.php
+msgid "Thesaurus accessible, mais l'appel authentifié a échoué : %s"
+msgstr ""
+
+#: includes/class-pivot-client.php
+msgid "Connexion établie : le thesaurus et un appel authentifié répondent tous les deux."
+msgstr ""
+
+#: includes/class-pivot-cron.php
+msgid "Toutes les 15 minutes (PIVOT)"
+msgstr ""
+
+#: includes/class-pivot-fields.php
+msgid "Du %1$s au %2$s"
+msgstr ""
+
+#: includes/class-pivot-fields.php
+msgid "de %1$s à %2$s"
+msgstr ""
+
+#: includes/class-pivot-fields.php
+msgid "à partir de %s"
+msgstr ""
+
+#: includes/class-pivot-i18n.php
+msgid "Extension déclarée par filtre"
+msgstr ""
+
+#: includes/class-pivot-i18n.php
+msgid "Aucune : site monolingue"
+msgstr ""
+
+#: includes/class-pivot-i18n.php
+msgid "Français"
+msgstr ""
+
+#: includes/class-pivot-i18n.php
+msgid "Néerlandais"
+msgstr ""
+
+#: includes/class-pivot-i18n.php
+msgid "Anglais"
+msgstr ""
+
+#: includes/class-pivot-i18n.php
+msgid "Allemand"
+msgstr ""
+
+#: includes/class-pivot-index-builder.php includes/class-pivot-rest.php
+msgid "Page de listing introuvable."
+msgstr ""
+
+#: includes/class-pivot-index-builder.php
+msgid "Cette page n'a pas de code de requête."
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Rechercher"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Donnez un titre à la page de listing."
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Indiquez l'URL de la page, par exemple hebergements ou sejourner/hotels."
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Indiquez le code de la requête pré-programmée, par exemple QRY-00-0000-0000."
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "L'URL « %s » est déjà utilisée par une autre page de listing."
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Liste déroulante (un choix)"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Cases à cocher (plusieurs choix)"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Saisie libre"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Interrupteur oui/non"
+msgstr ""
+
+#: includes/class-pivot-listings.php includes/class-pivot-suggestions.php
+msgid "Commune"
+msgstr ""
+
+#: includes/class-pivot-listings.php includes/class-pivot-suggestions.php
+msgid "Code postal"
+msgstr ""
+
+#: includes/class-pivot-listings.php includes/class-pivot-suggestions.php
+msgid "Province"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Champ PIVOT (urn)"
+msgstr ""
+
+#: includes/class-pivot-parser.php
+msgid "Le service a renvoyé un document vide."
+msgstr ""
+
+#: includes/class-pivot-parser.php
+msgid "Document XML illisible."
+msgstr ""
+
+#: includes/class-pivot-parser.php
+msgid "Aucune offre dans la réponse du service."
+msgstr ""
+
+#: includes/class-pivot-redirects.php
+msgid "Indiquez au moins un gabarit d'ancienne adresse."
+msgstr ""
+
+#: includes/class-pivot-repository.php
+msgid "Code d'offre invalide."
+msgstr ""
+
+#: includes/class-pivot-rest.php
+msgid "L'index de cette page n'est pas encore disponible. Réessayez dans un instant."
+msgstr ""
+
+#: includes/class-pivot-seo.php
+msgid " – page %d"
+msgstr ""
+
+#: includes/class-pivot-shortcodes.php
+msgid "Indiquez une source : listing, query ou codes."
+msgstr ""
+
+#: includes/class-pivot-shortcodes.php
+msgid "Page de listing « %s » introuvable."
+msgstr ""
+
+#: includes/class-pivot-shortcodes.php
+msgid "Voir toutes les offres"
+msgstr ""
+
+#: includes/class-pivot-suggestions.php
+msgid "Cette requête ne renvoie aucune offre : impossible d'en déduire des critères."
+msgstr ""
+
+#: includes/class-pivot-templates.php
+msgid "offre(s)"
+msgstr ""
+
+#: includes/class-pivot-templates.php
+msgid "Aucune offre ne correspond à votre recherche."
+msgstr ""
+
+#: includes/class-pivot-templates.php
+msgid "Chargement des offres…"
+msgstr ""
+
+#: includes/class-pivot-templates.php
+msgid "Les offres n'ont pas pu être chargées. Rechargez la page dans quelques instants."
+msgstr ""
+
+#: includes/class-pivot-templates.php
+msgid "Page précédente"
+msgstr ""
+
+#: includes/class-pivot-templates.php
+msgid "Page suivante"
+msgstr ""
+
+#: includes/class-pivot-templates.php
+msgid "Page"
+msgstr ""
+
+#: includes/class-pivot-templates.php
+msgid "Informations"
+msgstr ""
+
+#: includes/class-pivot-types.php
+msgid "Autre"
+msgstr ""
+
+#: includes/preflight.php
+msgid "PIVOT Offres demande PHP 7.4 ou plus récent. Ce serveur exécute PHP %s. Demandez la mise à jour à votre hébergeur."
+msgstr ""
+
+#: includes/preflight.php
+msgid "SimpleXML, qui sert à lire les réponses de PIVOT"
+msgstr ""
+
+#: includes/preflight.php
+msgid "libxml, qui sert à analyser le XML"
+msgstr ""
+
+#: includes/preflight.php
+msgid "JSON, qui sert à écrire les fichiers de cache"
+msgstr ""
+
+#: includes/preflight.php
+msgid "L'extension PHP « %s » est absente de ce serveur."
+msgstr ""
+
+#: includes/preflight.php
+msgid "Ces noms sont déjà déclarés sur le site : %s. Un autre plugin, votre thème ou votre code PIVOT existant les utilise. Désactivez-le, ou renommez-le, avant d'activer PIVOT Offres."
+msgstr ""
+
+#: includes/preflight.php
+msgid "Le dossier des fichiers envoyés est inutilisable : %s"
+msgstr ""
+
+#: includes/preflight.php
+msgid "Le dossier %s n'est pas accessible en écriture. Le plugin y range son cache."
+msgstr ""
+
+#: includes/preflight.php
+msgid "PIVOT Offres n'a pas pu démarrer."
+msgstr ""
+

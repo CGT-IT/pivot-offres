@@ -1,0 +1,1708 @@
+# Traduction de PIVOT Offres.
+msgid ""
+msgstr ""
+"Project-Id-Version: PIVOT Offres 1.1.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: pivot-offres\n"
+"Language: de_DE\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Activation impossible"
+msgstr "Aktivierung nicht möglich"
+
+msgid "PIVOT Offres ne peut pas fonctionner sur ce site :"
+msgstr "PIVOT Angebote kann auf dieser Website nicht arbeiten:"
+
+msgid "PIVOT Offres est actif, mais une étape d'installation a échoué :"
+msgstr "PIVOT Angebote ist aktiv, aber ein Installationsschritt ist fehlgeschlagen:"
+
+msgid "Désactivez puis réactivez le plugin après avoir corrigé le problème."
+msgstr "Deaktivieren und reaktivieren Sie das Plugin, nachdem Sie das Problem behoben haben."
+
+msgid "La configuration linguistique du site a changé."
+msgstr "Die Sprachkonfiguration der Website hat sich geändert."
+
+msgid "PIVOT Offres suit désormais %1$s, pour les langues %2$s. Les index ont été marqués comme périmés : ils se reconstruisent d'eux-mêmes, ou immédiatement depuis Cache et outils."
+msgstr "PIVOT Angebote folgt nun %1$s, für die Sprachen %2$s. Die Indexe wurden als veraltet markiert: sie werden von selbst neu aufgebaut oder sofort über Cache und Werkzeuge."
+
+msgid "Pensez à traduire le titre et l'URL de chaque page de listing, ainsi que le libellé de vos critères : sans traduction saisie, ils reprennent la langue par défaut."
+msgstr "Denken Sie daran, Titel und URL jeder Listenseite sowie die Bezeichnung Ihrer Kriterien zu übersetzen: ohne eingetragene Übersetzung greifen sie auf die Standardsprache zurück."
+
+msgid "Voir les pages de listing"
+msgstr "Die Listenseiten ansehen"
+
+msgid "Enregistrer les permaliens"
+msgstr "Permalinks speichern"
+
+msgid "PIVOT Offres"
+msgstr "PIVOT Angebote"
+
+msgid "PIVOT"
+msgstr "PIVOT"
+
+msgid "Pages de listing"
+msgstr "Listenseiten"
+
+msgid "Ajouter une page"
+msgstr "Seite hinzufügen"
+
+msgid "Insérer des offres"
+msgstr "Angebote einfügen"
+
+msgid "Shortcode"
+msgstr "Shortcode"
+
+msgid "Types d'offres"
+msgstr "Angebotstypen"
+
+msgid "Champs affichés"
+msgstr "Angezeigte Felder"
+
+msgid "Réglages PIVOT"
+msgstr "PIVOT-Einstellungen"
+
+msgid "Réglages"
+msgstr "Einstellungen"
+
+msgid "Cache et redirections"
+msgstr "Cache und Weiterleitungen"
+
+msgid "Cache et outils"
+msgstr "Cache und Werkzeuge"
+
+msgid "Journal des appels"
+msgstr "Protokoll der Aufrufe"
+
+msgid "Journal"
+msgstr "Protokoll"
+
+msgid "Reconstruction en cours…"
+msgstr "Neuaufbau läuft…"
+
+msgid "Index reconstruit."
+msgstr "Index neu aufgebaut."
+
+msgid "La reconstruction a échoué."
+msgstr "Der Neuaufbau ist fehlgeschlagen."
+
+msgid "%1$d offres traitées sur %2$d"
+msgstr "%1$d von %2$d Angeboten verarbeitet"
+
+msgid "Supprimer cette page de listing ? Les offres PIVOT ne sont pas touchées."
+msgstr "Diese Listenseite löschen? Die Angebote in PIVOT bleiben unberührt."
+
+msgid "Chargement des champs…"
+msgstr "Felder werden geladen…"
+
+msgid "Les champs n'ont pas pu être chargés. Vérifiez la connexion à PIVOT dans les réglages."
+msgstr "Die Felder konnten nicht geladen werden. Prüfen Sie die Verbindung zu PIVOT in den Einstellungen."
+
+msgid "Aucun champ ne correspond."
+msgstr "Kein Feld entspricht der Suche."
+
+msgid "Choisissez un type d'offre pour voir ses champs."
+msgstr "Wählen Sie einen Angebotstyp, um dessen Felder zu sehen."
+
+msgid "présent dans cette page"
+msgstr "auf dieser Seite vorhanden"
+
+msgid "Copié"
+msgstr "Kopiert"
+
+msgid "Analyse des offres…"
+msgstr "Angebote werden analysiert…"
+
+msgid "Ajouter"
+msgstr "Hinzufügen"
+
+msgid "Ajouté"
+msgstr "Hinzugefügt"
+
+msgid "%1$d valeurs · %2$d %% des offres"
+msgstr "%1$d Werte · %2$d %% der Angebote"
+
+msgid "oui / non · %d %% des offres"
+msgstr "ja / nein · %d %% der Angebote"
+
+msgid "Déduit de %1$d offres analysées sur %2$d."
+msgstr "Abgeleitet aus %1$d analysierten Angeboten von %2$d."
+
+msgid "Aucun critère ne se dégage de ces offres. Ajoutez-en un sur mesure."
+msgstr "Aus diesen Angeboten ergibt sich kein Kriterium. Fügen Sie ein eigenes hinzu."
+
+msgid "L'analyse a échoué : %s"
+msgstr "Die Analyse ist fehlgeschlagen: %s"
+
+msgid "Richesse des données passée sur « Complet » : ce critère porte sur un champ PIVOT."
+msgstr "Datentiefe auf « Vollständig » gesetzt: dieses Kriterium beruht auf einem PIVOT-Feld."
+
+msgid "Vous n'avez pas accès à cet écran."
+msgstr "Sie haben keinen Zugriff auf diese Seite."
+
+msgid "Aucune page de listing pour l'instant."
+msgstr "Bisher keine Listenseite."
+
+msgid "Une page de listing associe une URL de votre site à une requête pré-programmée PIVOT. Créez-en une pour publier vos premières offres."
+msgstr "Eine Listenseite verbindet eine URL Ihrer Website mit einer vorprogrammierten PIVOT-Abfrage. Legen Sie eine an, um Ihre ersten Angebote zu veröffentlichen."
+
+msgid "Créer la première page"
+msgstr "Erste Seite anlegen"
+
+msgid "Titre"
+msgstr "Titel"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Requête"
+msgstr "Abfrage"
+
+msgid "Par page"
+msgstr "Pro Seite"
+
+msgid "Carte"
+msgstr "Karte"
+
+msgid "Filtres"
+msgstr "Filter"
+
+msgid "Langues"
+msgstr "Sprachen"
+
+msgid "Index"
+msgstr "Index"
+
+msgid "inactive"
+msgstr "inaktiv"
+
+msgid "Modifier"
+msgstr "Bearbeiten"
+
+msgid "Reconstruire l'index"
+msgstr "Index neu aufbauen"
+
+msgid "Supprimer"
+msgstr "Löschen"
+
+msgid "Oui"
+msgstr "Ja"
+
+msgid "URL propre à cette langue"
+msgstr "Eigene URL für diese Sprache"
+
+msgid "Pas d'URL traduite : le chemin par défaut est réutilisé"
+msgstr "Keine übersetzte URL: der Standardpfad wird wiederverwendet"
+
+msgid "%1$d offres, il y a %2$s"
+msgstr "%1$d Angebote, vor %2$s"
+
+msgid "jamais construit"
+msgstr "nie aufgebaut"
+
+msgid "Page de listing supprimée."
+msgstr "Listenseite gelöscht."
+
+msgid "Index reconstruit : %d offres."
+msgstr "Index neu aufgebaut: %d Angebote."
+
+msgid "La reconstruction se poursuit en arrière-plan. Rechargez cette page dans une minute pour voir le total."
+msgstr "Der Neuaufbau läuft im Hintergrund weiter. Laden Sie diese Seite in einer Minute neu, um die Gesamtzahl zu sehen."
+
+msgid "Journal vidé : %d lignes supprimées."
+msgstr "Protokoll geleert: %d Zeilen gelöscht."
+
+msgid "Journal des appels PIVOT"
+msgstr "Protokoll der PIVOT-Aufrufe"
+
+msgid "Les entrées sont conservées %d jours, puis supprimées automatiquement."
+msgstr "Einträge werden %d Tage aufbewahrt und danach automatisch gelöscht."
+
+msgid "La journalisation est désactivée dans les réglages : aucune nouvelle entrée n'est enregistrée."
+msgstr "Die Protokollierung ist in den Einstellungen deaktiviert: es wird nichts Neues gespeichert."
+
+msgid "Tous les niveaux"
+msgstr "Alle Stufen"
+
+msgid "Débogage"
+msgstr "Debug"
+
+msgid "Information"
+msgstr "Information"
+
+msgid "Avertissement"
+msgstr "Warnung"
+
+msgid "Erreur"
+msgstr "Fehler"
+
+msgid "Rechercher une URL ou un message"
+msgstr "URL oder Meldung suchen"
+
+msgid "Filtrer"
+msgstr "Filtern"
+
+msgid "Date"
+msgstr "Datum"
+
+msgid "Niveau"
+msgstr "Stufe"
+
+msgid "Service"
+msgstr "Dienst"
+
+msgid "Appel"
+msgstr "Aufruf"
+
+msgid "HTTP"
+msgstr "HTTP"
+
+msgid "Durée"
+msgstr "Dauer"
+
+msgid "Poids"
+msgstr "Größe"
+
+msgid "Aucune entrée pour ces critères."
+msgstr "Keine Einträge für diese Kriterien."
+
+msgid "Vider le journal"
+msgstr "Protokoll leeren"
+
+msgid "%d réglage s'écarte des règles d'origine."
+msgid_plural "%d réglages s'écartent des règles d'origine."
+msgstr[0] "%d Einstellung weicht von den ursprünglichen Regeln ab."
+msgstr[1] "%d Einstellungen weichen von den ursprünglichen Regeln ab."
+
+msgid "Réglages effacés : les règles d'origine s'appliquent à nouveau."
+msgstr "Einstellungen gelöscht: Die ursprünglichen Regeln gelten wieder."
+
+msgid "Réglages enregistrés."
+msgstr "Einstellungen gespeichert."
+
+msgid "Les fiches détail suivent immédiatement. Les vignettes et les descriptifs des listings viennent des index : reconstruisez-les pour que le changement s'y voie."
+msgstr "Die Detailseiten folgen sofort. Die Vorschaubilder und die Beschreibungen der Übersichten stammen aus den Indexen: Bauen Sie diese neu auf, damit die Änderung dort sichtbar wird."
+
+msgid "Aller à Cache et outils"
+msgstr "Zu Cache und Werkzeuge"
+
+msgid "Décochez un champ pour qu'il cesse d'apparaître sur les fiches et les vignettes. Il reste utilisable comme critère de recherche : masquer n'est pas exclure."
+msgstr "Deaktivieren Sie ein Feld, damit es nicht mehr auf den Detailseiten und den Vorschaubildern erscheint. Es bleibt als Suchkriterium verwendbar: Ausblenden ist nicht Ausschließen."
+
+msgid "Décocher une catégorie masque tout ce qu'elle contient en une seule règle. Vous pouvez ensuite rétablir un champ précis à l'intérieur."
+msgstr "Das Deaktivieren einer Kategorie blendet mit einer einzigen Regel alles aus, was sie enthält. Sie können anschließend ein bestimmtes Feld darin wiederherstellen."
+
+msgid "Aucun champ connu pour l'instant."
+msgstr "Derzeit ist kein Feld bekannt."
+
+msgid "La liste vient de la structure des types rencontrés dans vos pages de listing : elle se remplit après la première construction d'index."
+msgstr "Die Liste stammt aus der Struktur der Typen, die in Ihren Übersichtsseiten vorkommen: Sie füllt sich nach dem ersten Aufbau eines Index."
+
+msgid "Chercher un champ"
+msgstr "Ein Feld suchen"
+
+msgid "libellé ou urn"
+msgstr "Bezeichnung oder URN"
+
+msgid "%1$d champs masqués sur %2$d."
+msgstr "%1$d von %2$d Feldern ausgeblendet."
+
+msgid "Enregistrer les champs affichés"
+msgstr "Angezeigte Felder speichern"
+
+msgid "Revenir aux règles d'origine"
+msgstr "Zu den ursprünglichen Regeln zurückkehren"
+
+msgid "réglé ici"
+msgstr "hier eingestellt"
+
+msgid "Champs écartés partout"
+msgstr "Überall ausgeschlossene Felder"
+
+msgid "Filtres de catégorisation propres à chaque opérateur, champs Cirkwi et champs dépréciés. Ils ne décrivent pas l'offre : ils ne sont ni affichables ni utilisables comme critère, et ne se règlent pas ici."
+msgstr "Kategorisierungsfilter der einzelnen Betreiber, Cirkwi-Felder und veraltete Felder. Sie beschreiben das Angebot nicht: Sie sind weder anzeigbar noch als Kriterium verwendbar und werden hier nicht eingestellt."
+
+msgid "Ajouter une page de listing"
+msgstr "Listenseite hinzufügen"
+
+msgid "Modifier la page de listing"
+msgstr "Listenseite bearbeiten"
+
+msgid "Page enregistrée."
+msgstr "Seite gespeichert."
+
+msgid "Créer la page"
+msgstr "Seite anlegen"
+
+msgid "Enregistrer les modifications"
+msgstr "Änderungen speichern"
+
+msgid "Identité de la page"
+msgstr "Identität der Seite"
+
+msgid "Ces champs concernent la langue par défaut (%s). Les autres langues se remplissent plus bas, dans la section Traductions."
+msgstr "Diese Felder gelten für die Standardsprache (%s). Die anderen Sprachen füllen Sie weiter unten im Abschnitt Übersetzungen aus."
+
+msgid "Affiché en haut de la page et repris par défaut comme titre pour les moteurs de recherche."
+msgstr "Erscheint oben auf der Seite und dient standardmäßig als Titel für Suchmaschinen."
+
+msgid "Un ou plusieurs segments, par exemple sejourner/hotels. L'adresse est créée par le plugin : aucune page WordPress à publier."
+msgstr "Ein oder mehrere Segmente, zum Beispiel uebernachten/hotels. Die Adresse wird vom Plugin erzeugt: Sie müssen keine WordPress-Seite veröffentlichen."
+
+msgid "Publication"
+msgstr "Veröffentlichung"
+
+msgid "Rendre cette page accessible aux visiteurs"
+msgstr "Diese Seite für Besucher zugänglich machen"
+
+msgid "Ouvrir"
+msgstr "Öffnen"
+
+msgid "Aperçu"
+msgstr "Vorschau"
+
+msgid "Offres affichées"
+msgstr "Angezeigte Angebote"
+
+msgid "Code de requête"
+msgstr "Abfragecode"
+
+msgid "Code de la requête pré-programmée créée dans PIVOT. C'est elle qui détermine quelles offres apparaissent ici."
+msgstr "Code der in PIVOT angelegten vorprogrammierten Abfrage. Sie bestimmt, welche Angebote hier erscheinen."
+
+msgid "Paramètres de la requête"
+msgstr "Parameter der Abfrage"
+
+msgid "Une paire nom=valeur par ligne, si la requête PIVOT attend des paramètres variables (long, lat, radius…)."
+msgstr "Ein Paar Name=Wert pro Zeile, wenn die PIVOT-Abfrage variable Parameter erwartet (long, lat, radius…)."
+
+msgid "Résumé — nom, adresse, géolocalisation, média par défaut"
+msgstr "Kurzfassung — Name, Adresse, Geolokalisierung, Standardmedium"
+
+msgid "Complet — tous les champs de l'offre, nécessaire pour filtrer sur un champ PIVOT"
+msgstr "Vollständig — alle Felder des Angebots, nötig zum Filtern nach einem PIVOT-Feld"
+
+msgid "Complet avec offres liées"
+msgstr "Vollständig mit verknüpften Angeboten"
+
+msgid "Richesse des données"
+msgstr "Datentiefe"
+
+msgid "Le mode résumé construit l'index plus vite ; le mode complet est indispensable dès qu'un filtre porte sur un champ PIVOT."
+msgstr "Die Kurzfassung baut den Index schneller auf; die Vollfassung ist unerlässlich, sobald ein Filter auf einem PIVOT-Feld beruht."
+
+msgid "Tri"
+msgstr "Sortierung"
+
+msgid "croissant"
+msgstr "aufsteigend"
+
+msgid "décroissant"
+msgstr "absteigend"
+
+msgid "Urn du champ de tri. Laissez vide pour conserver l'ordre renvoyé par PIVOT."
+msgstr "Urn des Sortierfelds. Leer lassen, um die Reihenfolge von PIVOT beizubehalten."
+
+msgid "Durée de cache propre"
+msgstr "Eigene Cache-Dauer"
+
+msgid "minutes"
+msgstr "Minuten"
+
+msgid "Laissez 0 pour utiliser la durée définie dans les réglages généraux."
+msgstr "Lassen Sie 0 stehen, um die Dauer aus den allgemeinen Einstellungen zu verwenden."
+
+msgid "Mise en page"
+msgstr "Layout"
+
+msgid "Offres par page"
+msgstr "Angebote pro Seite"
+
+msgid "La pagination est gérée dans le navigateur : changer de page ne déclenche aucun appel à PIVOT."
+msgstr "Die Seitennavigation läuft im Browser: ein Seitenwechsel löst keinen Aufruf an PIVOT aus."
+
+msgid "Afficher une carte qui pointe les offres de la page"
+msgstr "Eine Karte mit den Angeboten dieser Seite anzeigen"
+
+msgid "Seules les offres géolocalisées apparaissent sur la carte ; les autres restent dans la liste."
+msgstr "Nur geolokalisierte Angebote erscheinen auf der Karte; die übrigen bleiben in der Liste."
+
+msgid "Cadrage de la carte"
+msgstr "Kartenausschnitt"
+
+msgid "Latitude, longitude et niveau de zoom initial. Laissez le centre vide pour cadrer automatiquement sur les offres affichées."
+msgstr "Breitengrad, Längengrad und Anfangszoom. Lassen Sie die Mitte leer, um automatisch auf die angezeigten Angebote zu zoomen."
+
+msgid "Recherche libre"
+msgstr "Freie Suche"
+
+msgid "Proposer un champ de recherche"
+msgstr "Ein Suchfeld anbieten"
+
+msgid "Rechercher une offre, une localité…"
+msgstr "Angebot, Ort … suchen"
+
+msgid "Texte d'introduction"
+msgstr "Einleitungstext"
+
+msgid "Affiché sous le titre, avant les critères de recherche."
+msgstr "Erscheint unter dem Titel, vor den Suchkriterien."
+
+msgid "Critères de recherche"
+msgstr "Suchkriterien"
+
+msgid "Chaque critère devient un contrôle affiché au-dessus des résultats. Les valeurs proposées sont calculées à partir des offres de la page, avec les libellés traduits que PIVOT renvoie."
+msgstr "Jedes Kriterium wird zu einem Bedienelement über den Ergebnissen. Die vorgeschlagenen Werte werden aus den Angeboten der Seite berechnet, mit den von PIVOT gelieferten übersetzten Bezeichnungen."
+
+msgid "Ajouter un critère sur mesure"
+msgstr "Ein eigenes Kriterium hinzufügen"
+
+msgid "Comment régler un critère ?"
+msgstr "Wie richtet man ein Kriterium ein?"
+
+msgid "Critères suggérés"
+msgstr "Vorgeschlagene Kriterien"
+
+msgid "Réanalyser les offres"
+msgstr "Angebote erneut analysieren"
+
+msgid "Enregistrez la page une première fois : les critères possibles seront déduits des offres que votre requête renvoie."
+msgstr "Speichern Sie die Seite ein erstes Mal: die möglichen Kriterien werden aus den Angeboten Ihrer Abfrage abgeleitet."
+
+msgid "Libellé"
+msgstr "Bezeichnung"
+
+msgid "Localité"
+msgstr "Ort"
+
+msgid "Source"
+msgstr "Quelle"
+
+msgid "Urn du champ"
+msgstr "Urn des Felds"
+
+msgid "Parcourir les champs disponibles"
+msgstr "Verfügbare Felder durchsuchen"
+
+msgid "Contrôle"
+msgstr "Bedienelement"
+
+msgid "Clé d'URL"
+msgstr "URL-Schlüssel"
+
+msgid "calculée"
+msgstr "berechnet"
+
+msgid "Traductions de ce critère"
+msgstr "Übersetzungen dieses Kriteriums"
+
+msgid "Les valeurs sont traduites par PIVOT. Complétez ci-dessous uniquement ce que vous voulez remplacer : une ligne « valeur|texte » par traduction à corriger."
+msgstr "Die Werte werden von PIVOT übersetzt. Tragen Sie unten nur ein, was Sie ersetzen möchten: eine Zeile « Wert|Text » je zu korrigierender Übersetzung."
+
+msgid "Traductions de valeurs"
+msgstr "Übersetzungen der Werte"
+
+msgid "namur|Namen"
+msgstr "namur|Namur"
+
+msgid "Valeurs disponibles pour ce critère (%d)"
+msgstr "Verfügbare Werte für dieses Kriterium (%d)"
+
+msgid "Type d'offre"
+msgstr "Angebotstyp"
+
+msgid "chargement…"
+msgstr "wird geladen…"
+
+msgid "Filtrer les champs"
+msgstr "Felder filtern"
+
+msgid "Fermer"
+msgstr "Schließen"
+
+msgid "Retirer ce critère"
+msgstr "Dieses Kriterium entfernen"
+
+msgid "Référencement"
+msgstr "Suchmaschinen"
+
+msgid "Titre pour les moteurs"
+msgstr "Titel für Suchmaschinen"
+
+msgid "Laissez vide pour reprendre le titre de la page."
+msgstr "Leer lassen, um den Titel der Seite zu übernehmen."
+
+msgid "Méta description"
+msgstr "Meta-Beschreibung"
+
+msgid "Environ 155 caractères."
+msgstr "Etwa 155 Zeichen."
+
+msgid "Traductions"
+msgstr "Übersetzungen"
+
+msgid "Un champ laissé vide reprend la langue par défaut. Les offres elles-mêmes sont traduites par PIVOT : seuls les textes de la page sont à saisir ici."
+msgstr "Ein leeres Feld übernimmt die Standardsprache. Die Angebote selbst übersetzt PIVOT: hier tragen Sie nur die Texte der Seite ein."
+
+msgid "Chemin propre à cette langue. Vide : le chemin de la langue par défaut est réutilisé."
+msgstr "Eigener Pfad für diese Sprache. Leer: der Pfad der Standardsprache wird wiederverwendet."
+
+msgid "Libellé de recherche"
+msgstr "Bezeichnung des Suchfelds"
+
+msgid "Index de la page"
+msgstr "Index der Seite"
+
+msgid "%1$d offres indexées en %3$d langue(s), dernière reconstruction il y a %2$s."
+msgstr "%1$d Angebote in %3$d Sprache(n) indexiert, letzter Neuaufbau vor %2$s."
+
+msgid "Cet index n'a pas encore été construit. Il le sera à la première visite, ou dès maintenant avec le bouton ci-dessous."
+msgstr "Dieser Index wurde noch nicht aufgebaut. Das geschieht beim ersten Besuch oder sofort über die Schaltfläche unten."
+
+msgid "Reconstruire maintenant"
+msgstr "Jetzt neu aufbauen"
+
+msgid "Insérer ces offres ailleurs"
+msgstr "Diese Angebote anderswo einfügen"
+
+msgid "Collez ce shortcode dans une page ou un article pour y afficher quelques vignettes de cette sélection, sans carte ni critères. Il réutilise l'index déjà construit : aucun appel supplémentaire à PIVOT."
+msgstr "Fügen Sie diesen Shortcode in eine Seite oder einen Beitrag ein, um dort einige Vorschaubilder dieser Auswahl zu zeigen, ohne Karte und ohne Kriterien. Er nutzt den bereits aufgebauten Index: kein zusätzlicher Aufruf an PIVOT."
+
+msgid "Pour restreindre à un critère :"
+msgstr "Zur Einschränkung auf ein Kriterium:"
+
+msgid "Attributs : nombre, colonnes, tri (defaut, nom, aleatoire), titre, filtre, lien=\"oui\" pour ajouter un lien vers cette page."
+msgstr "Attribute: nombre, colonnes, tri (defaut, nom, aleatoire), titre, filtre, lien=\"oui\" für einen Link auf diese Seite."
+
+msgid "Découvrir les pages de listing"
+msgstr "Die Listenseiten entdecken"
+
+msgid "Bienvenue dans PIVOT Offres"
+msgstr "Willkommen bei PIVOT Angebote"
+
+msgid "Cette extension publie vos offres touristiques sans jamais les copier en base de données. Cette visite dure une minute et montre comment publier votre première page."
+msgstr "Dieses Plugin veröffentlicht Ihre touristischen Angebote, ohne sie je in die Datenbank zu kopieren. Diese Tour dauert eine Minute und zeigt, wie Sie Ihre erste Seite veröffentlichen."
+
+msgid "Créer une page"
+msgstr "Eine Seite anlegen"
+
+msgid "Une page de listing associe une adresse de votre site à une requête pré-programmée PIVOT. C'est le point de départ : tout part d'ici."
+msgstr "Eine Listenseite verbindet eine Adresse Ihrer Website mit einer vorprogrammierten PIVOT-Abfrage. Das ist der Ausgangspunkt: alles beginnt hier."
+
+msgid "Vos pages"
+msgstr "Ihre Seiten"
+
+msgid "Chaque ligne résume une page : son adresse, sa requête, le nombre d'offres par page, les langues publiées et la date du dernier index."
+msgstr "Jede Zeile fasst eine Seite zusammen: Adresse, Abfrage, Angebote pro Seite, veröffentlichte Sprachen und Datum des letzten Index."
+
+msgid "L'index"
+msgstr "Der Index"
+
+msgid "L'index est le fichier qui alimente la recherche du visiteur. Il se reconstruit tout seul, mais ce lien le force immédiatement — pratique après avoir modifié une requête dans PIVOT."
+msgstr "Der Index ist die Datei, die die Suche des Besuchers speist. Er wird von selbst neu aufgebaut, aber dieser Link erzwingt es sofort — praktisch, nachdem Sie eine Abfrage in PIVOT geändert haben."
+
+msgid "À faire en premier"
+msgstr "Zuerst erledigen"
+
+msgid "Si ce n'est pas encore fait, ouvrez les réglages pour saisir votre clé ws_key et tester la connexion. Sans elle, aucune offre ne remontera."
+msgstr "Falls noch nicht geschehen, öffnen Sie die Einstellungen, tragen Sie Ihren ws_key ein und testen Sie die Verbindung. Ohne ihn kommt kein einziges Angebot an."
+
+msgid "Comprendre les champs affichés"
+msgstr "Die angezeigten Felder verstehen"
+
+msgid "Ce que montre une fiche"
+msgstr "Was eine Detailseite zeigt"
+
+msgid "PIVOT renvoie bien plus de champs qu'une fiche ne devrait en montrer. Cet écran décide lesquels sont visibles par vos visiteurs."
+msgstr "PIVOT liefert weit mehr Felder zurück, als eine Detailseite zeigen sollte. Dieser Bildschirm bestimmt, welche für Ihre Besucher sichtbar sind."
+
+msgid "Masquer n'est pas exclure"
+msgstr "Ausblenden ist nicht Ausschließen"
+
+msgid "Un champ décoché disparaît des fiches et des vignettes, mais reste utilisable comme critère de recherche. Les champs déjà décochés sont ceux que l'extension masque par défaut : vous pouvez les rétablir."
+msgstr "Ein deaktiviertes Feld verschwindet von den Detailseiten und den Vorschaubildern, bleibt aber als Suchkriterium verwendbar. Die bereits deaktivierten Felder sind jene, die die Erweiterung standardmäßig ausblendet: Sie können sie wiederherstellen."
+
+msgid "Toute une catégorie d'un coup"
+msgstr "Eine ganze Kategorie auf einmal"
+
+msgid "La case d'une catégorie commande tous ses champs, et n'enregistre qu'une seule règle. Décochez-la, puis recochez le champ que vous voulez garder : c'est la façon la plus courte d'exprimer « tout sauf celui-ci »."
+msgstr "Das Kästchen einer Kategorie steuert alle ihre Felder und speichert nur eine einzige Regel. Deaktivieren Sie es und aktivieren Sie anschließend das Feld, das Sie behalten möchten: Das ist der kürzeste Weg, „alles außer diesem“ auszudrücken."
+
+msgid "Retrouver un champ"
+msgstr "Ein Feld wiederfinden"
+
+msgid "Un type d'offre peut compter plus de cent champs. Tapez quelques lettres du libellé ou de l'urn pour ne garder que les lignes concernées."
+msgstr "Ein Angebotstyp kann über hundert Felder umfassen. Geben Sie einige Buchstaben der Bezeichnung oder der URN ein, um nur die betreffenden Zeilen zu behalten."
+
+msgid "Ce qui ne se règle pas ici"
+msgstr "Was hier nicht eingestellt wird"
+
+msgid "Les filtres de catégorisation et les champs Cirkwi ne décrivent pas l'offre. Ils sont écartés partout, y compris du filtrage, et sont listés ici seulement pour que vous ne les cherchiez pas ailleurs."
+msgstr "Die Kategorisierungsfilter und die Cirkwi-Felder beschreiben das Angebot nicht. Sie sind überall ausgeschlossen, auch vom Filtern, und stehen hier nur, damit Sie sie nicht anderswo suchen."
+
+msgid "Après l'enregistrement"
+msgstr "Nach dem Speichern"
+
+msgid "Les fiches détail suivent tout de suite. Les vignettes et les descriptifs des listings viennent des index : reconstruisez-les depuis Cache et outils pour que le changement s'y voie."
+msgstr "Die Detailseiten folgen sofort. Die Vorschaubilder und die Beschreibungen der Übersichten stammen aus den Indexen: Bauen Sie diese unter Cache und Werkzeuge neu auf, damit die Änderung dort sichtbar wird."
+
+msgid "Découvrir cet écran"
+msgstr "Diesen Bildschirm entdecken"
+
+msgid "Configurer une page de listing"
+msgstr "Eine Listenseite einrichten"
+
+msgid "Cinq réglages suffisent pour une page qui fonctionne. Voyons-les dans l'ordre."
+msgstr "Fünf Einstellungen genügen für eine funktionierende Seite. Sehen wir sie der Reihe nach an."
+
+msgid "L'adresse de la page"
+msgstr "Die Adresse der Seite"
+
+msgid "Saisissez un ou plusieurs segments, par exemple sejourner/hotels. L'adresse est créée par l'extension : vous n'avez aucune page WordPress à publier."
+msgstr "Geben Sie ein oder mehrere Segmente ein, zum Beispiel uebernachten/hotels. Die Adresse erzeugt das Plugin: Sie müssen keine WordPress-Seite veröffentlichen."
+
+msgid "La requête PIVOT"
+msgstr "Die PIVOT-Abfrage"
+
+msgid "Collez ici le code de la requête pré-programmée créée dans PIVOT, de la forme QRY-00-0000-0000. C'est elle qui détermine quelles offres apparaissent."
+msgstr "Fügen Sie hier den Code der in PIVOT angelegten vorprogrammierten Abfrage ein, in der Form QRY-00-0000-0000. Sie bestimmt, welche Angebote erscheinen."
+
+msgid "Le mode résumé construit l'index plus vite. Passez au mode complet dès qu'un critère de recherche porte sur un champ PIVOT : sans lui, ces champs ne sont pas renvoyés."
+msgstr "Die Kurzfassung baut den Index schneller auf. Wechseln Sie zur Vollfassung, sobald ein Suchkriterium auf einem PIVOT-Feld beruht: sonst werden diese Felder nicht geliefert."
+
+msgid "La carte"
+msgstr "Die Karte"
+
+msgid "Cochez pour afficher une carte qui pointe les offres de la page. Seules les offres géolocalisées y figurent ; les autres restent dans la liste."
+msgstr "Ankreuzen, um eine Karte mit den Angeboten der Seite anzuzeigen. Nur geolokalisierte Angebote erscheinen dort; die übrigen bleiben in der Liste."
+
+msgid "Les critères suggérés"
+msgstr "Die vorgeschlagenen Kriterien"
+
+msgid "Le plugin lit un échantillon de vos offres et propose les critères qui ont un sens : ceux dont les valeurs sont assez variées pour filtrer, et assez répandues pour concerner les offres. Un clic sur Ajouter pose le critère entièrement réglé."
+msgstr "Das Plugin liest eine Stichprobe Ihrer Angebote und schlägt die sinnvollen Kriterien vor: solche mit genügend verschiedenen Werten zum Filtern und genügend Abdeckung. Ein Klick auf Hinzufügen setzt das vollständig eingerichtete Kriterium."
+
+msgid "Un critère sur mesure"
+msgstr "Ein eigenes Kriterium"
+
+msgid "Si rien ne convient dans les suggestions, ce bouton ouvre un critère vierge à régler à la main."
+msgstr "Passt kein Vorschlag, öffnet diese Schaltfläche ein leeres Kriterium zum manuellen Einrichten."
+
+msgid "Un guide détaillé pour les critères"
+msgstr "Eine ausführliche Führung zu den Kriterien"
+
+msgid "Un critère se règle sur cinq champs. Ce bouton ouvre une visite qui les passe un par un, avec ce que chacun change pour le visiteur."
+msgstr "Ein Kriterium wird über fünf Felder eingerichtet. Diese Schaltfläche öffnet eine Tour, die sie einzeln durchgeht und zeigt, was jedes für den Besucher bewirkt."
+
+msgid "Enregistrer"
+msgstr "Speichern"
+
+msgid "À l'enregistrement, l'index se reconstruit si la requête ou les critères ont changé. La page est alors visible à l'adresse choisie."
+msgstr "Beim Speichern wird der Index neu aufgebaut, wenn sich Abfrage oder Kriterien geändert haben. Die Seite ist dann unter der gewählten Adresse sichtbar."
+
+msgid "Anatomie d'un critère"
+msgstr "Aufbau eines Kriteriums"
+
+msgid "Un critère associe une donnée des offres à un contrôle affiché au visiteur. Les critères suggérés remplissent ces cinq champs pour vous ; cette visite explique ce que chacun fait, pour les cas où vous voulez les régler vous-même."
+msgstr "Ein Kriterium verbindet eine Angabe aus den Angeboten mit einem Bedienelement für den Besucher. Die vorgeschlagenen Kriterien füllen diese fünf Felder für Sie aus; diese Tour erklärt, was jedes bewirkt, falls Sie sie selbst einrichten möchten."
+
+msgid "1. Libellé"
+msgstr "1. Bezeichnung"
+
+msgid "Le texte affiché au-dessus du contrôle, dans la langue par défaut. Les autres langues se saisissent plus bas, dans le repli « Traductions de ce critère »."
+msgstr "Der Text über dem Bedienelement, in der Standardsprache. Die anderen Sprachen tragen Sie weiter unten unter « Übersetzungen dieses Kriteriums » ein."
+
+msgid "2. Source"
+msgstr "2. Quelle"
+
+msgid "D'où vient la donnée. Localité, commune, code postal, province et type d'offre sont lus dans l'adresse de l'offre, sans rien configurer. « Champ PIVOT » ouvre tout le reste : catégorie, équipements, labels, capacités."
+msgstr "Woher die Angabe stammt. Ort, Gemeinde, Postleitzahl, Provinz und Angebotstyp werden ohne Konfiguration aus der Adresse des Angebots gelesen. « PIVOT-Feld » öffnet alles Übrige: Kategorie, Ausstattung, Label, Kapazitäten."
+
+msgid "3. Urn du champ"
+msgstr "3. Urn des Felds"
+
+msgid "Uniquement pour la source « Champ PIVOT » : l'identifiant du champ dans le modèle de données, de la forme urn:fld:catdec. Ce champ disparaît pour les autres sources."
+msgstr "Nur für die Quelle « PIVOT-Feld »: die Kennung des Felds im Datenmodell, in der Form urn:fld:catdec. Bei anderen Quellen verschwindet dieses Feld."
+
+msgid "Ne retenez aucune urn"
+msgstr "Merken Sie sich keine Urn"
+
+msgid "Ce lien ouvre le catalogue lu dans le thesaurus : les champs groupés par catégorie, avec leur libellé traduit. Les types d'offres réellement présents dans cette page sont proposés en tête. Un clic remplit l'urn, le libellé et le contrôle adapté."
+msgstr "Dieser Link öffnet den Katalog aus dem Thesaurus: die Felder nach Kategorie gruppiert, mit übersetzter Bezeichnung. Die tatsächlich auf dieser Seite vorhandenen Angebotstypen stehen oben. Ein Klick füllt Urn, Bezeichnung und passendes Bedienelement."
+
+msgid "4. Contrôle"
+msgstr "4. Bedienelement"
+
+msgid "Ce que manipule le visiteur. Liste déroulante pour un choix unique, cases à cocher pour cumuler plusieurs valeurs, saisie libre pour une recherche partielle, interrupteur pour un champ oui/non. Le catalogue de champs le présélectionne correctement."
+msgstr "Was der Besucher bedient. Auswahlliste für eine Wahl, Kontrollkästchen zum Kombinieren mehrerer Werte, freie Eingabe für eine Teilsuche, Schalter für ein Ja-Nein-Feld. Der Feldkatalog wählt es passend vor."
+
+msgid "5. Clé d'URL"
+msgstr "5. URL-Schlüssel"
+
+msgid "Le nom du paramètre dans l'adresse : ?province=namur. Laissez vide, il est calculé. Cette clé est identique dans toutes les langues, ce qui rend un lien filtré partageable entre versions linguistiques."
+msgstr "Der Name des Parameters in der Adresse: ?province=namur. Leer lassen, er wird berechnet. Dieser Schlüssel ist in allen Sprachen gleich, sodass ein gefilterter Link zwischen den Sprachversionen teilbar bleibt."
+
+msgid "Traduire le critère"
+msgstr "Das Kriterium übersetzen"
+
+msgid "PIVOT traduit déjà les valeurs. Ce repli ne sert qu'à corriger : un libellé par langue, et une ligne « valeur|texte » par traduction à remplacer. Les valeurs disponibles y sont listées après la première construction de l'index."
+msgstr "PIVOT übersetzt die Werte bereits. Dieser Bereich dient nur zur Korrektur: eine Bezeichnung je Sprache und eine Zeile « Wert|Text » je zu ersetzender Übersetzung. Die verfügbaren Werte stehen dort nach dem ersten Aufbau des Index."
+
+msgid "Retirer un critère"
+msgstr "Ein Kriterium entfernen"
+
+msgid "Le critère disparaît du formulaire ; rien n'est perdu tant que vous n'enregistrez pas. Les offres, elles, ne sont jamais touchées."
+msgstr "Das Kriterium verschwindet aus dem Formular; solange Sie nicht speichern, geht nichts verloren. Die Angebote selbst bleiben unberührt."
+
+msgid "Une fois enregistré"
+msgstr "Nach dem Speichern"
+
+msgid "Un critère sur un champ PIVOT exige la richesse « Complet » plus haut, sinon le champ n'est pas renvoyé et la liste de valeurs reste vide. Reconstruisez ensuite l'index pour voir les valeurs apparaître."
+msgstr "Ein Kriterium auf einem PIVOT-Feld verlangt oben die Einstellung « Vollständig », sonst wird das Feld nicht geliefert und die Werteliste bleibt leer. Bauen Sie danach den Index neu auf, damit die Werte erscheinen."
+
+msgid "Découvrir les réglages"
+msgstr "Die Einstellungen entdecken"
+
+msgid "Stage ou production"
+msgstr "Stage oder Produktion"
+
+msgid "Chaque environnement a son adresse et sa clé. Basculer de l'un à l'autre ne demande rien d'autre : les caches sont vidés automatiquement."
+msgstr "Jede Umgebung hat ihre eigene Adresse und ihren eigenen Schlüssel. Ein Wechsel verlangt nichts weiter: die Caches werden automatisch geleert."
+
+msgid "La clé ws_key"
+msgstr "Der ws_key-Schlüssel"
+
+msgid "Fournie par le CGT. Elle n'apparaît jamais dans le journal. Une clé n'accepte qu'un seul opérateur touristique, et se désactive si elle est utilisée depuis plusieurs adresses IP."
+msgstr "Vom CGT bereitgestellt. Er erscheint nie im Protokoll. Ein Schlüssel gilt für einen einzigen Tourismusbetreiber und wird deaktiviert, wenn er von mehreren IP-Adressen genutzt wird."
+
+msgid "Vérifier tout de suite"
+msgstr "Sofort prüfen"
+
+msgid "Ce bouton envoie un appel libre au thesaurus, puis un appel authentifié. Il vous dit précisément lequel des deux échoue."
+msgstr "Diese Schaltfläche sendet einen freien Aufruf an den Thesaurus und danach einen authentifizierten. Sie sagt Ihnen genau, welcher der beiden fehlschlägt."
+
+msgid "Les langues"
+msgstr "Die Sprachen"
+
+msgid "Rien à choisir ici : le plugin suit l'extension de traduction du site et publie une page par langue. PIVOT fournit les libellés en français, néerlandais, anglais et allemand ; une langue qu'il ne couvre pas reprend la langue par défaut."
+msgstr "Hier gibt es nichts zu wählen: das Plugin folgt dem Übersetzungs-Plugin der Website und veröffentlicht eine Seite je Sprache. PIVOT liefert die Bezeichnungen auf Französisch, Niederländisch, Englisch und Deutsch; eine nicht abgedeckte Sprache greift auf die Standardsprache zurück."
+
+msgid "Les durées de cache"
+msgstr "Die Cache-Dauer"
+
+msgid "Aucune offre n'est écrite en base. Ces durées décident à quelle fréquence les fichiers de cache sont renouvelés ; vous pouvez toujours les vider à la main depuis Cache et outils."
+msgstr "Kein Angebot wird in die Datenbank geschrieben. Diese Dauern bestimmen, wie oft die Cache-Dateien erneuert werden; Sie können sie jederzeit über Cache und Werkzeuge manuell leeren."
+
+msgid "Suivant"
+msgstr "Weiter"
+
+msgid "Précédent"
+msgstr "Zurück"
+
+msgid "Terminer"
+msgstr "Beenden"
+
+msgid "Passer le guide"
+msgstr "Führung überspringen"
+
+msgid "Fermer le guide"
+msgstr "Führung schließen"
+
+msgid "Revoir le guide"
+msgstr "Führung erneut ansehen"
+
+msgid "Étape %1$d sur %2$d"
+msgstr "Schritt %1$d von %2$d"
+
+msgid "Visite guidée"
+msgstr "Geführte Tour"
+
+msgid "Connexion à PIVOT"
+msgstr "Verbindung zu PIVOT"
+
+msgid "Choisissez l'environnement interrogé et enregistrez la clé correspondante. Chaque environnement a sa propre clé : basculer de l'un à l'autre ne demande aucune autre modification."
+msgstr "Wählen Sie die abgefragte Umgebung und speichern Sie den zugehörigen Schlüssel. Jede Umgebung hat ihren eigenen Schlüssel: ein Wechsel erfordert keine weitere Änderung."
+
+msgid "Environnement actif"
+msgstr "Aktive Umgebung"
+
+msgid "Stage (recette)"
+msgstr "Stage (Abnahme)"
+
+msgid "Production"
+msgstr "Produktion"
+
+msgid "URL du service — stage"
+msgstr "URL des Dienstes — Stage"
+
+msgid "Clé ws_key — stage"
+msgstr "ws_key-Schlüssel — Stage"
+
+msgid "URL du service — production"
+msgstr "URL des Dienstes — Produktion"
+
+msgid "Clé ws_key — production"
+msgstr "ws_key-Schlüssel — Produktion"
+
+msgid "Délai d'attente (secondes)"
+msgstr "Zeitlimit (Sekunden)"
+
+msgid "Au-delà de ce délai, l'appel est abandonné et l'erreur est journalisée."
+msgstr "Nach dieser Zeit wird der Aufruf abgebrochen und der Fehler protokolliert."
+
+msgid "Le plugin ne gère pas les langues lui-même : il suit l'extension de traduction installée sur le site. Les libellés des offres, eux, viennent toujours de PIVOT, qui les fournit en français, néerlandais, anglais et allemand."
+msgstr "Das Plugin verwaltet die Sprachen nicht selbst: es folgt dem auf der Website installierten Übersetzungs-Plugin. Die Bezeichnungen der Angebote kommen stets von PIVOT, das sie auf Französisch, Niederländisch, Englisch und Deutsch liefert."
+
+msgid "Extension détectée"
+msgstr "Erkanntes Plugin"
+
+msgid "Liens alternates"
+msgstr "Alternate-Links"
+
+msgid "Publier les balises hreflang entre versions linguistiques"
+msgstr "Die hreflang-Tags zwischen den Sprachversionen veröffentlichen"
+
+msgid "Les pages du plugin ne sont pas des articles WordPress : les extensions de traduction ne publient pas leurs alternates. Laissez cette case cochée sur un site multilingue."
+msgstr "Die Seiten des Plugins sind keine WordPress-Beiträge: Übersetzungs-Plugins veröffentlichen deren Alternates nicht. Lassen Sie dieses Kästchen auf einer mehrsprachigen Website angehakt."
+
+msgid "Durées de cache"
+msgstr "Cache-Dauer"
+
+msgid "Aucune offre n'est enregistrée en base de données. Tout est mis en cache dans des fichiers JSON, renouvelés automatiquement à l'expiration des durées ci-dessous, et réinitialisables à tout moment depuis l'écran Cache et outils."
+msgstr "Kein Angebot wird in der Datenbank gespeichert. Alles liegt in JSON-Dateien, die nach Ablauf der unten stehenden Dauer automatisch erneuert werden und die Sie jederzeit über den Bildschirm Cache und Werkzeuge zurücksetzen können."
+
+msgid "Listes d'offres"
+msgstr "Angebotslisten"
+
+msgid "Fréquence de reconstruction de l'index qui alimente les pages de listing."
+msgstr "Wie oft der Index neu aufgebaut wird, der die Listenseiten speist."
+
+msgid "Fiches détail"
+msgstr "Detailseiten"
+
+msgid "Thesaurus"
+msgstr "Thesaurus"
+
+msgid "Types d'offres, structures de champs, libellés et localités. Ces données bougent rarement : une durée longue est recommandée."
+msgstr "Angebotstypen, Feldstrukturen, Bezeichnungen und Ortsnamen. Diese Daten ändern sich selten: eine lange Dauer ist empfehlenswert."
+
+msgid "Erreurs"
+msgstr "Fehler"
+
+msgid "Durée pendant laquelle une offre introuvable n'est pas redemandée au service."
+msgstr "Wie lange ein nicht gefundenes Angebot nicht erneut beim Dienst angefragt wird."
+
+msgid "Offres par appel"
+msgstr "Angebote pro Aufruf"
+
+msgid "Taille des lots lors de la construction d'un index. Réduisez cette valeur si votre hébergeur coupe les requêtes longues."
+msgstr "Größe der Blöcke beim Aufbau eines Index. Senken Sie diesen Wert, wenn Ihr Hoster lange Anfragen abbricht."
+
+msgid "Livraison de l'index au navigateur"
+msgstr "Auslieferung des Index an den Browser"
+
+msgid "Fichier statique (recommandé)"
+msgstr "Statische Datei (empfohlen)"
+
+msgid "Route REST"
+msgstr "REST-Route"
+
+msgid "Le fichier statique évite de charger WordPress à chaque affichage de liste. Passez en REST si votre dossier uploads n'est pas servi directement."
+msgstr "Die statische Datei vermeidet, dass WordPress bei jeder Listenansicht geladen wird. Wechseln Sie zu REST, wenn Ihr uploads-Verzeichnis nicht direkt ausgeliefert wird."
+
+msgid "Affichage et URL"
+msgstr "Anzeige und URLs"
+
+msgid "Réglages communs à toutes les pages générées par le plugin."
+msgstr "Einstellungen, die für alle vom Plugin erzeugten Seiten gelten."
+
+msgid "Préfixe des pages détail"
+msgstr "Präfix der Detailseiten"
+
+msgid "Les fiches seront publiées sous %s."
+msgstr "Die Seiten werden unter %s veröffentlicht."
+
+msgid "Préfixe traduit"
+msgstr "Übersetztes Präfix"
+
+msgid "Facultatif : un préfixe propre à chaque langue, par exemple aanbod en néerlandais. Une langue laissée vide reprend le préfixe ci-dessus."
+msgstr "Optional: ein eigenes Präfix je Sprache, zum Beispiel angebot auf Deutsch. Eine leer gelassene Sprache übernimmt das Präfix von oben."
+
+msgid "Si une offre est renommée"
+msgstr "Wenn ein Angebot umbenannt wird"
+
+msgid "L'adresse suit le nouveau nom"
+msgstr "Die Adresse folgt dem neuen Namen"
+
+msgid "L'adresse ne change plus"
+msgstr "Die Adresse ändert sich nicht mehr"
+
+msgid "Dans les deux cas l'ancienne adresse continue de fonctionner et redirige en 301 : le code PIVOT termine toujours le segment. Suivre le nom garde des adresses parlantes ; les figer évite qu'une correction de faute de frappe ne déplace une page déjà référencée."
+msgstr "In beiden Fällen funktioniert die alte Adresse weiter und leitet mit 301 um: der PIVOT-Code schließt das Segment stets ab. Dem Namen zu folgen erhält sprechende Adressen; sie einzufrieren verhindert, dass eine Tippfehlerkorrektur eine bereits indexierte Seite verschiebt."
+
+msgid "Anciennes URL /details/CODE"
+msgstr "Alte URLs /details/CODE"
+
+msgid "Rediriger en 301 vers la nouvelle URL"
+msgstr "Mit 301 auf die neue URL weiterleiten"
+
+msgid "Afficher la fiche directement à cette adresse"
+msgstr "Die Seite direkt unter dieser Adresse anzeigen"
+
+msgid "La forme /details/CODEPIVOT&type=IDTYPE reste comprise dans les deux cas : les liens existants et les référencements externes continuent de fonctionner."
+msgstr "Die Form /details/CODEPIVOT&type=IDTYPE wird in beiden Fällen weiterhin verstanden: bestehende Links und externe Verweise funktionieren weiter."
+
+msgid "Taille des vignettes"
+msgstr "Größe der Vorschaubilder"
+
+msgid "Données structurées"
+msgstr "Strukturierte Daten"
+
+msgid "Publier le balisage schema.org (JSON-LD) sur les listes et les fiches"
+msgstr "Die schema.org-Auszeichnung (JSON-LD) auf Listen und Detailseiten veröffentlichen"
+
+msgid "Cartographie"
+msgstr "Kartografie"
+
+msgid "La carte s'affiche uniquement sur les pages de listing où vous l'avez activée."
+msgstr "Die Karte erscheint nur auf den Listenseiten, auf denen Sie sie aktiviert haben."
+
+msgid "Moteur de carte"
+msgstr "Kartenmodul"
+
+msgid "Leaflet + fond de carte au choix"
+msgstr "Leaflet + Hintergrundkarte nach Wahl"
+
+msgid "Aucune carte"
+msgstr "Keine Karte"
+
+msgid "URL des tuiles"
+msgstr "URL der Kacheln"
+
+msgid "Mention du fournisseur"
+msgstr "Nennung des Anbieters"
+
+msgid "Regroupement"
+msgstr "Gruppierung"
+
+msgid "Regrouper les points proches en grappes"
+msgstr "Nahe beieinander liegende Punkte zu Gruppen zusammenfassen"
+
+msgid "Journalisation"
+msgstr "Protokollierung"
+
+msgid "Le journal enregistre les appels au webservice pour faciliter le diagnostic. Il ne conserve jamais la clé ws_key."
+msgstr "Das Protokoll erfasst die Aufrufe an den Webservice zur leichteren Fehlersuche. Der ws_key-Schlüssel wird darin nie gespeichert."
+
+msgid "Activer le journal"
+msgstr "Das Protokoll aktivieren"
+
+msgid "Enregistrer les appels à PIVOT"
+msgstr "Die Aufrufe an PIVOT aufzeichnen"
+
+msgid "Niveau enregistré"
+msgstr "Erfasste Stufe"
+
+msgid "Tout, y compris les lectures en cache"
+msgstr "Alles, auch die Lesevorgänge aus dem Cache"
+
+msgid "Appels réseau et erreurs"
+msgstr "Netzwerkaufrufe und Fehler"
+
+msgid "Avertissements et erreurs"
+msgstr "Warnungen und Fehler"
+
+msgid "Erreurs seulement"
+msgstr "Nur Fehler"
+
+msgid "Conservation (jours)"
+msgstr "Aufbewahrung (Tage)"
+
+msgid "Une tâche quotidienne supprime les entrées plus anciennes."
+msgstr "Eine tägliche Aufgabe löscht die älteren Einträge."
+
+msgid "PIVOT fournit les contenus dans cette langue"
+msgstr "PIVOT liefert die Inhalte in dieser Sprache"
+
+msgid "PIVOT ne fournit pas cette langue : les contenus reprendront la langue par défaut"
+msgstr "PIVOT liefert diese Sprache nicht: die Inhalte greifen auf die Standardsprache zurück"
+
+msgid "Langue par défaut : %s. Une page de listing et une fiche existent dans chacune de ces langues."
+msgstr "Standardsprache: %s. Eine Listenseite und eine Detailseite existieren in jeder dieser Sprachen."
+
+msgid "Le site est monolingue. Installez et configurez une extension de traduction pour publier vos offres en plusieurs langues : le plugin la suivra sans autre réglage."
+msgstr "Die Website ist einsprachig. Installieren und konfigurieren Sie ein Übersetzungs-Plugin, um Ihre Angebote mehrsprachig zu veröffentlichen: das Plugin folgt ihm ohne weitere Einstellung."
+
+msgid "heures"
+msgstr "Stunden"
+
+msgid "jours"
+msgstr "Tage"
+
+msgid "Environnement changé : tous les caches ont été vidés."
+msgstr "Umgebung gewechselt: alle Caches wurden geleert."
+
+msgid "Enregistrer les réglages"
+msgstr "Einstellungen speichern"
+
+msgid "Vérifier la connexion"
+msgstr "Die Verbindung prüfen"
+
+msgid "Envoie un appel libre au thesaurus puis un appel authentifié au service query, avec les réglages enregistrés."
+msgstr "Sendet einen freien Aufruf an den Thesaurus und danach einen authentifizierten Aufruf an den Dienst query, mit den gespeicherten Einstellungen."
+
+msgid "Tester la connexion"
+msgstr "Verbindung testen"
+
+msgid "Insérer des offres dans une page"
+msgstr "Angebote in eine Seite einfügen"
+
+msgid "Réglez ce que vous voulez afficher, copiez le shortcode obtenu et collez-le dans une page ou un article. Il produit une liste de vignettes : ni carte, ni critères de recherche."
+msgstr "Stellen Sie ein, was angezeigt werden soll, kopieren Sie den erzeugten Shortcode und fügen Sie ihn in eine Seite oder einen Beitrag ein. Er liefert eine Liste von Vorschaubildern: keine Karte, keine Suchkriterien."
+
+msgid "Quelles offres"
+msgstr "Welche Angebote"
+
+msgid "Celles d'une page de listing"
+msgstr "Die einer Listenseite"
+
+msgid "Reprend l'index déjà construit : aucun appel supplémentaire à PIVOT."
+msgstr "Nutzt den bereits aufgebauten Index: kein zusätzlicher Aufruf an PIVOT."
+
+msgid "Aucune page de listing active pour l'instant."
+msgstr "Zurzeit keine aktive Listenseite."
+
+msgid "Celles d'une requête PIVOT"
+msgstr "Die einer PIVOT-Abfrage"
+
+msgid "Une sélection que je choisis"
+msgstr "Eine Auswahl, die ich selbst treffe"
+
+msgid "Codes séparés par des virgules. L'ordre saisi est l'ordre affiché."
+msgstr "Codes durch Kommas getrennt. Die eingegebene Reihenfolge ist die angezeigte."
+
+msgid "Présentation"
+msgstr "Darstellung"
+
+msgid "Offres"
+msgstr "Angebote"
+
+msgid "Colonnes"
+msgstr "Spalten"
+
+msgid "Ordre"
+msgstr "Reihenfolge"
+
+msgid "Celui de PIVOT"
+msgstr "Die von PIVOT"
+
+msgid "Alphabétique"
+msgstr "Alphabetisch"
+
+msgid "Aléatoire"
+msgstr "Zufällig"
+
+msgid "Restreindre"
+msgstr "Einschränken"
+
+msgid "province:namur"
+msgstr "province:namur"
+
+msgid "Facultatif. Forme cle:valeur, plusieurs séparées par une barre verticale. Les clés sont celles des critères de la page choisie."
+msgstr "Optional. Form Schlüssel:Wert, mehrere durch einen senkrechten Strich getrennt. Die Schlüssel sind die der Kriterien der gewählten Seite."
+
+msgid "Habillage"
+msgstr "Aufmachung"
+
+msgid "Nos coups de cœur"
+msgstr "Unsere Favoriten"
+
+msgid "Ajouter un lien vers la page de listing"
+msgstr "Einen Link zur Listenseite hinzufügen"
+
+msgid "Votre shortcode"
+msgstr "Ihr Shortcode"
+
+msgid "Copier"
+msgstr "Kopieren"
+
+msgid "Rendu avec les styles de l'extension. Votre thème peut le présenter différemment."
+msgstr "Dargestellt mit den Stilen der Erweiterung. Ihr Theme kann es anders darstellen."
+
+msgid "Clés et valeurs disponibles"
+msgstr "Verfügbare Schlüssel und Werte"
+
+msgid "%d redirection"
+msgid_plural "%d redirections"
+msgstr[0] "%d Weiterleitung"
+msgstr[1] "%d Weiterleitungen"
+
+msgid "%d adresse déjà gérée par le plugin, ignorée"
+msgid_plural "%d adresses déjà gérées par le plugin, ignorées"
+msgstr[0] "%d bereits vom Plugin verwaltete Adresse, übergangen"
+msgstr[1] "%d bereits vom Plugin verwaltete Adressen, übergangen"
+
+msgid "%d inchangée"
+msgid_plural "%d inchangées"
+msgstr[0] "%d unverändert"
+msgstr[1] "%d unverändert"
+
+msgid "Enregistrer cette redirection"
+msgid_plural "Enregistrer ces %d redirections"
+msgstr[0] "Diese Weiterleitung speichern"
+msgstr[1] "Diese %d Weiterleitungen speichern"
+
+msgid "Cache vidé : %d fichiers supprimés. Les prochaines visites rechargeront les données depuis PIVOT."
+msgstr "Cache geleert: %d Dateien gelöscht. Die nächsten Besuche laden die Daten erneut von PIVOT."
+
+msgid "Cache du thesaurus réinitialisé : %d fichiers supprimés."
+msgstr "Thesaurus-Cache zurückgesetzt: %d Dateien gelöscht."
+
+msgid "Cache des fiches vidé : %d fichiers supprimés."
+msgstr "Cache der Detailseiten geleert: %d Dateien gelöscht."
+
+msgid "Reconstruction lancée pour toutes les pages actives. Elle se poursuit en arrière-plan."
+msgstr "Neuaufbau für alle aktiven Seiten gestartet. Er läuft im Hintergrund weiter."
+
+msgid "Indiquez le code de la requête à traiter."
+msgstr "Geben Sie den Code der zu verarbeitenden Abfrage an."
+
+msgid "Simulation terminée : %d redirections seraient créées. Rien n'a été enregistré."
+msgstr "Simulation abgeschlossen: %d Weiterleitungen würden angelegt. Es wurde nichts gespeichert."
+
+msgid "%1$d redirections enregistrées. La table en compte %2$d au total."
+msgstr "%1$d Weiterleitungen gespeichert. Die Tabelle enthält insgesamt %2$d."
+
+msgid "Simulation abandonnée. Rien n'a été enregistré."
+msgstr "Simulation abgebrochen. Es wurde nichts gespeichert."
+
+msgid "Redirection ajoutée."
+msgstr "Weiterleitung hinzugefügt."
+
+msgid "Redirection refusée : vérifiez que la source et la cible sont différentes et non vides."
+msgstr "Weiterleitung abgelehnt: prüfen Sie, ob Quelle und Ziel verschieden und nicht leer sind."
+
+msgid "Redirection supprimée."
+msgstr "Weiterleitung gelöscht."
+
+msgid "Relevé des renommages effacé."
+msgstr "Aufstellung der Umbenennungen gelöscht."
+
+msgid "Registre des adresses vidé. Les fiches repartiront du nom actuel de chaque offre à la prochaine construction d'index."
+msgstr "Adressregister geleert. Die Seiten gehen beim nächsten Indexaufbau vom aktuellen Namen jedes Angebots aus."
+
+msgid "Les visites guidées vous seront reproposées à votre prochaine visite de chaque écran."
+msgstr "Die geführten Touren werden Ihnen beim nächsten Aufruf jedes Bildschirms erneut angeboten."
+
+msgid "Table de redirections vidée."
+msgstr "Weiterleitungstabelle geleert."
+
+msgid "Index des pages de listing"
+msgstr "Index der Listenseiten"
+
+msgid "États de construction"
+msgstr "Aufbaustatus"
+
+msgid "Réponses brutes"
+msgstr "Rohantworten"
+
+msgid "Cache"
+msgstr "Cache"
+
+msgid "Les offres ne sont jamais écrites en base de données : elles vivent dans ces fichiers, renouvelés automatiquement."
+msgstr "Angebote werden nie in die Datenbank geschrieben: sie leben in diesen Dateien, die automatisch erneuert werden."
+
+msgid "Contenu"
+msgstr "Inhalt"
+
+msgid "Fichiers"
+msgstr "Dateien"
+
+msgid "Réinitialiser le cache du thesaurus"
+msgstr "Thesaurus-Cache zurücksetzen"
+
+msgid "Vider les fiches détail"
+msgstr "Detailseiten leeren"
+
+msgid "Reconstruire tous les index"
+msgstr "Alle Indexe neu aufbauen"
+
+msgid "Tout vider"
+msgstr "Alles leeren"
+
+msgid "Redirections 301"
+msgstr "301-Weiterleitungen"
+
+msgid "La forme /details/CODEPIVOT&type=IDTYPE est déjà reconnue sans configuration. Cet outil sert à couvrir d'autres anciennes adresses, par lot, à partir des offres d'une requête."
+msgstr "Die Form /details/CODEPIVOT&type=IDTYPE wird bereits ohne Konfiguration erkannt. Dieses Werkzeug dient dazu, weitere alte Adressen stapelweise abzudecken, ausgehend von den Angeboten einer Abfrage."
+
+msgid "Requête à parcourir"
+msgstr "Zu durchlaufende Abfrage"
+
+msgid "Toutes les offres retournées par cette requête recevront une redirection vers leur nouvelle fiche."
+msgstr "Alle von dieser Abfrage gelieferten Angebote erhalten eine Weiterleitung auf ihre neue Seite."
+
+msgid "Gabarits des anciennes URL"
+msgstr "Vorlagen der alten URLs"
+
+msgid "Jetons disponibles : {code}, {type}, {slug}, {lang}. Chaque gabarit pointe vers la fiche dans sa langue : une seule passe suffit pour tout le site. Une langue laissée vide est ignorée."
+msgstr "Verfügbare Platzhalter: {code}, {type}, {slug}, {lang}. Jede Vorlage verweist auf die Seite in ihrer Sprache: ein Durchlauf genügt für die ganze Website. Eine leer gelassene Sprache wird übergangen."
+
+msgid "Inutile de viser /details/ : cette forme est déjà reconnue par le plugin, les entrées correspondantes sont ignorées."
+msgstr "/details/ ist überflüssig: diese Form erkennt das Plugin bereits, entsprechende Einträge werden übergangen."
+
+msgid "Mode"
+msgstr "Modus"
+
+msgid "Simuler sans enregistrer"
+msgstr "Simulieren, ohne zu speichern"
+
+msgid "Générer les redirections"
+msgstr "Die Weiterleitungen erzeugen"
+
+msgid "Ajouter une redirection"
+msgstr "Eine Weiterleitung hinzufügen"
+
+msgid "/ancienne-page"
+msgstr "/alte-seite"
+
+msgid "Table actuelle (%d)"
+msgstr "Aktuelle Tabelle (%d)"
+
+msgid "Cible"
+msgstr "Ziel"
+
+msgid "Retirer"
+msgstr "Entfernen"
+
+msgid "%d autres redirections ne sont pas affichées. Exportez la table pour la consulter en entier."
+msgstr "%d weitere Weiterleitungen werden nicht angezeigt. Exportieren Sie die Tabelle, um sie vollständig zu sehen."
+
+msgid "Exporter"
+msgstr "Exportieren"
+
+msgid "Vider la table"
+msgstr "Tabelle leeren"
+
+msgid "Aucune redirection enregistrée."
+msgstr "Keine Weiterleitung gespeichert."
+
+msgid "Aperçu de ce qui serait créé"
+msgstr "Vorschau des Anzulegenden"
+
+msgid "Redirections créées"
+msgstr "Angelegte Weiterleitungen"
+
+msgid "destinations en %s"
+msgstr "Ziele auf %s"
+
+msgid "Offre"
+msgstr "Angebot"
+
+msgid "Langue"
+msgstr "Sprache"
+
+msgid "Ancienne adresse"
+msgstr "Alte Adresse"
+
+msgid "Nouvelle adresse"
+msgstr "Neue Adresse"
+
+msgid "%d autres ne sont pas affichées ici."
+msgstr "%d weitere werden hier nicht angezeigt."
+
+msgid "Abandonner"
+msgstr "Verwerfen"
+
+msgid "Rien n'a encore été écrit. La simulation reste disponible tant que vous n'avez pas tranché, même si vous quittez cet écran."
+msgstr "Es wurde noch nichts geschrieben. Die Simulation bleibt verfügbar, solange Sie nicht entschieden haben, auch wenn Sie diesen Bildschirm verlassen."
+
+msgid "Offres renommées"
+msgstr "Umbenannte Angebote"
+
+msgid "Aucun changement de dénomination relevé depuis la mise en service. Les renommages faits dans PIVOT apparaîtront ici après la reconstruction de l'index."
+msgstr "Seit der Inbetriebnahme wurde keine Namensänderung festgestellt. Umbenennungen in PIVOT erscheinen hier nach dem Neuaufbau des Index."
+
+msgid "Ces offres ont changé de nom dans PIVOT. Leur adresse est figée : elle n'a pas bougé."
+msgstr "Diese Angebote wurden in PIVOT umbenannt. Ihre Adresse ist eingefroren: sie hat sich nicht geändert."
+
+msgid "Ces offres ont changé de nom dans PIVOT, et leur adresse a suivi. L'ancienne redirige en 301 vers la nouvelle ; pensez à prévenir vos partenaires si vous leur aviez communiqué un lien."
+msgstr "Diese Angebote wurden in PIVOT umbenannt, und ihre Adresse ist mitgezogen. Die alte leitet mit 301 auf die neue um; informieren Sie Ihre Partner, falls Sie ihnen einen Link mitgeteilt hatten."
+
+msgid "Ancien nom"
+msgstr "Alter Name"
+
+msgid "Nouveau nom"
+msgstr "Neuer Name"
+
+msgid "Adresse"
+msgstr "Adresse"
+
+msgid "inchangée"
+msgstr "unverändert"
+
+msgid "Effacer ce relevé"
+msgstr "Diese Aufstellung löschen"
+
+msgid "Réinitialiser le registre des adresses"
+msgstr "Das Adressregister zurücksetzen"
+
+msgid "Aide"
+msgstr "Hilfe"
+
+msgid "Les visites guidées s'ouvrent une seule fois par écran et par personne. Le bouton présent en haut de chaque écran permet de les revoir à tout moment ; celui-ci les remet à zéro pour votre compte."
+msgstr "Geführte Touren öffnen sich einmal pro Bildschirm und Person. Mit der Schaltfläche oben auf jedem Bildschirm sehen Sie sie jederzeit erneut; diese hier setzt sie für Ihr Konto zurück."
+
+msgid "Revoir les visites guidées"
+msgstr "Geführte Touren erneut ansehen"
+
+msgid "Diagnostic"
+msgstr "Diagnose"
+
+msgid "Version du plugin"
+msgstr "Version des Plugins"
+
+msgid "Stage"
+msgstr "Stage"
+
+msgid "URL du service"
+msgstr "URL des Dienstes"
+
+msgid "Clé enregistrée"
+msgstr "Gespeicherter Schlüssel"
+
+msgid "Non"
+msgstr "Nein"
+
+msgid "Dossier de cache"
+msgstr "Cache-Verzeichnis"
+
+msgid "Racine du site"
+msgstr "Wurzel der Website"
+
+msgid "Pages actives"
+msgstr "Aktive Seiten"
+
+msgid "Gestion des langues"
+msgstr "Sprachverwaltung"
+
+msgid "Langues publiées"
+msgstr "Veröffentlichte Sprachen"
+
+msgid "Prochaine reconstruction"
+msgstr "Nächster Neuaufbau"
+
+msgid "non planifiée"
+msgstr "nicht geplant"
+
+msgid "URL par langue"
+msgstr "URL je Sprache"
+
+msgid "contenus non traduits par PIVOT"
+msgstr "Inhalte von PIVOT nicht übersetzt"
+
+msgid "identique"
+msgstr "identisch"
+
+msgid "Les langues %1$s reçoivent la même adresse que la langue par défaut : %2$s ne distingue pas les URL que le plugin fabrique, car elles ne correspondent à aucun contenu WordPress. Vérifiez sa configuration d'URL, ou fournissez l'adresse attendue avec le filtre pivot_language_url. En attendant, une seule balise hreflang est publiée plutôt que plusieurs identiques."
+msgstr "Die Sprachen %1$s erhalten dieselbe Adresse wie die Standardsprache: %2$s unterscheidet die vom Plugin erzeugten URLs nicht, da sie keinem WordPress-Inhalt entsprechen. Prüfen Sie dessen URL-Konfiguration oder liefern Sie die erwartete Adresse über den Filter pivot_language_url. Bis dahin wird ein einziges hreflang-Tag statt mehrerer identischer veröffentlicht."
+
+msgid "Familles enregistrées."
+msgstr "Familien gespeichert."
+
+msgid "Rien n'a été enregistré : les familles de PIVOT n'ont pas pu être lues."
+msgstr "Es wurde nichts gespeichert: Die Familien von PIVOT konnten nicht gelesen werden."
+
+msgid "La famille décide du gabarit utilisé pour la fiche et pour la vignette. Elle vient du thesaurus de PIVOT ; vous pouvez la corriger ici pour un type qui mérite un traitement à part."
+msgstr "Die Familie bestimmt die Vorlage für die Detailseite und für das Vorschaubild. Sie stammt aus dem Thesaurus von PIVOT; Sie können sie hier für einen Typ korrigieren, der eine gesonderte Behandlung verdient."
+
+msgid "Cet écran ne compose aucun visuel : il indique quel fichier de gabarit s'applique, pour que votre développeur sache où écrire. Le gabarit le plus précis disponible l'emporte toujours."
+msgstr "Dieser Bildschirm gestaltet keine Darstellung: Er zeigt an, welche Vorlagendatei greift, damit Ihr Entwickler weiß, wo er schreiben muss. Die genaueste verfügbare Vorlage setzt sich immer durch."
+
+msgid "Les familles n'ont pas pu être lues dans le thesaurus de PIVOT. Sans elles, tous les types passent par le gabarit commun."
+msgstr "Die Familien konnten nicht aus dem Thesaurus von PIVOT gelesen werden. Ohne sie laufen alle Typen über die gemeinsame Vorlage."
+
+msgid "Vérifiez la connexion dans Réglages, puis réinitialisez le cache du thesaurus depuis Cache et outils. Aucune famille de remplacement n'est inventée : elle ne correspondrait à aucun de vos gabarits."
+msgstr "Prüfen Sie die Verbindung unter Einstellungen und setzen Sie anschließend den Thesaurus-Cache unter Cache und Werkzeuge zurück. Es wird keine Ersatzfamilie erfunden: Sie würde keiner Ihrer Vorlagen entsprechen."
+
+msgid "Aucun type rencontré pour l'instant."
+msgstr "Bisher kein Typ angetroffen."
+
+msgid "Les types apparaissent ici après la première construction d'index d'une page de listing : ce sont ceux que vos requêtes renvoient réellement."
+msgstr "Die Typen erscheinen hier nach dem ersten Indexaufbau einer Listenseite: es sind jene, die Ihre Abfragen tatsächlich liefern."
+
+msgid "Enregistrer les familles"
+msgstr "Familien speichern"
+
+msgid "Famille"
+msgstr "Familie"
+
+msgid "corrigée ici — PIVOT classe ce type dans « %s »"
+msgstr "hier korrigiert – PIVOT ordnet diesen Typ „%s“ zu"
+
+msgid "telle que PIVOT la déclare"
+msgstr "so wie PIVOT sie angibt"
+
+msgid "Fiche détail"
+msgstr "Detailseite"
+
+msgid "Vignette"
+msgstr "Vorschaubild"
+
+msgid "en service : %s, dans votre thème"
+msgstr "im Einsatz: %s, in Ihrem Theme"
+
+msgid "en service : le gabarit commun du plugin"
+msgstr "im Einsatz: die gemeinsame Vorlage des Plugins"
+
+msgid "À placer dans un dossier pivot-offres/ de votre thème. Le premier fichier trouvé est utilisé."
+msgstr "In einem Ordner pivot-offres/ Ihres Themes abzulegen. Die erste gefundene Datei wird verwendet."
+
+msgid "Champs embarqués dans la vignette :"
+msgstr "Im Vorschaubild mitgeführte Felder:"
+
+msgid "Déclarés par le filtre pivot_card_fields. Ils voyagent dans l'index ; c'est au gabarit de vignette de les afficher."
+msgstr "Über den Filter pivot_card_fields angegeben. Sie reisen im Index mit; es ist Sache der Vorlage des Vorschaubilds, sie anzuzeigen."
+
+msgid "Cette offre n'est plus disponible."
+msgstr "Dieses Angebot ist nicht mehr verfügbar."
+
+msgid "Fil d'Ariane"
+msgstr "Brotkrümelnavigation"
+
+msgid "Contact"
+msgstr "Kontakt"
+
+msgid "Site web"
+msgstr "Website"
+
+msgid "Situation"
+msgstr "Lage"
+
+msgid "Voir sur la carte"
+msgstr "Auf der Karte ansehen"
+
+msgid "← Retour aux résultats"
+msgstr "← Zurück zu den Ergebnissen"
+
+msgid "Référence PIVOT"
+msgstr "PIVOT-Referenz"
+
+msgid "%d offre"
+msgid_plural "%d offres"
+msgstr[0] "%d Angebot"
+msgstr[1] "%d Angebote"
+
+msgid "Nom, localité, mot-clé…"
+msgstr "Name, Ort, Stichwort …"
+
+msgid "Toutes"
+msgstr "Alle"
+
+msgid "Effacer les filtres"
+msgstr "Filter zurücksetzen"
+
+msgid "Carte des offres"
+msgstr "Karte mit den Angeboten"
+
+msgid "Aucune offre à afficher pour le moment."
+msgstr "Zurzeit kein Angebot zum Anzeigen."
+
+msgid "Pagination des offres"
+msgstr "Seitennavigation der Angebote"
+
+msgid "+ %d autre date"
+msgid_plural "+ %d autres dates"
+msgstr[0] "+ %d weiterer Termin"
+msgstr[1] "+ %d weitere Termine"
+
+msgid "Voir la fiche"
+msgstr "Seite ansehen"
+
+msgid "Chambres"
+msgstr "Zimmer"
+
+msgid "Capacité"
+msgstr "Kapazität"
+
+msgid "Classement"
+msgstr "Klassifizierung"
+
+msgid "Aucune clé ws_key n'est enregistrée pour cet environnement. Ajoutez-la dans Réglages PIVOT."
+msgstr "Für diese Umgebung ist kein ws_key-Schlüssel gespeichert. Fügen Sie ihn in den PIVOT-Einstellungen hinzu."
+
+msgid "Le service thesaurus est injoignable : %s"
+msgstr "Der Dienst Thesaurus ist nicht erreichbar: %s"
+
+msgid "Le service répond, mais aucune clé ws_key n'est enregistrée pour cet environnement."
+msgstr "Der Dienst antwortet, aber für diese Umgebung ist kein ws_key-Schlüssel gespeichert."
+
+msgid "Thesaurus accessible, mais l'appel authentifié a échoué : %s"
+msgstr "Thesaurus erreichbar, aber der authentifizierte Aufruf ist fehlgeschlagen: %s"
+
+msgid "Connexion établie : le thesaurus et un appel authentifié répondent tous les deux."
+msgstr "Verbindung hergestellt: sowohl der Thesaurus als auch ein authentifizierter Aufruf antworten."
+
+msgid "Toutes les 15 minutes (PIVOT)"
+msgstr "Alle 15 Minuten (PIVOT)"
+
+msgid "Du %1$s au %2$s"
+msgstr "Vom %1$s bis %2$s"
+
+msgid "de %1$s à %2$s"
+msgstr "von %1$s bis %2$s"
+
+msgid "à partir de %s"
+msgstr "ab %s"
+
+msgid "Extension déclarée par filtre"
+msgstr "Über Filter angemeldetes Plugin"
+
+msgid "Aucune : site monolingue"
+msgstr "Keines: einsprachige Website"
+
+msgid "Français"
+msgstr "Französisch"
+
+msgid "Néerlandais"
+msgstr "Niederländisch"
+
+msgid "Anglais"
+msgstr "Englisch"
+
+msgid "Allemand"
+msgstr "Deutsch"
+
+msgid "Page de listing introuvable."
+msgstr "Listenseite nicht gefunden."
+
+msgid "Cette page n'a pas de code de requête."
+msgstr "Diese Seite hat keinen Abfragecode."
+
+msgid "Rechercher"
+msgstr "Suchen"
+
+msgid "Donnez un titre à la page de listing."
+msgstr "Geben Sie der Listenseite einen Titel."
+
+msgid "Indiquez l'URL de la page, par exemple hebergements ou sejourner/hotels."
+msgstr "Geben Sie die URL der Seite an, zum Beispiel uebernachten oder uebernachten/hotels."
+
+msgid "Indiquez le code de la requête pré-programmée, par exemple QRY-00-0000-0000."
+msgstr "Geben Sie den Code der vorprogrammierten Abfrage an, zum Beispiel QRY-00-0000-0000."
+
+msgid "L'URL « %s » est déjà utilisée par une autre page de listing."
+msgstr "Die URL « %s » wird bereits von einer anderen Listenseite verwendet."
+
+msgid "Liste déroulante (un choix)"
+msgstr "Auswahlliste (eine Wahl)"
+
+msgid "Cases à cocher (plusieurs choix)"
+msgstr "Kontrollkästchen (mehrere Wahlmöglichkeiten)"
+
+msgid "Saisie libre"
+msgstr "Freie Eingabe"
+
+msgid "Interrupteur oui/non"
+msgstr "Ja-Nein-Schalter"
+
+msgid "Commune"
+msgstr "Gemeinde"
+
+msgid "Code postal"
+msgstr "Postleitzahl"
+
+msgid "Province"
+msgstr "Provinz"
+
+msgid "Champ PIVOT (urn)"
+msgstr "PIVOT-Feld (urn)"
+
+msgid "Le service a renvoyé un document vide."
+msgstr "Der Dienst hat ein leeres Dokument zurückgegeben."
+
+msgid "Document XML illisible."
+msgstr "Unlesbares XML-Dokument."
+
+msgid "Aucune offre dans la réponse du service."
+msgstr "Kein Angebot in der Antwort des Dienstes."
+
+msgid "Indiquez au moins un gabarit d'ancienne adresse."
+msgstr "Geben Sie mindestens eine Vorlage einer alten Adresse an."
+
+msgid "Code d'offre invalide."
+msgstr "Ungültiger Angebotscode."
+
+msgid "L'index de cette page n'est pas encore disponible. Réessayez dans un instant."
+msgstr "Der Index dieser Seite ist noch nicht verfügbar. Versuchen Sie es gleich noch einmal."
+
+msgid " – page %d"
+msgstr " – Seite %d"
+
+msgid "Indiquez une source : listing, query ou codes."
+msgstr "Geben Sie eine Quelle an: listing, query oder codes."
+
+msgid "Page de listing « %s » introuvable."
+msgstr "Listenseite « %s » nicht gefunden."
+
+msgid "Voir toutes les offres"
+msgstr "Alle Angebote ansehen"
+
+msgid "Cette requête ne renvoie aucune offre : impossible d'en déduire des critères."
+msgstr "Diese Abfrage liefert kein Angebot: daraus lassen sich keine Kriterien ableiten."
+
+msgid "offre(s)"
+msgstr "Angebot(e)"
+
+msgid "Aucune offre ne correspond à votre recherche."
+msgstr "Kein Angebot entspricht Ihrer Suche."
+
+msgid "Chargement des offres…"
+msgstr "Angebote werden geladen…"
+
+msgid "Les offres n'ont pas pu être chargées. Rechargez la page dans quelques instants."
+msgstr "Die Angebote konnten nicht geladen werden. Laden Sie die Seite in einigen Augenblicken neu."
+
+msgid "Page précédente"
+msgstr "Vorherige Seite"
+
+msgid "Page suivante"
+msgstr "Nächste Seite"
+
+msgid "Page"
+msgstr "Seite"
+
+msgid "Informations"
+msgstr "Informationen"
+
+msgid "Autre"
+msgstr "Sonstiges"
+
+msgid "PIVOT Offres demande PHP 7.4 ou plus récent. Ce serveur exécute PHP %s. Demandez la mise à jour à votre hébergeur."
+msgstr "PIVOT Angebote benötigt PHP 7.4 oder neuer. Dieser Server nutzt PHP %s. Bitten Sie Ihren Hoster um die Aktualisierung."
+
+msgid "SimpleXML, qui sert à lire les réponses de PIVOT"
+msgstr "SimpleXML, womit die Antworten von PIVOT gelesen werden"
+
+msgid "libxml, qui sert à analyser le XML"
+msgstr "libxml, womit das XML analysiert wird"
+
+msgid "JSON, qui sert à écrire les fichiers de cache"
+msgstr "JSON, womit die Cache-Dateien geschrieben werden"
+
+msgid "L'extension PHP « %s » est absente de ce serveur."
+msgstr "Die PHP-Erweiterung « %s » fehlt auf diesem Server."
+
+msgid "Ces noms sont déjà déclarés sur le site : %s. Un autre plugin, votre thème ou votre code PIVOT existant les utilise. Désactivez-le, ou renommez-le, avant d'activer PIVOT Offres."
+msgstr "Diese Namen sind auf der Website bereits deklariert: %s. Ein anderes Plugin, Ihr Theme oder Ihr vorhandener PIVOT-Code verwendet sie. Deaktivieren oder benennen Sie ihn um, bevor Sie PIVOT Angebote aktivieren."
+
+msgid "Le dossier des fichiers envoyés est inutilisable : %s"
+msgstr "Das Upload-Verzeichnis ist unbrauchbar: %s"
+
+msgid "Le dossier %s n'est pas accessible en écriture. Le plugin y range son cache."
+msgstr "Das Verzeichnis %s ist nicht beschreibbar. Das Plugin legt dort seinen Cache ab."
+
+msgid "PIVOT Offres n'a pas pu démarrer."
+msgstr "PIVOT Angebote konnte nicht starten."
+

@@ -1,0 +1,498 @@
+/**
+ * Styles des pages PIVOT.
+ *
+ * Volontairement discrets : le but est de s'insérer dans le thème hôte plutôt
+ * que de lui imposer une identité. Tout est réglable via les variables
+ * ci-dessous, redéfinissables dans le thème enfant.
+ */
+
+.pivot-listing,
+.pivot-detail {
+	--pivot-gap: 1.5rem;
+	--pivot-radius: 6px;
+	--pivot-border: 1px solid rgba( 0, 0, 0, 0.12 );
+	--pivot-muted: rgba( 0, 0, 0, 0.6 );
+	--pivot-accent: currentColor;
+	--pivot-card-min: 260px;
+
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: var( --pivot-gap );
+}
+
+/* ------------------------------------------------------------------ commun */
+
+.pivot-button {
+	display: inline-block;
+	padding: 0.5em 1.1em;
+	border: var( --pivot-border );
+	border-radius: var( --pivot-radius );
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	line-height: 1.2;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.pivot-button:hover,
+.pivot-button:focus-visible {
+	border-color: currentColor;
+}
+
+.pivot-button-ghost {
+	background: transparent;
+}
+
+.pivot-listing :focus-visible,
+.pivot-detail :focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
+/* ----------------------------------------------------------------- listing */
+
+.pivot-listing-header {
+	margin-bottom: var( --pivot-gap );
+}
+
+.pivot-listing-intro {
+	max-width: 68ch;
+	color: var( --pivot-muted );
+}
+
+.pivot-criteria {
+	margin-bottom: var( --pivot-gap );
+	padding: var( --pivot-gap );
+	border: var( --pivot-border );
+	border-radius: var( --pivot-radius );
+}
+
+.pivot-filters-zone {
+	display: grid;
+	grid-template-columns: repeat( auto-fit, minmax( 220px, 1fr ) );
+	gap: 1rem;
+}
+
+.pivot-field label,
+.pivot-field legend {
+	display: block;
+	margin-bottom: 0.35em;
+	font-size: 0.9em;
+	font-weight: 600;
+}
+
+.pivot-field input[type="text"],
+.pivot-field input[type="search"],
+.pivot-field select {
+	width: 100%;
+	padding: 0.5em;
+	border: var( --pivot-border );
+	border-radius: var( --pivot-radius );
+	background: #fff;
+	font: inherit;
+}
+
+.pivot-field fieldset {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.pivot-check {
+	display: flex;
+	align-items: center;
+	gap: 0.4em;
+	margin-bottom: 0.25em;
+	font-weight: 400;
+}
+
+.pivot-check input {
+	margin: 0;
+}
+
+.pivot-count {
+	color: var( --pivot-muted );
+	font-size: 0.85em;
+	font-style: normal;
+}
+
+.pivot-criteria-actions {
+	display: flex;
+	gap: 0.5rem;
+	margin: 1rem 0 0;
+}
+
+.pivot-map {
+	height: 420px;
+	margin-bottom: var( --pivot-gap );
+	border-radius: var( --pivot-radius );
+	background: rgba( 0, 0, 0, 0.04 );
+}
+
+.pivot-results-count {
+	margin: 0 0 1rem;
+	color: var( --pivot-muted );
+	font-size: 0.95em;
+}
+
+/* ------------------------------------------------------------------ grille */
+
+.pivot-grid {
+	display: grid;
+	grid-template-columns: repeat( auto-fill, minmax( var( --pivot-card-min ), 1fr ) );
+	gap: var( --pivot-gap );
+}
+
+.pivot-card {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	border: var( --pivot-border );
+	border-radius: var( --pivot-radius );
+	background: #fff;
+}
+
+.pivot-card-media {
+	aspect-ratio: 4 / 3;
+	overflow: hidden;
+	background: rgba( 0, 0, 0, 0.04 );
+}
+
+.pivot-card-media img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.pivot-card-body {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 0.4rem;
+	padding: 1rem;
+}
+
+.pivot-card-type {
+	margin: 0;
+	color: var( --pivot-muted );
+	font-size: 0.78em;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.pivot-card-title {
+	margin: 0;
+	font-size: 1.1rem;
+	line-height: 1.3;
+}
+
+.pivot-card-title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.pivot-card-title a:hover,
+.pivot-card-title a:focus-visible {
+	text-decoration: underline;
+}
+
+.pivot-card-place {
+	margin: 0;
+	color: var( --pivot-muted );
+	font-size: 0.9em;
+}
+
+.pivot-card-excerpt {
+	margin: 0;
+	font-size: 0.92em;
+}
+
+.pivot-card-action {
+	margin: auto 0 0;
+	padding-top: 0.5rem;
+}
+
+.pivot-empty-results {
+	grid-column: 1 / -1;
+	padding: 2rem;
+	border: 1px dashed rgba( 0, 0, 0, 0.2 );
+	border-radius: var( --pivot-radius );
+	color: var( --pivot-muted );
+	text-align: center;
+}
+
+/* -------------------------------------------------------------- pagination */
+
+.pivot-pagination {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+	justify-content: center;
+	margin-top: var( --pivot-gap );
+}
+
+.pivot-pagination .pivot-page,
+.pivot-pagination .page-numbers {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 2.4em;
+	height: 2.4em;
+	padding: 0 0.6em;
+	border: var( --pivot-border );
+	border-radius: var( --pivot-radius );
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.pivot-pagination .pivot-page.is-current,
+.pivot-pagination .page-numbers.current {
+	border-color: currentColor;
+	font-weight: 700;
+}
+
+.pivot-page-dots {
+	align-self: center;
+	padding: 0 0.2em;
+	color: var( --pivot-muted );
+}
+
+/* ------------------------------------------------------------------ détail */
+
+.pivot-breadcrumb {
+	margin-bottom: 1rem;
+	color: var( --pivot-muted );
+	font-size: 0.9em;
+}
+
+.pivot-breadcrumb a {
+	color: inherit;
+}
+
+.pivot-detail-type {
+	margin: 0 0 0.25rem;
+	color: var( --pivot-muted );
+	font-size: 0.8em;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.pivot-detail-title {
+	margin: 0 0 0.5rem;
+}
+
+.pivot-detail-address {
+	margin: 0;
+	color: var( --pivot-muted );
+}
+
+.pivot-gallery {
+	display: grid;
+	grid-template-columns: repeat( auto-fit, minmax( 160px, 1fr ) );
+	gap: 0.75rem;
+	margin: var( --pivot-gap ) 0;
+}
+
+.pivot-gallery-item {
+	position: relative;
+	margin: 0;
+	overflow: hidden;
+	border-radius: var( --pivot-radius );
+}
+
+.pivot-gallery-item.is-primary {
+	grid-column: span 2;
+	grid-row: span 2;
+}
+
+.pivot-gallery-item img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.pivot-credit {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	padding: 0.2em 0.5em;
+	background: rgba( 0, 0, 0, 0.55 );
+	color: #fff;
+	font-size: 0.72em;
+}
+
+.pivot-detail-layout {
+	display: grid;
+	grid-template-columns: minmax( 0, 2fr ) minmax( 0, 1fr );
+	gap: calc( var( --pivot-gap ) * 1.5 );
+	align-items: start;
+}
+
+.pivot-spec-group {
+	margin-bottom: var( --pivot-gap );
+}
+
+.pivot-spec-group h2 {
+	margin: 0 0 0.6rem;
+	padding-bottom: 0.3rem;
+	border-bottom: var( --pivot-border );
+	font-size: 1.05rem;
+}
+
+.pivot-spec-list {
+	margin: 0;
+}
+
+.pivot-spec {
+	display: grid;
+	grid-template-columns: minmax( 140px, 34% ) 1fr;
+	gap: 0.5rem;
+	padding: 0.4rem 0;
+	border-bottom: 1px solid rgba( 0, 0, 0, 0.06 );
+}
+
+.pivot-spec dt {
+	margin: 0;
+	color: var( --pivot-muted );
+	font-size: 0.9em;
+}
+
+.pivot-spec dd {
+	margin: 0;
+}
+
+.pivot-detail-side {
+	position: sticky;
+	top: 1rem;
+	padding: 1rem;
+	border: var( --pivot-border );
+	border-radius: var( --pivot-radius );
+}
+
+.pivot-detail-side h2 {
+	margin: 0 0 0.5rem;
+	font-size: 1rem;
+}
+
+.pivot-contact ul {
+	margin: 0 0 1rem;
+	padding: 0;
+	list-style: none;
+}
+
+.pivot-contact li {
+	padding: 0.25rem 0;
+}
+
+.pivot-reference {
+	color: var( --pivot-muted );
+	font-size: 0.82em;
+}
+
+/* ------------------------------------------------------------- adaptations */
+
+@media ( max-width: 782px ) {
+	.pivot-detail-layout {
+		grid-template-columns: 1fr;
+	}
+
+	.pivot-detail-side {
+		position: static;
+	}
+
+	.pivot-map {
+		height: 300px;
+	}
+
+	.pivot-gallery-item.is-primary {
+		grid-column: span 2;
+		grid-row: auto;
+	}
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.pivot-listing *,
+	.pivot-detail * {
+		scroll-behavior: auto !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+@media ( prefers-color-scheme: dark ) {
+	.pivot-listing,
+	.pivot-detail {
+		--pivot-border: 1px solid rgba( 255, 255, 255, 0.18 );
+		--pivot-muted: rgba( 255, 255, 255, 0.65 );
+	}
+
+	.pivot-card,
+	.pivot-field input[type="text"],
+	.pivot-field input[type="search"],
+	.pivot-field select {
+		background: rgba( 255, 255, 255, 0.04 );
+		color: inherit;
+	}
+}
+
+/* ------------------------------------------------ insertion par shortcode */
+
+.pivot-inline {
+	--pivot-gap: 1.25rem;
+	--pivot-radius: 6px;
+	--pivot-border: 1px solid rgba( 0, 0, 0, 0.12 );
+	--pivot-muted: rgba( 0, 0, 0, 0.6 );
+
+	margin: 2rem 0;
+}
+
+.pivot-inline-title {
+	margin: 0 0 1rem;
+}
+
+/* Le nombre de colonnes est fixé par le shortcode ; en dessous de 640 px la
+   grille repasse en une seule colonne quoi qu'il arrive. */
+.pivot-inline .pivot-grid {
+	grid-template-columns: repeat( var( --pivot-inline-cols, 3 ), minmax( 0, 1fr ) );
+}
+
+.pivot-cols-1 { --pivot-inline-cols: 1; }
+.pivot-cols-2 { --pivot-inline-cols: 2; }
+.pivot-cols-3 { --pivot-inline-cols: 3; }
+.pivot-cols-4 { --pivot-inline-cols: 4; }
+.pivot-cols-5 { --pivot-inline-cols: 5; }
+.pivot-cols-6 { --pivot-inline-cols: 6; }
+
+.pivot-inline-more {
+	margin-top: 1.25rem;
+}
+
+.pivot-inline-error {
+	padding: 0.75rem 1rem;
+	border-left: 4px solid #b32d2e;
+	background: rgba( 179, 45, 46, 0.06 );
+}
+
+@media ( max-width: 900px ) {
+	.pivot-inline .pivot-grid {
+		grid-template-columns: repeat( min( var( --pivot-inline-cols, 3 ), 2 ), minmax( 0, 1fr ) );
+	}
+}
+
+@media ( max-width: 600px ) {
+	.pivot-inline .pivot-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media ( prefers-color-scheme: dark ) {
+	.pivot-inline {
+		--pivot-border: 1px solid rgba( 255, 255, 255, 0.18 );
+		--pivot-muted: rgba( 255, 255, 255, 0.65 );
+	}
+}

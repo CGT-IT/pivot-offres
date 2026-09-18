@@ -178,7 +178,12 @@ class Pivot_Redirects {
 			}
 		}
 
-		$offer = Pivot_Repository::get_offer( $code, array( 'content' => 3 ) );
+		// Lecture du cache seulement : ce recalcul n'économise qu'un saut de
+		// redirection. Interroger PIVOT ici bloquait la redirection elle-même
+		// jusqu'à trente secondes, pour un gain que le visiteur ne voit pas. À
+		// défaut de cache, la cible enregistrée fait très bien l'affaire : elle
+		// redirigera une seconde fois, et c'est tout.
+		$offer = Pivot_Repository::get_offer( $code, array( 'content' => 3, 'cached_only' => true ) );
 
 		if ( is_wp_error( $offer ) ) {
 			return $target;

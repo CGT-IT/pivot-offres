@@ -235,11 +235,23 @@ class Pivot_Rest {
 		$index = Pivot_Index_Builder::ensure( $listing, $lang );
 
 		if ( ! $index ) {
-			return new WP_Error(
-				'pivot_index_unavailable',
-				__( 'L\'index de cette page n\'est pas encore disponible. Réessayez dans un instant.', 'pivot-offres' ),
-				array( 'status' => 503 )
+			// La construction a été programmée, elle n'a pas lieu ici : cette
+			// route est ouverte à tous, et y enchaîner des appels à PIVOT
+			// permettait à n'importe qui de mobiliser un processus PHP pendant
+			// vingt-cinq secondes et de marteler le service avec la clé du site.
+			$response = new WP_REST_Response(
+				array(
+					'code'    => 'pivot_index_unavailable',
+					'message' => __( 'L\'index de cette page n\'est pas encore disponible. Réessayez dans un instant.', 'pivot-offres' ),
+					'data'    => array( 'status' => 503 ),
+				),
+				503
 			);
+
+			$response->header( 'Retry-After', '30' );
+			$response->header( 'Cache-Control', 'no-store' );
+
+			return $response;
 		}
 
 		$response = rest_ensure_response( $index );

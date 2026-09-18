@@ -21,7 +21,18 @@ $pivot_listing   = pivot_get( $pivot_context, 'listing', array() );
 $pivot_lang      = Pivot_I18n::current();
 $pivot_page      = max( 1, (int) pivot_get( $pivot_context, 'page', 1 ) );
 
-$pivot_index   = Pivot_Index_Builder::ensure( $pivot_listing, $pivot_lang );
+$pivot_index = Pivot_Index_Builder::ensure( $pivot_listing, $pivot_lang );
+
+// null ne veut pas dire « aucune offre » mais « index pas encore construit » :
+// la reconstruction vient d'être programmée. Les deux cas méritent des mots
+// différents, et celui-ci ne doit surtout pas être mis en cache par un proxy.
+$pivot_pending = ( null === $pivot_index );
+
+if ( $pivot_pending ) {
+	nocache_headers();
+	header( 'Retry-After: 30' );
+}
+
 $pivot_items   = (array) pivot_get( $pivot_index, 'items', array() );
 $pivot_filters = (array) pivot_get( $pivot_index, 'filters', array() );
 $pivot_total   = count( $pivot_items );
@@ -157,6 +168,8 @@ get_header();
 			foreach ( $pivot_slice as $pivot_item ) {
 				$pivot_templates->part( 'card', array( 'item' => $pivot_item ) );
 			}
+		} elseif ( $pivot_pending ) {
+			echo '<p class="pivot-pending">' . esc_html__( 'Les offres de cette page sont en cours de préparation. Rechargez la page dans un instant.', 'pivot-offres' ) . '</p>';
 		} else {
 			echo '<p class="pivot-empty-results">' . esc_html__( 'Aucune offre à afficher pour le moment.', 'pivot-offres' ) . '</p>';
 		}

@@ -31,6 +31,14 @@ class Pivot_Thesaurus {
 		$cached = Pivot_Cache::get( self::GROUP, $key );
 
 		if ( null !== $cached ) {
+			// Un échec est mémorisé brièvement, comme pour les offres : sans
+			// cela, pendant une panne du thésaurus, chaque valeur de facette non
+			// résolue relançait un appel de trente secondes — et il y en a des
+			// centaines dans une seule construction d'index.
+			if ( is_array( $cached ) && isset( $cached['__error'] ) ) {
+				return new WP_Error( 'pivot_thesaurus_unavailable', (string) $cached['__error'] );
+			}
+
 			Pivot_Logger::debug(
 				'Thesaurus servi depuis le cache.',
 				array( 'service' => 'thesaurus', 'endpoint' => $path, 'cache_status' => 'hit' )
@@ -46,18 +54,37 @@ class Pivot_Thesaurus {
 		);
 
 		if ( is_wp_error( $response ) ) {
+			self::remember_failure( $key, $response );
+
 			return $response;
 		}
 
 		$parsed = call_user_func( $parser, $response['body'] );
 
 		if ( is_wp_error( $parsed ) ) {
+			self::remember_failure( $key, $parsed );
+
 			return $parsed;
 		}
 
 		Pivot_Cache::set( self::GROUP, $key, $parsed, (int) pivot_settings( 'ttl_thesaurus', 30 * DAY_IN_SECONDS ) );
 
 		return $parsed;
+	}
+
+	/**
+	 * Mémorise brièvement un échec, pour ne pas le rejouer à chaque appel.
+	 *
+	 * @param string   $key   Clé de cache.
+	 * @param WP_Error $error Erreur rencontrée.
+	 */
+	private static function remember_failure( $key, $error ) {
+		Pivot_Cache::set(
+			self::GROUP,
+			$key,
+			array( '__error' => $error->get_error_message() ),
+			(int) pivot_settings( 'ttl_negative', 5 * MINUTE_IN_SECONDS )
+		);
 	}
 
 	/**

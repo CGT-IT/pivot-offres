@@ -81,6 +81,72 @@ class Pivot_Client {
 	 * @param array       $args   Options.
 	 * @return array|WP_Error
 	 */
+	/** Échecs de transport consécutifs avant ouverture du disjoncteur. */
+	const CIRCUIT_THRESHOLD = 3;
+
+	/** Durée d'ouverture du disjoncteur, en secondes. */
+	const CIRCUIT_COOLDOWN = 180;
+
+	/**
+	 * Le disjoncteur est-il ouvert ?
+	 *
+	 * @return bool
+	 */
+	private static function circuit_open() {
+		$state = Pivot_Cache::get( 'build', 'circuit' );
+
+		if ( ! is_array( $state ) ) {
+			return false;
+		}
+
+		if ( (int) pivot_get( $state, 'failures', 0 ) < self::CIRCUIT_THRESHOLD ) {
+			return false;
+		}
+
+		$since = (int) pivot_get( $state, 'opened', 0 );
+
+		return $since > 0 && ( time() - $since ) < self::CIRCUIT_COOLDOWN;
+	}
+
+	/**
+	 * Compte un échec de transport.
+	 */
+	private static function record_failure() {
+		$state    = Pivot_Cache::get( 'build', 'circuit' );
+		$failures = is_array( $state ) ? (int) pivot_get( $state, 'failures', 0 ) : 0;
+		$failures++;
+
+		Pivot_Cache::set(
+			'build',
+			'circuit',
+			array(
+				'failures' => $failures,
+				'opened'   => $failures >= self::CIRCUIT_THRESHOLD ? time() : 0,
+			),
+			self::CIRCUIT_COOLDOWN * 4
+		);
+
+		if ( self::CIRCUIT_THRESHOLD === $failures ) {
+			Pivot_Logger::error(
+				sprintf(
+					'PIVOT injoignable après %1$d tentatives : appels suspendus pendant %2$d secondes.',
+					$failures,
+					self::CIRCUIT_COOLDOWN
+				),
+				array( 'service' => 'client' )
+			);
+		}
+	}
+
+	/**
+	 * Remet le compteur à zéro : le service répond.
+	 */
+	private static function record_success() {
+		if ( null !== Pivot_Cache::get( 'build', 'circuit' ) ) {
+			Pivot_Cache::delete( 'build', 'circuit' );
+		}
+	}
+
 	private static function request( $method, $path, $matrix, $body, $args ) {
 		$args = wp_parse_args(
 			$args,
@@ -90,10 +156,26 @@ class Pivot_Client {
 				'content_type' => 'application/xml',
 				'timeout'      => (int) pivot_settings( 'timeout', 30 ),
 				'service'      => strtok( ltrim( (string) $path, '/' ), '/' ),
+				// Le test de connexion doit joindre le service même quand le
+				// disjoncteur est ouvert : c'est précisément à ce moment-là que
+				// l'administrateur s'en sert.
+				'bypass_circuit' => false,
 			)
 		);
 
 		$url = self::build_url( $path, $matrix );
+
+		// Disjoncteur : quand PIVOT ne répond plus, chaque appel coûte jusqu'à
+		// trente secondes d'attente. Sans cela, une panne du service se traduit
+		// par des pages qui mettent une demi-minute à s'afficher, encore et
+		// encore. Après plusieurs échecs d'affilée on cesse d'essayer pendant
+		// quelques minutes et on répond tout de suite.
+		if ( empty( $args['bypass_circuit'] ) && self::circuit_open() ) {
+			return new WP_Error(
+				'pivot_circuit_open',
+				__( 'Le service PIVOT ne répond pas. Nouvelle tentative dans quelques minutes.', 'pivot-offres' )
+			);
+		}
 
 		$headers = array(
 			'Accept'          => $args['accept'],
@@ -133,6 +215,11 @@ class Pivot_Client {
 		$duration = (int) round( ( microtime( true ) - $start ) * 1000 );
 
 		if ( is_wp_error( $response ) ) {
+			// Seules les pannes de transport — injoignable, délai dépassé —
+			// comptent pour le disjoncteur. Un 404 sur une offre absente est une
+			// réponse valide du service, pas une panne.
+			self::record_failure();
+
 			Pivot_Logger::error(
 				$response->get_error_message(),
 				array(
@@ -144,6 +231,8 @@ class Pivot_Client {
 			);
 			return $response;
 		}
+
+		self::record_success();
 
 		$code    = (int) wp_remote_retrieve_response_code( $response );
 		$payload = (string) wp_remote_retrieve_body( $response );
@@ -194,7 +283,11 @@ class Pivot_Client {
 	 * @return array{ok:bool,message:string}
 	 */
 	public static function test_connection() {
-		$thesaurus = self::get( 'thesaurus/typeofr', array( 'fmt' => 'xml' ), array( 'auth' => false, 'timeout' => 15 ) );
+		$thesaurus = self::get(
+			'thesaurus/typeofr',
+			array( 'fmt' => 'xml' ),
+			array( 'auth' => false, 'timeout' => 15, 'bypass_circuit' => true )
+		);
 
 		if ( is_wp_error( $thesaurus ) ) {
 			return array(

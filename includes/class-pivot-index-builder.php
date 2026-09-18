@@ -179,31 +179,87 @@ class Pivot_Index_Builder {
 			return new WP_Error( 'pivot_missing_query', __( 'Cette page n\'a pas de code de requête.', 'pivot-offres' ) );
 		}
 
-		$started = microtime( true );
-		$state   = self::progress( $listing_id );
+		// Un seul constructeur à la fois par page. Sans ce verrou, N visiteurs
+		// arrivant ensemble sur un index absent ouvraient chacun leur session de
+		// pagination chez PIVOT et écrivaient tous la même clé d'état : le
+		// dernier écrasait les autres, et l'index pouvait être publié à partir
+		// d'un jeu d'offres incomplet. Le verrou expire un peu après le budget,
+		// pour qu'une interruption ne bloque pas la page indéfiniment.
+		$lock = self::lock_name( $listing_id );
 
-		if ( ! is_array( $state ) || empty( $state['token'] ) || ! empty( $state['done'] ) ) {
-			$state = self::start( $listing );
+		if ( ! Pivot_Cache::acquire_lock( $lock, $budget + 60 ) ) {
+			return new WP_Error(
+				'pivot_build_locked',
+				__( 'Une reconstruction de cette page est déjà en cours.', 'pivot-offres' )
+			);
+		}
 
-			if ( is_wp_error( $state ) ) {
-				return $state;
+		try {
+			$started = microtime( true );
+			$state   = self::progress( $listing_id );
+
+			if ( ! is_array( $state ) || empty( $state['token'] ) || ! empty( $state['done'] ) ) {
+				$state = self::start( $listing );
+
+				if ( is_wp_error( $state ) ) {
+					return $state;
+				}
 			}
-		}
 
-		while ( empty( $state['done'] ) && ( microtime( true ) - $started ) < $budget ) {
-			$state = self::step( $listing, $state );
+			while ( empty( $state['done'] ) && ( microtime( true ) - $started ) < $budget ) {
+				$state = self::step( $listing, $state );
 
-			if ( is_wp_error( $state ) ) {
-				return $state;
+				if ( is_wp_error( $state ) ) {
+					// L'état sur disque porte un jeton que PIVOT vient de
+					// refuser — le plus souvent parce qu'il a expiré. Le laisser
+					// en place condamnait la page : chaque tentative suivante
+					// reprenait le même jeton mort et échouait pareil, sans que
+					// rien ne reparte jamais de zéro. On efface, on replanifie,
+					// et la prochaine exécution rouvre une pagination propre.
+					self::clear_state( $listing_id );
+					self::schedule_continue( $listing_id );
+
+					Pivot_Logger::error(
+						sprintf(
+							'Construction de « %1$s » interrompue : %2$s. État remis à zéro.',
+							$listing_id,
+							$state->get_error_message()
+						),
+						array( 'service' => 'index' )
+					);
+
+					return $state;
+				}
 			}
-		}
 
-		if ( empty( $state['done'] ) ) {
-			self::save_state( $listing_id, $state );
-			self::schedule_continue( $listing_id );
-		}
+			if ( empty( $state['done'] ) ) {
+				self::save_state( $listing_id, $state );
+				self::schedule_continue( $listing_id );
+			}
 
-		return $state;
+			return $state;
+		} finally {
+			Pivot_Cache::release_lock( $lock );
+		}
+	}
+
+	/**
+	 * Nom du verrou de construction d'une page.
+	 *
+	 * @param string $listing_id Identifiant.
+	 * @return string
+	 */
+	private static function lock_name( $listing_id ) {
+		return 'build|' . $listing_id;
+	}
+
+	/**
+	 * Oublie l'état de construction, sans toucher aux index déjà publiés.
+	 *
+	 * @param string $listing_id Identifiant.
+	 */
+	private static function clear_state( $listing_id ) {
+		Pivot_Cache::delete( self::STATE_GROUP, 'state|' . $listing_id );
 	}
 
 	/**
@@ -1115,23 +1171,35 @@ class Pivot_Index_Builder {
 	 * Planifie la poursuite d'une construction interrompue.
 	 *
 	 * @param string $listing_id Identifiant.
+	 * @param int    $delay      Délai en secondes.
 	 */
-	private static function schedule_continue( $listing_id ) {
+	private static function schedule_continue( $listing_id, $delay = 30 ) {
 		if ( ! wp_next_scheduled( 'pivot_continue_index', array( $listing_id ) ) ) {
-			wp_schedule_single_event( time() + 30, 'pivot_continue_index', array( $listing_id ) );
+			wp_schedule_single_event( time() + max( 1, (int) $delay ), 'pivot_continue_index', array( $listing_id ) );
 		}
 	}
 
 	/**
-	 * Fournit l'index de la langue demandée, en le construisant si besoin.
+	 * Fournit l'index de la langue demandée.
 	 *
-	 * À la première visite l'index est construit sur-le-champ ; s'il est
-	 * seulement périmé, il reste servi et la reconstruction part en tâche de
-	 * fond.
+	 * Ne construit jamais dans la requête en cours. La construction enchaîne des
+	 * appels à PIVOT — onze pour un millier d'offres — et tenait la page du
+	 * visiteur vingt-cinq secondes, parfois cinquante lorsqu'un appel démarrait
+	 * juste avant la fin du budget. Pire : si le budget expirait avant la fin,
+	 * aucun fichier n'était écrit, et la page s'affichait vide après cette
+	 * attente ; le visiteur suivant recommençait à zéro.
+	 *
+	 * Désormais l'absence d'index programme le travail et rend la main tout de
+	 * suite. L'appelant distingue les deux cas : null signifie « pas encore
+	 * disponible », à traduire par un message d'attente et non par « aucune
+	 * offre ».
+	 *
+	 * Un index périmé, lui, continue d'être servi pendant que la reconstruction
+	 * part en tâche de fond : mieux vaut une donnée d'hier qu'une page vide.
 	 *
 	 * @param array       $listing Configuration.
 	 * @param string|null $lang    Langue.
-	 * @return array|null
+	 * @return array|null Null si l'index n'est pas encore disponible.
 	 */
 	public static function ensure( $listing, $lang = null ) {
 		$listing_id = pivot_get( $listing, 'id', '' );
@@ -1139,12 +1207,13 @@ class Pivot_Index_Builder {
 		$path       = self::path( $listing_id, $lang );
 
 		if ( ! file_exists( $path ) ) {
-			self::run( $listing_id, 25 );
-			return self::read( $listing_id, $lang );
+			self::schedule_continue( $listing_id, 1 );
+
+			return null;
 		}
 
-		if ( ! self::is_fresh( $listing, $lang ) && ! wp_next_scheduled( 'pivot_continue_index', array( $listing_id ) ) ) {
-			wp_schedule_single_event( time() + 5, 'pivot_continue_index', array( $listing_id ) );
+		if ( ! self::is_fresh( $listing, $lang ) ) {
+			self::schedule_continue( $listing_id, 5 );
 		}
 
 		return self::read( $listing_id, $lang );

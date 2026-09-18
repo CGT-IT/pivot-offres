@@ -444,6 +444,81 @@ class Pivot_Cache {
 	}
 
 	/**
+	 * Prend un verrou exclusif.
+	 *
+	 * Sert à empêcher deux reconstructions simultanées de la même page. La prise
+	 * repose sur fopen() en mode « x », qui échoue si le fichier existe déjà :
+	 * la création est atomique, deux requêtes concurrentes ne peuvent pas
+	 * l'obtenir toutes les deux. C'est le seul mécanisme portable ici, l'object
+	 * cache de WordPress n'étant pas forcément persistant d'une requête à l'autre.
+	 *
+	 * @param string $name Nom du verrou.
+	 * @param int    $ttl  Durée au-delà de laquelle le verrou est réputé abandonné.
+	 * @return bool Vrai si le verrou a été pris.
+	 */
+	public static function acquire_lock( $name, $ttl = 60 ) {
+		$file = self::lock_path( $name );
+
+		// Un verrou plus vieux que sa durée de vie appartient à un processus
+		// interrompu — épuisement du temps d'exécution, redémarrage de PHP. Sans
+		// cette reprise, une seule interruption bloquerait la page pour toujours.
+		if ( file_exists( $file ) && ( time() - (int) @filemtime( $file ) ) > $ttl ) { // phpcs:ignore
+			@unlink( $file ); // phpcs:ignore
+		}
+
+		$handle = @fopen( $file, 'xb' ); // phpcs:ignore
+
+		if ( false === $handle ) {
+			return false;
+		}
+
+		fwrite( $handle, (string) time() ); // phpcs:ignore
+		fclose( $handle ); // phpcs:ignore
+
+		return true;
+	}
+
+	/**
+	 * Rend un verrou.
+	 *
+	 * @param string $name Nom du verrou.
+	 */
+	public static function release_lock( $name ) {
+		$file = self::lock_path( $name );
+
+		if ( file_exists( $file ) ) {
+			@unlink( $file ); // phpcs:ignore
+		}
+	}
+
+	/**
+	 * Un verrou est-il tenu, et encore valide ?
+	 *
+	 * @param string $name Nom du verrou.
+	 * @param int    $ttl  Durée au-delà de laquelle le verrou est réputé abandonné.
+	 * @return bool
+	 */
+	public static function is_locked( $name, $ttl = 60 ) {
+		$file = self::lock_path( $name );
+
+		if ( ! file_exists( $file ) ) {
+			return false;
+		}
+
+		return ( time() - (int) @filemtime( $file ) ) <= $ttl; // phpcs:ignore
+	}
+
+	/**
+	 * Chemin du fichier d'un verrou.
+	 *
+	 * @param string $name Nom du verrou.
+	 * @return string
+	 */
+	private static function lock_path( $name ) {
+		return self::directory( 'build' ) . 'lock-' . self::filename_for( $name ) . '.lock';
+	}
+
+	/**
 	 * Efface le cache écrit par une version antérieure.
 	 *
 	 * Avant la 2.5.1, tout vivait sous uploads/pivot-cache/ sous un nom en md5

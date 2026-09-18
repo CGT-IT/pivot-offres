@@ -28,8 +28,13 @@ class Pivot_Repository {
 		$args = wp_parse_args(
 			$args,
 			array(
-				'content' => 3,
-				'refresh' => false,
+				'content'     => 3,
+				'refresh'     => false,
+				// Ne pas interroger PIVOT en cas d'absence du cache. Pour les
+				// appelants dont l'appel n'est qu'un confort : mieux vaut un
+				// résultat approximatif tout de suite qu'un résultat exact après
+				// trente secondes d'attente.
+				'cached_only' => false,
 			)
 		);
 
@@ -48,6 +53,10 @@ class Pivot_Repository {
 				);
 				return $cached;
 			}
+		}
+
+		if ( $args['cached_only'] ) {
+			return new WP_Error( 'pivot_offer_not_cached', __( 'Offre absente du cache.', 'pivot-offres' ) );
 		}
 
 		$matrix = array(

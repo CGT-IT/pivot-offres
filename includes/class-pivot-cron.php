@@ -82,7 +82,17 @@ class Pivot_Cron {
 				continue;
 			}
 
-			Pivot_Index_Builder::run( $listing['id'], 25 );
+			$result = Pivot_Index_Builder::run( $listing['id'], 25 );
+
+			// Une page en échec ne doit pas retenir les autres. La valeur de
+			// retour n'était pas regardée : la tâche s'arrêtait sur la première
+			// page non fraîche, et si celle-ci était cassée — code de requête
+			// invalide, jeton refusé — elle la reprenait toutes les quinze
+			// minutes sans jamais atteindre les suivantes, qui restaient
+			// périmées indéfiniment.
+			if ( is_wp_error( $result ) ) {
+				continue;
+			}
 
 			// Un index par passage : la tâche revient dans 15 minutes.
 			return;

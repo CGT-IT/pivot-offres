@@ -21,6 +21,9 @@ class Pivot_Index_Builder {
 	const GROUP       = 'index';
 	const STATE_GROUP = 'build';
 
+	/** @var array Index déjà décodés pendant cette requête. */
+	private static $read_memo = array();
+
 	/**
 	 * Nom du fichier d'index d'une page dans une langue.
 	 *
@@ -98,15 +101,60 @@ class Pivot_Index_Builder {
 	 * @return array|null
 	 */
 	public static function read( $listing_id, $lang = null ) {
-		$path = self::path( $listing_id, $lang );
+		$lang = $lang ? $lang : Pivot_I18n::current();
+		$memo = $listing_id . '|' . $lang;
 
-		if ( ! is_readable( $path ) ) {
-			return null;
+		// Une page de listing lisait le même fichier deux fois : une fois pour la
+		// grille, une fois depuis l'en-tête SEO pour en tirer un simple compteur.
+		// Sur l'index le plus gros de ce site, cela faisait deux décodages de
+		// 419 Ko — quelque 20 000 entrées de tableau PHP matérialisées deux fois
+		// pour afficher douze cartes. Les échecs sont mémorisés aussi : un index
+		// absent ou tronqué ne doit pas être relu à chaque appel.
+		if ( array_key_exists( $memo, self::$read_memo ) ) {
+			return self::$read_memo[ $memo ];
 		}
 
-		$data = json_decode( (string) file_get_contents( $path ), true ); // phpcs:ignore
+		$path = self::path( $listing_id, $lang );
+		$data = null;
 
-		return is_array( $data ) ? $data : null;
+		if ( is_readable( $path ) ) {
+			$decoded = json_decode( (string) file_get_contents( $path ), true ); // phpcs:ignore
+			$data    = is_array( $decoded ) ? $decoded : null;
+
+			if ( null === $data ) {
+				// Fichier illisible : le signaler et l'écarter, plutôt que de
+				// servir une page vide en silence à chaque requête.
+				Pivot_Logger::error(
+					sprintf( 'Index illisible, fichier écarté : %s', self::filename( $listing_id, $lang ) ),
+					array( 'service' => 'index' )
+				);
+
+				@unlink( $path ); // phpcs:ignore
+			}
+		}
+
+		self::$read_memo[ $memo ] = $data;
+
+		return $data;
+	}
+
+	/**
+	 * Oublie les index décodés, après écriture ou suppression.
+	 *
+	 * @param string $listing_id Identifiant, vide pour tout oublier.
+	 */
+	public static function forget( $listing_id = '' ) {
+		if ( '' === $listing_id ) {
+			self::$read_memo = array();
+
+			return;
+		}
+
+		foreach ( array_keys( self::$read_memo ) as $memo ) {
+			if ( 0 === strpos( $memo, $listing_id . '|' ) ) {
+				unset( self::$read_memo[ $memo ] );
+			}
+		}
 	}
 
 	/**
@@ -123,6 +171,8 @@ class Pivot_Index_Builder {
 		}
 
 		Pivot_Cache::delete( self::STATE_GROUP, 'state|' . $listing_id );
+
+		self::forget( $listing_id );
 	}
 
 	/**
@@ -139,6 +189,8 @@ class Pivot_Index_Builder {
 				@touch( $path, time() - YEAR_IN_SECONDS ); // phpcs:ignore
 			}
 		}
+
+		self::forget( $listing_id );
 	}
 
 	/**
@@ -886,6 +938,7 @@ class Pivot_Index_Builder {
 
 			if ( false !== $json ) {
 				Pivot_Cache::put_file( self::GROUP, self::filename( $listing_id, $lang ), $json );
+				self::forget( $listing_id );
 			}
 		}
 

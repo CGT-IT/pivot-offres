@@ -275,26 +275,45 @@ class Pivot_Cache {
 			return self::$memory[ $memo ];
 		}
 
+		// Les sorties négatives sont mémorisées au même titre que les succès.
+		// Seuls les succès l'étaient : une entrée expirée, illisible ou absente
+		// était donc relue et redécodée à chaque appel de la même requête — pour
+		// le registre des adresses, 800 Ko de JSON à chaque fois.
 		$file = self::path( $group, $key );
+
 		if ( ! is_readable( $file ) ) {
-			return null;
+			return self::memoize( $memo, null );
 		}
 
 		$raw = file_get_contents( $file ); // phpcs:ignore
 		if ( false === $raw || '' === $raw ) {
-			return null;
+			return self::memoize( $memo, null );
 		}
 
 		$payload = json_decode( $raw, true );
 		if ( ! is_array( $payload ) || ! isset( $payload['expires'] ) ) {
-			return null;
+			// Entrée corrompue : la retirer, sinon elle échoue silencieusement à
+			// chaque requête jusqu'à ce que quelqu'un s'en aperçoive.
+			@unlink( $file ); // phpcs:ignore
+
+			return self::memoize( $memo, null );
 		}
 
 		if ( 0 !== (int) $payload['expires'] && (int) $payload['expires'] < time() ) {
-			return null;
+			return self::memoize( $memo, null );
 		}
 
-		$value                  = isset( $payload['data'] ) ? $payload['data'] : null;
+		return self::memoize( $memo, isset( $payload['data'] ) ? $payload['data'] : null );
+	}
+
+	/**
+	 * Retient une valeur pour le reste de la requête, et la renvoie.
+	 *
+	 * @param string $memo  Clé mémoire.
+	 * @param mixed  $value Valeur.
+	 * @return mixed
+	 */
+	private static function memoize( $memo, $value ) {
 		self::$memory[ $memo ] = $value;
 
 		return $value;

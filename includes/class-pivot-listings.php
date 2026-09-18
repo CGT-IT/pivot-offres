@@ -15,6 +15,9 @@ class Pivot_Listings {
 
 	const OPTION = 'pivot_listings';
 
+	/** @var array|null Liste normalisée, mémoïsée pour la requête en cours. */
+	private static $all_memo = null;
+
 	/**
 	 * Configuration par défaut.
 	 *
@@ -63,10 +66,21 @@ class Pivot_Listings {
 	 * @return array id => configuration.
 	 */
 	public static function all() {
+		// Reconstruit à chaque appel, avec un wp_parse_args par page, alors que
+		// la méthode est sollicitée plusieurs fois par requête : à init pour les
+		// règles de réécriture, puis à la résolution du contexte, puis par les
+		// gabarits et l'en-tête SEO. L'option n'est pas autochargée, donc chaque
+		// appel valait aussi une requête SQL.
+		if ( null !== self::$all_memo ) {
+			return self::$all_memo;
+		}
+
 		$stored = get_option( self::OPTION, array() );
 
 		if ( ! is_array( $stored ) ) {
-			return array();
+			self::$all_memo = array();
+
+			return self::$all_memo;
 		}
 
 		$out = array();
@@ -80,7 +94,16 @@ class Pivot_Listings {
 			$out[ $id ]   = $config;
 		}
 
+		self::$all_memo = $out;
+
 		return $out;
+	}
+
+	/**
+	 * Oublie la liste mémoïsée, après toute écriture.
+	 */
+	private static function forget() {
+		self::$all_memo = null;
 	}
 
 	/**
@@ -333,6 +356,8 @@ class Pivot_Listings {
 
 		update_option( self::OPTION, $all, false );
 
+		self::forget();
+
 		Pivot_Rewrites::instance()->schedule_flush();
 
 		$structure_changed = ! $existing
@@ -363,6 +388,8 @@ class Pivot_Listings {
 		unset( $all[ $id ] );
 		update_option( self::OPTION, $all, false );
 
+		self::forget();
+
 		Pivot_Index_Builder::delete_index( $id );
 		Pivot_Rewrites::instance()->schedule_flush();
 
@@ -387,6 +414,8 @@ class Pivot_Listings {
 		}
 
 		update_option( self::OPTION, $all, false );
+
+		self::forget();
 	}
 
 	/* ---------------------------------------------------------- nettoyage */

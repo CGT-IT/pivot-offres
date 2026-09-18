@@ -220,6 +220,19 @@ class Pivot_Templates {
 	 * @return string Chemin du gabarit.
 	 */
 	public static function locate( $base, $type_id = 0, $code = '' ) {
+		// Résolu une fois par combinaison et par requête. locate_template()
+		// interroge le thème enfant puis le thème parent pour cinq candidats, et
+		// la méthode est appelée une fois par vignette : une page de douze
+		// cartes provoquait une centaine d'accès disque, une construction
+		// d'index plusieurs milliers.
+		static $cache = array();
+
+		$memo = $base . '|' . (int) $type_id . '|' . $code;
+
+		if ( isset( $cache[ $memo ] ) ) {
+			return $cache[ $memo ];
+		}
+
 		$family = $type_id ? Pivot_Types::family( $type_id ) : '';
 		$names  = array();
 
@@ -259,6 +272,8 @@ class Pivot_Templates {
 		$theme = locate_template( $candidates );
 
 		if ( $theme ) {
+			$cache[ $memo ] = $theme;
+
 			return $theme;
 		}
 
@@ -266,11 +281,15 @@ class Pivot_Templates {
 			$file = PIVOT_DIR . 'templates/' . $name . '.php';
 
 			if ( file_exists( $file ) ) {
+				$cache[ $memo ] = $file;
+
 				return $file;
 			}
 		}
 
-		return PIVOT_DIR . 'templates/' . $base . '.php';
+		$cache[ $memo ] = PIVOT_DIR . 'templates/' . $base . '.php';
+
+		return $cache[ $memo ];
 	}
 
 	/**

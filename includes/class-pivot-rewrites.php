@@ -173,7 +173,11 @@ class Pivot_Rewrites {
 		$vars[] = 'pivot_legacy';
 		$vars[] = 'pivot_page';
 		$vars[] = 'pivot_lang';
-		$vars[] = 'type';
+		// Préfixée, comme les autres : déclarer « type » en variable publique la
+		// rendait reconnue sur tout le site et exposait le plugin aux collisions
+		// avec les thèmes et les autres extensions. La forme ancienne ?type=ID
+		// reste honorée, elle est lue directement dans $_GET plus bas.
+		$vars[] = 'pivot_type';
 
 		return $vars;
 	}
@@ -229,7 +233,7 @@ class Pivot_Rewrites {
 		}
 
 		$wp->query_vars['pivot_legacy'] = $code;
-		$wp->query_vars['type']         = $type;
+		$wp->query_vars['pivot_type']   = $type;
 
 		if ( $lang ) {
 			$wp->query_vars['pivot_lang'] = $lang;
@@ -256,7 +260,7 @@ class Pivot_Rewrites {
 		$legacy = get_query_var( 'pivot_legacy' );
 
 		if ( $legacy ) {
-			$this->handle_legacy( $legacy, (int) get_query_var( 'type' ) );
+			$this->handle_legacy( $legacy, (int) get_query_var( 'pivot_type' ) );
 			return;
 		}
 

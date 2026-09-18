@@ -7,6 +7,13 @@
  * terminée ou passée ne se rouvre pas d'elle-même, et un bouton permet à
  * chacun de la revoir quand il veut.
  *
+ * La classe vit dans includes/ et non dans admin/ : l'avancement est enregistré
+ * par la route REST /pivot/v1/onboarding, or une requête REST n'est pas
+ * is_admin(). Chargée depuis admin/ elle n'existait pas au moment de l'appel et
+ * la route répondait une erreur 500 à chaque fois. Seul l'accrochage de la
+ * visite guidée est propre à l'administration : il reste dans le constructeur,
+ * que seul Pivot_Admin déclenche.
+ *
  * @package Pivot_Offres
  */
 

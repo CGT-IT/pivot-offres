@@ -34,6 +34,11 @@ class Pivot_Logger {
 	}
 
 	private function __construct() {
+		// Le plugin ne planifie pas cet événement : la purge du journal est faite
+		// par la maintenance quotidienne (Pivot_Cron::maintenance). L'accroche
+		// reste déclarée pour deux raisons : les installations anciennes peuvent
+		// encore avoir l'événement planifié, et elle sert de point d'entrée à qui
+		// veut déclencher une purge par do_action( 'pivot_purge_logs' ).
 		add_action( 'pivot_purge_logs', array( __CLASS__, 'purge' ) );
 	}
 

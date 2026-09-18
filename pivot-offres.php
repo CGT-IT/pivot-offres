@@ -58,6 +58,10 @@ require_once PIVOT_DIR . 'includes/class-pivot-seo.php';
 require_once PIVOT_DIR . 'includes/class-pivot-templates.php';
 require_once PIVOT_DIR . 'includes/class-pivot-shortcodes.php';
 require_once PIVOT_DIR . 'includes/class-pivot-cron.php';
+// La visite guidée est pilotée depuis l'administration, mais son avancement est
+// enregistré par une route REST, qui n'est pas is_admin() : la classe doit donc
+// être déclarée en dehors du bloc ci-dessous.
+require_once PIVOT_DIR . 'includes/class-pivot-onboarding.php';
 
 if ( is_admin() ) {
 	require_once PIVOT_DIR . 'admin/class-pivot-settings.php';
@@ -66,7 +70,6 @@ if ( is_admin() ) {
 	require_once PIVOT_DIR . 'admin/class-pivot-types-admin.php';
 	require_once PIVOT_DIR . 'admin/class-pivot-fields-admin.php';
 	require_once PIVOT_DIR . 'admin/class-pivot-shortcode-admin.php';
-	require_once PIVOT_DIR . 'admin/class-pivot-onboarding.php';
 	require_once PIVOT_DIR . 'admin/class-pivot-admin.php';
 }
 

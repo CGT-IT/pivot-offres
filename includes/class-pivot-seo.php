@@ -30,7 +30,8 @@ class Pivot_Seo {
 		add_filter( 'document_title_parts', array( $this, 'title' ) );
 		add_action( 'wp_head', array( $this, 'head' ), 2 );
 		add_filter( 'wpseo_canonical', array( $this, 'yoast_canonical' ) );
-		add_filter( 'language_attributes', array( $this, 'language_attributes' ) );
+		// Pas de filtre sur language_attributes : l'attribut lang de la balise
+		// html est l'affaire de l'extension de traduction, pas la nôtre.
 	}
 
 	/**
@@ -40,17 +41,6 @@ class Pivot_Seo {
 	 */
 	private function context() {
 		return Pivot_Rewrites::instance()->context();
-	}
-
-	/**
-	 * Aligne l'attribut lang de la balise html sur la langue de la page.
-	 *
-	 * @param string $output Attributs calculés.
-	 * @return string
-	 */
-	public function language_attributes( $output ) {
-		// L'extension de traduction gère déjà cet attribut : on n'y touche pas.
-		return $output;
 	}
 
 	/**
@@ -480,7 +470,14 @@ class Pivot_Seo {
 			return;
 		}
 
-		$json = wp_json_encode( $data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+		// Les données viennent de PIVOT et ne sont pas assainies : un nom d'offre
+		// contenant « </script> » sortirait de la balise. Deux garde-fous, parce
+		// que le bloc est écrit tel quel dans le document :
+		//  - les barres obliques restent échappées (\/), ce que JSON_UNESCAPED_SLASHES
+		//    supprimait, si bien que « </script> » ne peut plus s'écrire ;
+		//  - JSON_HEX_TAG passe < et > en < / >, ce qui ferme la voie
+		//    même si l'échappement des barres obliques venait à changer.
+		$json = wp_json_encode( $data, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP );
 
 		if ( false === $json ) {
 			return;

@@ -188,8 +188,39 @@
 		} );
 	}
 
+	/**
+	 * Paramètres d'URL pilotés par la page.
+	 *
+	 * Tout ce qui n'est pas dans cette liste appartient à quelqu'un d'autre et
+	 * doit survivre à la réécriture de l'adresse.
+	 */
+	function ownedKeys() {
+		var keys = [ 'q', 'page' ];
+
+		if ( form ) {
+			Array.prototype.forEach.call( form.querySelectorAll( '[data-filter]' ), function ( field ) {
+				var key = field.getAttribute( 'data-filter' );
+
+				if ( key ) {
+					keys.push( key, key + '[]' );
+				}
+			} );
+		}
+
+		return keys;
+	}
+
 	function writeStateToUrl( replace ) {
-		var params = new URLSearchParams();
+		// On repart de l'adresse courante, et non d'une chaîne vide : sinon les
+		// paramètres de campagne (utm_*, gclid, fbclid, suivi d'affiliation…)
+		// seraient effacés dès le premier rendu, avant même que les scripts de
+		// mesure n'aient pu les lire, et l'attribution des campagnes serait
+		// faussée.
+		var params = new URLSearchParams( window.location.search );
+
+		ownedKeys().forEach( function ( key ) {
+			params.delete( key );
+		} );
 
 		if ( state.query ) {
 			params.set( 'q', state.query );

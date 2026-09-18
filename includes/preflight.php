@@ -83,6 +83,20 @@ function pivot_preflight_problems( $check_collisions = true ) {
 		$problems[] = array( 'id' => 'uploads_readonly', 'data' => $uploads['basedir'] );
 	}
 
+	// 5. Stockage privé : offres, état de construction et thésaurus vivent sous
+	// wp-content/, hors de l'arborescence publiée. Sans écriture à cet endroit,
+	// le plugin ne peut rien mettre en cache — et surtout, il ne faut pas qu'il
+	// se rabatte silencieusement sur uploads/, qui est servi par le serveur web.
+	// Nom écrit en clair, et non Pivot_Cache::PRIVATE_DIRNAME : ce fichier est
+	// chargé avant toutes les classes du plugin — c'est même sa raison d'être,
+	// puisqu'il vérifie qu'aucune d'elles n'entre en collision.
+	$private = trailingslashit( WP_CONTENT_DIR ) . 'pivot-cache-private';
+	$probe   = is_dir( $private ) ? $private : WP_CONTENT_DIR;
+
+	if ( ! is_writable( $probe ) ) {
+		$problems[] = array( 'id' => 'private_readonly', 'data' => $probe );
+	}
+
 	return $problems;
 }
 
@@ -138,6 +152,13 @@ function pivot_preflight_message( $problem ) {
 			return sprintf(
 				/* translators: %s : chemin du dossier. */
 				__( 'Le dossier %s n\'est pas accessible en écriture. Le plugin y range son cache.', 'pivot-offres' ),
+				$data
+			);
+
+		case 'private_readonly':
+			return sprintf(
+				/* translators: %s : chemin du dossier. */
+				__( 'Le dossier %s n\'est pas accessible en écriture. Le plugin y range les données qui ne doivent pas être servies par le Web : offres, thésaurus, état de construction.', 'pivot-offres' ),
 				$data
 			);
 	}

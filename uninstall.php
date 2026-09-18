@@ -23,11 +23,26 @@ $pivot_options = array(
 	'pivot_redirects',           // Pivot_Redirects::OPTION
 	'pivot_types',               // Pivot_Types::OPTION
 	'pivot_field_rules',         // Pivot_Fields::RULES_OPTION
+	'pivot_cache_secret',        // Pivot_Cache::SECRET_OPTION
+	'pivot_version',
 	'pivot_flush_rewrites',
 	'pivot_lang_fingerprint',
 	'pivot_lang_changed',
 	'pivot_activation_failures',
 );
+
+// Tâches planifiées propres à une page de listing.
+//
+// Elles portent l'identifiant de la page en argument, et se lisent donc dans
+// `pivot_listings` : il faut les retirer **avant** de supprimer l'option, sinon
+// les événements survivent sans que plus rien ne sache les nommer.
+$pivot_listings = get_option( 'pivot_listings', array() );
+
+if ( is_array( $pivot_listings ) ) {
+	foreach ( array_keys( $pivot_listings ) as $pivot_listing_id ) {
+		wp_clear_scheduled_hook( 'pivot_continue_index', array( $pivot_listing_id ) );
+	}
+}
 
 foreach ( $pivot_options as $pivot_option ) {
 	delete_option( $pivot_option );
@@ -42,11 +57,19 @@ global $wpdb;
 $pivot_table = $wpdb->prefix . 'pivot_logs';
 $wpdb->query( "DROP TABLE IF EXISTS {$pivot_table}" ); // phpcs:ignore
 
-// Fichiers de cache.
+// Fichiers de cache : la moitié publique sous uploads, la moitié privée sous
+// wp-content. Les deux racines doivent partir.
 $pivot_uploads = wp_get_upload_dir();
-$pivot_dir     = trailingslashit( $pivot_uploads['basedir'] ) . 'pivot-cache';
+$pivot_dirs    = array(
+	trailingslashit( $pivot_uploads['basedir'] ) . 'pivot-cache',   // Pivot_Cache::DIRNAME
+	trailingslashit( WP_CONTENT_DIR ) . 'pivot-cache-private',      // Pivot_Cache::PRIVATE_DIRNAME
+);
 
-if ( is_dir( $pivot_dir ) ) {
+foreach ( $pivot_dirs as $pivot_dir ) {
+	if ( ! is_dir( $pivot_dir ) ) {
+		continue;
+	}
+
 	$pivot_iterator = new RecursiveIteratorIterator(
 		new RecursiveDirectoryIterator( $pivot_dir, FilesystemIterator::SKIP_DOTS ),
 		RecursiveIteratorIterator::CHILD_FIRST

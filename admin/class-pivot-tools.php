@@ -293,6 +293,7 @@ class Pivot_Tools {
 			'thesaurus' => __( 'Thesaurus', 'pivot-offres' ),
 			'build'     => __( 'États de construction', 'pivot-offres' ),
 			'raw'       => __( 'Réponses brutes', 'pivot-offres' ),
+			'registry'  => __( 'Registre des adresses', 'pivot-offres' ),
 		);
 
 		echo '<h2>' . esc_html__( 'Cache', 'pivot-offres' ) . '</h2>';
@@ -335,6 +336,7 @@ class Pivot_Tools {
 			esc_html__( 'Tout vider', 'pivot-offres' )
 		);
 		echo '</p>';
+		echo '<p class="description">' . esc_html__( 'Tout vider épargne le registre des adresses : lui seul ne se reconstruit pas depuis PIVOT, et le perdre changerait l\'adresse des fiches lorsque les slugs sont figés.', 'pivot-offres' ) . '</p>';
 		echo '</form>';
 	}
 
@@ -716,7 +718,8 @@ class Pivot_Tools {
 			__( 'Environnement actif', 'pivot-offres' ) => 'prod' === pivot_settings( 'environment' ) ? __( 'Production', 'pivot-offres' ) : __( 'Stage', 'pivot-offres' ),
 			__( 'URL du service', 'pivot-offres' )      => pivot_service_url(),
 			__( 'Clé enregistrée', 'pivot-offres' )     => pivot_ws_key() ? __( 'Oui', 'pivot-offres' ) : __( 'Non', 'pivot-offres' ),
-			__( 'Dossier de cache', 'pivot-offres' )    => Pivot_Cache::directory(),
+			__( 'Index publiés', 'pivot-offres' )       => Pivot_Cache::directory( 'index' ),
+			__( 'Cache privé', 'pivot-offres' )         => Pivot_Cache::directory( 'offers' ),
 			__( 'Racine du site', 'pivot-offres' )      => Pivot_I18n::site_root(),
 			__( 'Pages actives', 'pivot-offres' )       => (string) count( Pivot_Listings::active() ),
 			__( 'Gestion des langues', 'pivot-offres' ) => self::language_mode_label(),

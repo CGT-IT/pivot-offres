@@ -98,6 +98,38 @@ final class Pivot_Offres {
 		// tôt : les charger sur plugins_loaded déclenche un avertissement.
 		add_action( 'init', array( $this, 'load_textdomain' ), 0 );
 		add_action( 'init', array( $this, 'boot' ), 5 );
+		// Les reprises de version se font en administration : une page publique
+		// n'a pas à déplacer des fichiers.
+		add_action( 'admin_init', array( $this, 'maybe_upgrade' ), 1 );
+	}
+
+	/**
+	 * Applique les reprises liées à un changement de version.
+	 *
+	 * Le numéro installé est comparé au numéro courant : tant qu'ils diffèrent,
+	 * les reprises tournent une fois, puis le numéro est enregistré.
+	 */
+	public function maybe_upgrade() {
+		$installed = (string) get_option( 'pivot_version', '' );
+
+		if ( PIVOT_VERSION === $installed ) {
+			return;
+		}
+
+		// Efface le cache laissé en clair sous uploads par les versions
+		// antérieures ; il se reconstruit depuis PIVOT.
+		$report = Pivot_Cache::purge_legacy_store();
+
+		if ( $report['deleted'] ) {
+			Pivot_Logger::info(
+				sprintf( 'Ancien cache supprimé : %d fichier(s) en clair.', $report['deleted'] ),
+				array( 'service' => 'cache' )
+			);
+		}
+
+		Pivot_Cache::ensure_directory();
+
+		update_option( 'pivot_version', PIVOT_VERSION, false );
 	}
 
 	/**
@@ -162,6 +194,7 @@ function pivot_activate() {
 	$steps = array(
 		'table de journal'   => array( 'Pivot_Logger', 'create_table' ),
 		'dossier de cache'   => array( 'Pivot_Cache', 'ensure_directory' ),
+		'ancien cache'       => array( 'Pivot_Cache', 'purge_legacy_store' ),
 		'tâches planifiées'  => array( 'Pivot_Cron', 'schedule_events' ),
 	);
 

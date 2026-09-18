@@ -3,8 +3,28 @@
  * Cache fichier.
  *
  * Les offres ne sont jamais stockées en base de données : tout transite par des
- * fichiers JSON dans wp-content/uploads/pivot-cache/, doublés par l'object cache
- * mémoire de la requête en cours. Chaque entrée porte sa propre date d'expiration.
+ * fichiers JSON, doublés par l'object cache mémoire de la requête en cours.
+ * Chaque entrée porte sa propre date d'expiration.
+ *
+ * Le stockage est coupé en deux, parce que les deux moitiés n'ont pas du tout
+ * le même public :
+ *
+ *  - `index` est **servi au navigateur** : ces fichiers doivent rester sous
+ *    uploads/, à une adresse stable et devinable, c'est leur raison d'être.
+ *  - tout le reste — offres normalisées, état de construction, thésaurus,
+ *    réponses brutes, registre des adresses — n'a **aucune raison d'être
+ *    accessible par le Web**. Ces fichiers vivent sous wp-content/, hors de
+ *    l'arborescence publiée.
+ *
+ * Auparavant tout était sous uploads/ et le nom de fichier était le md5 de la
+ * clé. Les clés étant bâties sur des identifiants publics (le code d'une offre,
+ * l'identifiant d'une page), les adresses se calculaient : n'importe qui
+ * pouvait lire une offre complète — y compris les champs que l'administrateur
+ * avait masqués — ou récupérer le jeton de pagination PIVOT dans l'état de
+ * construction. Le seul rempart était un .htaccess, sans effet sous nginx.
+ *
+ * Les noms de fichiers sont désormais salés avec un secret propre au site, si
+ * bien qu'ils ne se devinent plus, même pour la moitié publique.
  *
  * @package Pivot_Offres
  */
@@ -15,22 +35,120 @@ class Pivot_Cache {
 
 	const DIRNAME = 'pivot-cache';
 
+	/** Dossier du stockage privé, sous wp-content/. */
+	const PRIVATE_DIRNAME = 'pivot-cache-private';
+
+	/** Option portant le sel des noms de fichiers. */
+	const SECRET_OPTION = 'pivot_cache_secret';
+
 	/** @var array Cache mémoire de la requête courante. */
 	private static $memory = array();
+
+	/** @var string|null Sel des noms de fichiers, mémoïsé. */
+	private static $secret = null;
+
+	/** @var array Dossiers déjà vérifiés pendant cette requête. */
+	private static $ensured = array();
+
+	/**
+	 * Groupes servis directement au navigateur.
+	 *
+	 * @return array
+	 */
+	public static function public_groups() {
+		return array( 'index' );
+	}
+
+	/**
+	 * Tous les groupes, publics et privés.
+	 *
+	 * @return array
+	 */
+	public static function groups() {
+		return array( 'index', 'offers', 'thesaurus', 'build', 'raw', 'registry' );
+	}
+
+	/**
+	 * Un groupe est-il servi au navigateur ?
+	 *
+	 * Le groupe vide désigne la racine publique, par compatibilité.
+	 *
+	 * @param string $group Groupe.
+	 * @return bool
+	 */
+	public static function is_public( $group ) {
+		return '' === $group || in_array( $group, self::public_groups(), true );
+	}
+
+	/**
+	 * Racine du stockage dont relève un groupe.
+	 *
+	 * @param string $group Groupe.
+	 * @return string
+	 */
+	private static function base( $group ) {
+		if ( self::is_public( $group ) ) {
+			$uploads = wp_get_upload_dir();
+
+			return trailingslashit( $uploads['basedir'] ) . self::DIRNAME;
+		}
+
+		/**
+		 * Emplacement du stockage privé.
+		 *
+		 * Doit rester hors de l'arborescence servie par le serveur web.
+		 *
+		 * @param string $path Chemin absolu, sans barre oblique finale.
+		 */
+		return apply_filters(
+			'pivot_private_cache_dir',
+			trailingslashit( WP_CONTENT_DIR ) . self::PRIVATE_DIRNAME
+		);
+	}
+
+	/**
+	 * Sel des noms de fichiers.
+	 *
+	 * Un secret propre au site, et non wp_salt() : la rotation des sels de
+	 * WordPress est une opération d'hygiène courante, et elle rendrait alors
+	 * le registre des adresses introuvable — or lui n'est pas reconstructible.
+	 *
+	 * @return string
+	 */
+	private static function secret() {
+		if ( null !== self::$secret ) {
+			return self::$secret;
+		}
+
+		$secret = (string) get_option( self::SECRET_OPTION, '' );
+
+		if ( '' === $secret ) {
+			$secret = wp_generate_password( 32, false, false );
+			update_option( self::SECRET_OPTION, $secret, true );
+		}
+
+		self::$secret = $secret;
+
+		return $secret;
+	}
 
 	/**
 	 * Chemin absolu du dossier de cache (créé si nécessaire).
 	 *
-	 * @param string $group Sous-dossier (offers, index, thesaurus, build).
+	 * @param string $group Sous-dossier (index, offers, thesaurus, build, raw, registry).
 	 * @return string
 	 */
 	public static function directory( $group = '' ) {
-		$uploads = wp_get_upload_dir();
-		$base    = trailingslashit( $uploads['basedir'] ) . self::DIRNAME;
-		$path    = $group ? trailingslashit( $base ) . sanitize_key( $group ) : $base;
+		$base = self::base( $group );
+		$path = $group ? trailingslashit( $base ) . sanitize_key( $group ) : $base;
 
-		if ( ! file_exists( $path ) ) {
-			wp_mkdir_p( $path );
+		// Un seul test par dossier et par requête : directory() est appelée à
+		// chaque lecture comme à chaque écriture.
+		if ( ! isset( self::$ensured[ $path ] ) ) {
+			if ( ! file_exists( $path ) ) {
+				wp_mkdir_p( $path );
+			}
+			self::$ensured[ $path ] = true;
 		}
 
 		return trailingslashit( $path );
@@ -39,38 +157,98 @@ class Pivot_Cache {
 	/**
 	 * URL publique du dossier de cache.
 	 *
+	 * N'a de sens que pour un groupe public : le stockage privé n'est pas servi.
+	 *
 	 * @param string $group Sous-dossier.
-	 * @return string
+	 * @return string Chaîne vide pour un groupe privé.
 	 */
 	public static function url( $group = '' ) {
+		if ( ! self::is_public( $group ) ) {
+			return '';
+		}
+
 		$uploads = wp_get_upload_dir();
 		$base    = trailingslashit( $uploads['baseurl'] ) . self::DIRNAME;
+
 		return trailingslashit( $group ? trailingslashit( $base ) . sanitize_key( $group ) : $base );
 	}
 
 	/**
-	 * Crée le dossier et pose les garde-fous (pas d'indexation, pas de listing).
+	 * Crée les dossiers et pose les garde-fous.
+	 *
+	 * Côté public on empêche seulement le listing et l'exécution de PHP : les
+	 * index doivent rester téléchargeables. Côté privé on refuse tout, et le
+	 * dossier est de toute façon hors de l'arborescence publiée — la règle n'est
+	 * qu'une ceinture de plus, sans effet sous nginx.
 	 */
 	public static function ensure_directory() {
-		$base = self::directory();
+		// set() l'appelle à chaque écriture : une fois par requête suffit.
+		static $done = false;
 
-		$index = $base . 'index.php';
-		if ( ! file_exists( $index ) ) {
-			file_put_contents( $index, "<?php // Silence is golden.\n" ); // phpcs:ignore
+		if ( $done ) {
+			return;
 		}
 
-		$htaccess = $base . '.htaccess';
-		if ( ! file_exists( $htaccess ) ) {
-			$rules = "Options -Indexes\n"
-				. "<FilesMatch \"\\.(php|phtml)$\">\n"
-				. "Require all denied\n"
-				. "</FilesMatch>\n";
-			file_put_contents( $htaccess, $rules ); // phpcs:ignore
+		$done = true;
+
+		// Racine publique : uploads/pivot-cache/.
+		self::write_guard(
+			self::directory(),
+			"Options -Indexes\n"
+			. "<FilesMatch \"\\.(php|phtml)$\">\n"
+			. "Require all denied\n"
+			. "</FilesMatch>\n"
+		);
+
+		// Racine privée : wp-content/pivot-cache-private/.
+		self::write_guard(
+			trailingslashit( self::base( 'offers' ) ),
+			"Options -Indexes\n"
+			. "Require all denied\n"
+		);
+
+		foreach ( self::groups() as $group ) {
+			$dir = self::directory( $group );
+
+			// Un index.php par sous-dossier : le listing reste muet même si la
+			// directive Options -Indexes n'est pas honorée.
+			if ( ! file_exists( $dir . 'index.php' ) ) {
+				file_put_contents( $dir . 'index.php', "<?php // Silence is golden.\n" ); // phpcs:ignore
+			}
+		}
+	}
+
+	/**
+	 * Pose index.php et .htaccess dans une racine de stockage.
+	 *
+	 * @param string $base  Dossier, avec barre oblique finale.
+	 * @param string $rules Contenu du .htaccess.
+	 */
+	private static function write_guard( $base, $rules ) {
+		if ( ! file_exists( $base ) ) {
+			wp_mkdir_p( $base );
 		}
 
-		foreach ( array( 'offers', 'index', 'thesaurus', 'build', 'raw' ) as $group ) {
-			self::directory( $group );
+		if ( ! file_exists( $base . 'index.php' ) ) {
+			file_put_contents( $base . 'index.php', "<?php // Silence is golden.\n" ); // phpcs:ignore
 		}
+
+		if ( ! file_exists( $base . '.htaccess' ) ) {
+			file_put_contents( $base . '.htaccess', $rules ); // phpcs:ignore
+		}
+	}
+
+	/**
+	 * Nom de fichier d'une clé.
+	 *
+	 * Salé : sans cela le nom est le md5 d'une clé bâtie sur des identifiants
+	 * publics, donc calculable par n'importe qui.
+	 *
+	 * @param string $key Clé.
+	 * @return string
+	 */
+	private static function filename_for( $key ) {
+		return md5( self::secret() . '|' . $key );
 	}
 
 	/**
@@ -81,7 +259,7 @@ class Pivot_Cache {
 	 * @return string
 	 */
 	private static function path( $group, $key ) {
-		return self::directory( $group ) . md5( $key ) . '.json';
+		return self::directory( $group ) . self::filename_for( $key ) . '.json';
 	}
 
 	/**
@@ -186,7 +364,12 @@ class Pivot_Cache {
 		self::$memory = array();
 		$count        = 0;
 
-		$groups = $group ? array( $group ) : array( 'offers', 'index', 'thesaurus', 'build', 'raw' );
+		// « Tout vider » épargne le registre des adresses : lui seul n'est pas
+		// reconstructible depuis PIVOT. En mode slug figé, le purger rendrait à
+		// chaque fiche une adresse dérivée de son nom actuel — exactement ce que
+		// ce mode existe pour empêcher. Il reste purgeable explicitement, par
+		// flush( 'registry' ).
+		$groups = $group ? array( $group ) : array( 'index', 'offers', 'thesaurus', 'build', 'raw' );
 
 		foreach ( $groups as $name ) {
 			$dir = self::directory( $name );
@@ -215,7 +398,11 @@ class Pivot_Cache {
 	 */
 	public static function purge_expired() {
 		$count = 0;
-		foreach ( array( 'offers', 'raw', 'thesaurus' ) as $group ) {
+
+		// `index` est écarté : il ne contient que des fichiers bruts, sans
+		// enveloppe ni date d'expiration, et les décoder coûterait cher pour
+		// rien. `registry` l'est aussi : il n'expire jamais.
+		foreach ( array( 'offers', 'raw', 'thesaurus', 'build' ) as $group ) {
 			$dir = self::directory( $group );
 			foreach ( (array) glob( $dir . '*.json' ) as $file ) {
 				$raw = file_get_contents( $file ); // phpcs:ignore
@@ -239,7 +426,7 @@ class Pivot_Cache {
 	 */
 	public static function stats() {
 		$stats = array();
-		foreach ( array( 'offers', 'index', 'thesaurus', 'raw', 'build' ) as $group ) {
+		foreach ( self::groups() as $group ) {
 			$dir   = self::directory( $group );
 			$files = (array) glob( $dir . '*' );
 			$size  = 0;
@@ -254,6 +441,59 @@ class Pivot_Cache {
 			);
 		}
 		return $stats;
+	}
+
+	/**
+	 * Efface le cache écrit par une version antérieure.
+	 *
+	 * Avant la 2.5.1, tout vivait sous uploads/pivot-cache/ sous un nom en md5
+	 * non salé, donc calculable par quiconque. Ces fichiers sont supprimés et
+	 * non déplacés : le cache se reconstruit entièrement depuis PIVOT, et les
+	 * conserver reviendrait à garder en ligne précisément ce que l'on cherche à
+	 * en retirer. Le premier passage sur une page de listing reconstruit son
+	 * index ; offres, thésaurus et registre des adresses se remplissent à la
+	 * demande.
+	 *
+	 * Idempotente : sans ancien fichier, elle ne fait rien.
+	 *
+	 * @return array Compte rendu : nombre de fichiers effacés.
+	 */
+	public static function purge_legacy_store() {
+		$uploads  = wp_get_upload_dir();
+		$old_base = trailingslashit( trailingslashit( $uploads['basedir'] ) . self::DIRNAME );
+		$report   = array( 'deleted' => 0 );
+
+		// Les groupes désormais privés n'ont plus rien à faire sous uploads.
+		foreach ( array( 'offers', 'thesaurus', 'build', 'raw' ) as $group ) {
+			$dir = $old_base . $group;
+
+			if ( ! is_dir( $dir ) ) {
+				continue;
+			}
+
+			foreach ( (array) glob( trailingslashit( $dir ) . '*' ) as $file ) {
+				if ( is_file( $file ) && @unlink( $file ) ) { // phpcs:ignore
+					$report['deleted']++;
+				}
+			}
+
+			@rmdir( $dir ); // phpcs:ignore
+		}
+
+		// Dans le groupe public, les entrées à enveloppe (registre des adresses)
+		// portaient un nom en md5 non salé. Les index de listing, eux, ont un
+		// nom lisible « listing-<page>-<langue>.json » : on n'y touche pas.
+		foreach ( array( 'slugs', 'slug-changes' ) as $key ) {
+			$old = $old_base . 'index/' . md5( $key ) . '.json';
+
+			if ( is_file( $old ) && @unlink( $old ) ) { // phpcs:ignore
+				$report['deleted']++;
+			}
+		}
+
+		self::$memory = array();
+
+		return $report;
 	}
 
 	/**

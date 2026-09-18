@@ -18,7 +18,9 @@ defined( 'ABSPATH' ) || exit;
 
 class Pivot_Slugs {
 
-	const GROUP = 'index';
+	// Groupe privé : le registre vivait autrefois dans « index », servi au
+	// navigateur, où ses 800 Ko d'état interne n'avaient rien à faire.
+	const GROUP = 'registry';
 
 	/** Nombre de changements conservés pour consultation. */
 	const MAX_CHANGES = 200;

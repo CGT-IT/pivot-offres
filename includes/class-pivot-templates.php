@@ -15,6 +15,10 @@ class Pivot_Templates {
 	/** @var Pivot_Templates|null */
 	private static $instance = null;
 
+	/** Versions des bibliothèques cartographiques livrées dans assets/vendor/. */
+	const LEAFLET_VERSION       = '1.9.4';
+	const MARKERCLUSTER_VERSION = '1.5.3';
+
 	/** @var array|null Offre chargée pour la requête courante. */
 	private $offer = null;
 
@@ -411,6 +415,16 @@ class Pivot_Templates {
 		wp_enqueue_style( 'pivot-offres', PIVOT_URL . 'assets/css/pivot.css', array(), PIVOT_VERSION );
 
 		if ( 'listing' !== $context['kind'] ) {
+			// Fiche détail : le lien de retour dépend de la provenance du
+			// visiteur, donc du navigateur et non du serveur, pour que la page
+			// reste identique pour tous et plaçable derrière un cache.
+			$candidates = self::origin_candidates( $this->lang() );
+
+			if ( $candidates ) {
+				wp_enqueue_script( 'pivot-detail', PIVOT_URL . 'assets/js/pivot-detail.js', array(), PIVOT_VERSION, true );
+				wp_localize_script( 'pivot-detail', 'pivotDetailData', array( 'origins' => $candidates ) );
+			}
+
 			return;
 		}
 
@@ -419,13 +433,21 @@ class Pivot_Templates {
 		$show_map = ! empty( $listing['show_map'] ) && 'leaflet' === pivot_settings( 'map_provider', 'leaflet' );
 
 		if ( $show_map ) {
-			wp_enqueue_style( 'leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', array(), '1.9.4' );
-			wp_enqueue_script( 'leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', array(), '1.9.4', true );
+			// Leaflet est servi par le site, et non depuis unpkg.com.
+			//
+			// Un CDN tiers signifiait : l'adresse IP de chaque visiteur envoyée
+			// à un hébergeur américain sans son consentement — difficilement
+			// tenable pour un organisme public —, une dépendance à la
+			// disponibilité d'un service extérieur, et du code exécuté sans
+			// contrôle d'intégrité. Les fichiers sont dans assets/vendor/,
+			// versionnés avec le plugin.
+			wp_enqueue_style( 'leaflet', PIVOT_URL . 'assets/vendor/leaflet/leaflet.css', array(), self::LEAFLET_VERSION );
+			wp_enqueue_script( 'leaflet', PIVOT_URL . 'assets/vendor/leaflet/leaflet.js', array(), self::LEAFLET_VERSION, true );
 
 			if ( pivot_settings( 'map_cluster', 1 ) ) {
-				wp_enqueue_style( 'leaflet-markercluster', 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css', array( 'leaflet' ), '1.5.3' );
-				wp_enqueue_style( 'leaflet-markercluster-default', 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css', array( 'leaflet' ), '1.5.3' );
-				wp_enqueue_script( 'leaflet-markercluster', 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js', array( 'leaflet' ), '1.5.3', true );
+				wp_enqueue_style( 'leaflet-markercluster', PIVOT_URL . 'assets/vendor/markercluster/MarkerCluster.css', array( 'leaflet' ), self::MARKERCLUSTER_VERSION );
+				wp_enqueue_style( 'leaflet-markercluster-default', PIVOT_URL . 'assets/vendor/markercluster/MarkerCluster.Default.css', array( 'leaflet' ), self::MARKERCLUSTER_VERSION );
+				wp_enqueue_script( 'leaflet-markercluster', PIVOT_URL . 'assets/vendor/markercluster/leaflet.markercluster.js', array( 'leaflet' ), self::MARKERCLUSTER_VERSION, true );
 			}
 		}
 
@@ -1047,25 +1069,47 @@ class Pivot_Templates {
 	 * @return array|null
 	 */
 	public function origin_listing() {
-		$referer = isset( $_SERVER['HTTP_REFERER'] ) ? (string) wp_unslash( $_SERVER['HTTP_REFERER'] ) : '';
-
-		if ( $referer ) {
-			$path = trim( (string) wp_parse_url( $referer, PHP_URL_PATH ), '/' );
-			$path = preg_replace( '#/page/\d+$#', '', $path );
-			$path = preg_replace( '#^(' . implode( '|', Pivot_I18n::languages() ) . ')/#', '', $path );
-
-			foreach ( Pivot_Listings::active() as $listing ) {
-				foreach ( Pivot_I18n::enabled() as $lang ) {
-					if ( Pivot_Listings::slug( $listing, $lang ) === $path ) {
-						return $listing;
-					}
-				}
-			}
-		}
-
+		// Ne dépend plus du Referer.
+		//
+		// Le fil d'Ariane et le lien de retour en étaient déduits : le HTML
+		// variait donc selon la provenance du visiteur alors que l'URL, elle,
+		// ne variait pas. Derrière un cache de page — Varnish, WP Rocket,
+		// Cloudflare —, la provenance du tout premier visiteur se retrouvait
+		// servie à tous les suivants, y compris dans le JSON-LD. Et `Vary:
+		// Referer` n'aurait rien arrangé : il rend le cache inutilisable.
+		//
+		// Le serveur rend donc une réponse identique pour tous, et c'est le
+		// navigateur qui personnalise le lien de retour à partir de sa propre
+		// provenance (assets/js/pivot-detail.js).
 		$active = Pivot_Listings::active();
 
 		return 1 === count( $active ) ? reset( $active ) : null;
+	}
+
+	/**
+	 * Pages de listing susceptibles d'être l'origine d'une visite.
+	 *
+	 * Sert au navigateur à reconnaître d'où vient le visiteur, sans que le
+	 * serveur ait à en tenir compte.
+	 *
+	 * @param string $lang Langue.
+	 * @return array Liste de { url, title }.
+	 */
+	public static function origin_candidates( $lang ) {
+		$out = array();
+
+		foreach ( Pivot_Listings::active() as $listing ) {
+			$url = Pivot_Listings::url( $listing, $lang );
+
+			if ( $url ) {
+				$out[] = array(
+					'url'   => $url,
+					'title' => Pivot_Listings::title( $listing, $lang ),
+				);
+			}
+		}
+
+		return $out;
 	}
 
 	/**

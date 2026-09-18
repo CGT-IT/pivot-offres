@@ -1,12 +1,10 @@
 <?php
 /**
  * Plugin Name:       PIVOT Offres Installed
- * Plugin URI:        https://example.com/pivot-offres
  * Description:       Publie les offres touristiques de PIVOT/Web (CGT Wallonie) : pages de listing paramétrables, recherche et pagination 100 % côté client, cartographie, pages détail optimisées SEO, multilingue fr/nl/en/de à partir des traductions renvoyées par PIVOT. Aucune offre n'est stockée en base de données.
  * Version:           2.5.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
- * Author:            Votre agence
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       pivot-offres

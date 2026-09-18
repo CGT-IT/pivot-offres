@@ -47,15 +47,21 @@ get_header();
 
 <article class="pivot-detail" itemscope itemtype="https://schema.org/<?php echo esc_attr( $pivot_schema ); ?>" lang="<?php echo esc_attr( Pivot_I18n::hreflang( $pivot_lang ) ); ?>">
 
-	<?php if ( $pivot_origin ) : ?>
-		<nav class="pivot-breadcrumb" aria-label="<?php esc_attr_e( 'Fil d\'Ariane', 'pivot-offres' ); ?>">
-			<a href="<?php echo esc_url( Pivot_I18n::url( '', $pivot_lang ) ); ?>"><?php echo esc_html( get_bloginfo( 'name' ) ); ?></a>
-			<span aria-hidden="true">›</span>
+	<nav class="pivot-breadcrumb" aria-label="<?php esc_attr_e( 'Fil d\'Ariane', 'pivot-offres' ); ?>">
+		<a href="<?php echo esc_url( Pivot_I18n::url( '', $pivot_lang ) ); ?>"><?php echo esc_html( get_bloginfo( 'name' ) ); ?></a>
+		<span aria-hidden="true">›</span>
+		<?php if ( $pivot_origin ) : ?>
 			<a href="<?php echo esc_url( Pivot_Listings::url( $pivot_origin, $pivot_lang ) ); ?>"><?php echo esc_html( Pivot_Listings::title( $pivot_origin, $pivot_lang ) ); ?></a>
 			<span aria-hidden="true">›</span>
-			<span aria-current="page"><?php echo esc_html( $pivot_name ); ?></span>
-		</nav>
-	<?php endif; ?>
+		<?php else : ?>
+			<?php
+			// Rempli par le navigateur quand le visiteur arrive d'une page de
+			// listing : le serveur rend la même page pour tout le monde.
+			?>
+			<span class="pivot-breadcrumb-origin" data-pivot-origin hidden></span>
+		<?php endif; ?>
+		<span aria-current="page"><?php echo esc_html( $pivot_name ); ?></span>
+	</nav>
 
 	<header class="pivot-detail-header">
 		<?php if ( $pivot_type ) : ?>
@@ -182,6 +188,11 @@ get_header();
 					<a href="<?php echo esc_url( Pivot_Listings::url( $pivot_origin, $pivot_lang ) ); ?>">
 						<?php esc_html_e( '← Retour aux résultats', 'pivot-offres' ); ?>
 					</a>
+				</p>
+			<?php else : ?>
+				<?php // Le libellé est déjà là : le navigateur n'a que l'adresse à poser. ?>
+				<p class="pivot-back" data-pivot-origin hidden>
+					<a href=""><?php esc_html_e( '← Retour aux résultats', 'pivot-offres' ); ?></a>
 				</p>
 			<?php endif; ?>
 

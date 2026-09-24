@@ -39,7 +39,7 @@ class Pivot_Repository {
 		);
 
 		// Une seule entrée de cache par offre : elle contient toutes les langues.
-		$key = sprintf( 'offer|%s|c%d', $code, (int) $args['content'] );
+		$key = self::offer_key( $code, $args['content'] );
 
 		if ( ! $args['refresh'] ) {
 			$cached = Pivot_Cache::get( self::GROUP, $key );
@@ -96,8 +96,53 @@ class Pivot_Repository {
 	 */
 	public static function forget_offer( $code ) {
 		foreach ( array( 1, 2, 3 ) as $content ) {
-			Pivot_Cache::delete( self::GROUP, sprintf( 'offer|%s|c%d', $code, $content ) );
+			Pivot_Cache::delete( self::GROUP, self::offer_key( $code, $content ) );
 		}
+	}
+
+	/**
+	 * Range une offre déjà reçue de PIVOT, sans nouvel appel.
+	 *
+	 * Sert à la construction d'un index : une requête exécutée au niveau de
+	 * détail de la fiche renvoie chaque offre telle que get_offer() la
+	 * demanderait. La ranger ici épargne au premier visiteur de la fiche un
+	 * aller-retour d'une demi-seconde.
+	 *
+	 * @param array $offer   Offre normalisée.
+	 * @param int   $content Niveau de détail avec lequel elle a été obtenue.
+	 * @param int   $ttl     Durée de vie ; 0 pour la durée des fiches détail.
+	 * @return bool Vrai si l'offre a été écrite.
+	 */
+	public static function remember_offer( $offer, $content, $ttl = 0 ) {
+		$code = trim( (string) pivot_get( $offer, 'code', '' ) );
+
+		if ( ! pivot_is_code( $code ) ) {
+			return false;
+		}
+
+		// La route des fiches met le code en capitales avant de le chercher.
+		// Écrite sous une autre casse, l'entrée ne serait jamais relue.
+		//
+		// Pas de mémorisation : une construction range des centaines d'offres
+		// dans la même requête, et n'en relit aucune.
+		return Pivot_Cache::set(
+			self::GROUP,
+			self::offer_key( strtoupper( $code ), $content ),
+			$offer,
+			$ttl > 0 ? (int) $ttl : (int) pivot_settings( 'ttl_offer', 12 * HOUR_IN_SECONDS ),
+			false
+		);
+	}
+
+	/**
+	 * Clé de cache d'une offre.
+	 *
+	 * @param string $code    Code PIVOT.
+	 * @param int    $content Niveau de détail.
+	 * @return string
+	 */
+	private static function offer_key( $code, $content ) {
+		return sprintf( 'offer|%s|c%d', $code, (int) $content );
 	}
 
 	/**
@@ -180,6 +225,102 @@ class Pivot_Repository {
 		}
 
 		return Pivot_Parser::parse_offers( $response['body'] );
+	}
+
+	/**
+	 * Différentiel d'une requête : les offres entrées, modifiées ou sorties
+	 * depuis la dernière réception validée par query_ack().
+	 *
+	 * Chaque offre porte `operation` : 0 ajout, 1 modification, 2 retrait. Sans
+	 * réception validée — premier appel, après query_clear(), ou si PIVOT a
+	 * perdu sa référence — toutes les offres reviennent en ajout.
+	 *
+	 * Le résultat est retenu par PIVOT comme « dernier appel » : c'est lui que
+	 * query_ack() fera passer en référence.
+	 *
+	 * @param array $listing Configuration.
+	 * @param int   $content Richesse des offres renvoyées (0 : codes et dates).
+	 * @return array|WP_Error Même forme que query_page().
+	 */
+	public static function query_diff( $listing, $content = 0 ) {
+		$matrix = array(
+			'fmt'     => 'xml',
+			'content' => (int) $content,
+		);
+
+		if ( $content > 0 ) {
+			$matrix['thumb'] = pivot_settings( 'thumb', 'THB_MW' );
+		}
+
+		$params = self::matrix_params( $listing );
+		if ( $params ) {
+			$matrix['param'] = $params;
+		}
+
+		$response = Pivot_Client::get(
+			'query/' . pivot_get( $listing, 'query_code', '' ) . '/diff',
+			$matrix,
+			array( 'service' => 'query', 'timeout' => max( 60, (int) pivot_settings( 'timeout', 30 ) ) )
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		return Pivot_Parser::parse_offers( $response['body'] );
+	}
+
+	/**
+	 * Valide le dernier différentiel reçu : il devient la référence du suivant.
+	 *
+	 * @param array $listing Configuration.
+	 * @return true|WP_Error
+	 */
+	public static function query_ack( $listing ) {
+		$response = Pivot_Client::get(
+			'query/' . pivot_get( $listing, 'query_code', '' ) . '/ack',
+			array(),
+			array( 'service' => 'query' )
+		);
+
+		return self::boolean_result( $response, 'pivot_ack_refused' );
+	}
+
+	/**
+	 * Réinitialise le cache différentiel d'une requête chez PIVOT.
+	 *
+	 * Le différentiel suivant renverra toutes les offres de la requête.
+	 *
+	 * @param array $listing Configuration.
+	 * @return true|WP_Error
+	 */
+	public static function query_clear( $listing ) {
+		$response = Pivot_Client::delete(
+			'query/' . pivot_get( $listing, 'query_code', '' ) . '/clear',
+			array(),
+			array( 'service' => 'query' )
+		);
+
+		return self::boolean_result( $response, 'pivot_clear_refused' );
+	}
+
+	/**
+	 * Lit une réponse `<result><value>true</value></result>`.
+	 *
+	 * @param array|WP_Error $response Réponse du client.
+	 * @param string         $code     Code d'erreur si PIVOT répond false.
+	 * @return true|WP_Error
+	 */
+	private static function boolean_result( $response, $code ) {
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		if ( ! preg_match( '#<value>\s*true\s*</value>#i', (string) $response['body'] ) ) {
+			return new WP_Error( $code, __( 'PIVOT a refusé l\'opération sur le différentiel.', 'pivot-offres' ) );
+		}
+
+		return true;
 	}
 
 	/**

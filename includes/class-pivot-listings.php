@@ -53,6 +53,8 @@ class Pivot_Listings {
 			'active'           => 1,
 			'index_built'      => 0,
 			'index_count'      => 0,
+			'index_checked'    => 0,
+			'index_changes'    => 0,
 			'facet_values'     => array(),
 			'offer_types'      => array(),
 			'created'          => 0,
@@ -345,6 +347,8 @@ class Pivot_Listings {
 			'active'           => empty( $config['active'] ) ? 0 : 1,
 			'index_built'      => $existing ? (int) $existing['index_built'] : 0,
 			'index_count'      => $existing ? (int) $existing['index_count'] : 0,
+			'index_checked'    => $existing ? (int) $existing['index_checked'] : 0,
+			'index_changes'    => $existing ? (int) $existing['index_changes'] : 0,
 			'facet_values'     => $existing ? (array) $existing['facet_values'] : array(),
 			'offer_types'      => $existing ? (array) $existing['offer_types'] : array(),
 			'created'          => $existing && $existing['created'] ? (int) $existing['created'] : time(),
@@ -367,6 +371,7 @@ class Pivot_Listings {
 		// jusqu'à l'expiration du cache, six heures plus tard par défaut.
 		$structure_changed = ! $existing
 			|| $existing['query_code'] !== $clean['query_code']
+			|| wp_json_encode( $existing['query_params'] ) !== wp_json_encode( $clean['query_params'] )
 			|| (int) $existing['content'] !== (int) $clean['content']
 			|| (int) $existing['per_page'] !== (int) $clean['per_page']
 			|| (int) $existing['show_map'] !== (int) $clean['show_map']
@@ -558,6 +563,36 @@ class Pivot_Listings {
 			'multiselect' => __( 'Cases à cocher (plusieurs choix)', 'pivot-offres' ),
 			'text'        => __( 'Saisie libre', 'pivot-offres' ),
 			'toggle'      => __( 'Interrupteur oui/non', 'pivot-offres' ),
+			'range'       => __( 'Nombre à comparer', 'pivot-offres' ),
+		);
+	}
+
+	/**
+	 * Comparaisons possibles pour un critère numérique.
+	 *
+	 * L'administrateur la choisit : le visiteur ne saisit qu'un nombre, et lit
+	 * à côté ce qu'il signifie (« au moins 3 »).
+	 *
+	 * @return array
+	 */
+	public static function filter_operators() {
+		return array(
+			'gte'     => __( 'Au moins (≥)', 'pivot-offres' ),
+			'lte'     => __( 'Au plus (≤)', 'pivot-offres' ),
+			'between' => __( 'Entre deux valeurs', 'pivot-offres' ),
+			'eq'      => __( 'Égal à (=)', 'pivot-offres' ),
+		);
+	}
+
+	/**
+	 * Affichages possibles pour un critère numérique.
+	 *
+	 * @return array
+	 */
+	public static function filter_widgets() {
+		return array(
+			'input'  => __( 'Champ de saisie', 'pivot-offres' ),
+			'slider' => __( 'Jauge (curseur)', 'pivot-offres' ),
 		);
 	}
 
@@ -635,7 +670,7 @@ class Pivot_Listings {
 
 			$used[] = $key;
 
-			$clean[] = array(
+			$entry = array(
 				'key'          => $key,
 				'label'        => $label,
 				'labels'       => self::sanitize_translations( pivot_get( $filter, 'labels', array() ), 'sanitize_text_field' ),
@@ -645,9 +680,65 @@ class Pivot_Listings {
 				'value_labels' => self::sanitize_value_labels( pivot_get( $filter, 'value_labels', array() ) ),
 				'placeholder'  => sanitize_text_field( pivot_get( $filter, 'placeholder', '' ) ),
 			);
+
+			if ( 'range' === $type ) {
+				$entry = array_merge( $entry, self::sanitize_range( $filter ) );
+			}
+
+			$clean[] = $entry;
 		}
 
 		return $clean;
+	}
+
+	/**
+	 * Réglages propres à un critère numérique.
+	 *
+	 * @param array $filter Données brutes.
+	 * @return array
+	 */
+	private static function sanitize_range( $filter ) {
+		$operator = pivot_get( $filter, 'operator', 'gte' );
+		if ( ! isset( self::filter_operators()[ $operator ] ) ) {
+			$operator = 'gte';
+		}
+
+		// Une jauge ne vise pas une valeur exacte : elle glisse d'une valeur à
+		// l'autre, et « égal à 37 » y serait introuvable.
+		$widget = pivot_get( $filter, 'widget', 'input' );
+		if ( ! isset( self::filter_widgets()[ $widget ] ) || 'eq' === $operator ) {
+			$widget = 'input';
+		}
+
+		return array(
+			'operator' => $operator,
+			'widget'   => $widget,
+			'unit'     => mb_substr( sanitize_text_field( pivot_get( $filter, 'unit', '' ) ), 0, 12 ),
+		);
+	}
+
+	/**
+	 * Clés d'URL d'un critère.
+	 *
+	 * Un critère numérique en porte deux, une par borne : ?prix_max=50,
+	 * ?chambres_min=3. L'égalité garde la clé nue : ?etoiles=4.
+	 *
+	 * @param array $filter Définition du filtre.
+	 * @return array Borne (min, max, eq) => nom du paramètre.
+	 */
+	public static function range_params( $filter ) {
+		$key = (string) pivot_get( $filter, 'key', '' );
+
+		switch ( pivot_get( $filter, 'operator', 'gte' ) ) {
+			case 'eq':
+				return array( 'eq' => $key );
+			case 'lte':
+				return array( 'max' => $key . '_max' );
+			case 'between':
+				return array( 'min' => $key . '_min', 'max' => $key . '_max' );
+			default:
+				return array( 'min' => $key . '_min' );
+		}
 	}
 
 	/**

@@ -11,6 +11,12 @@
  * langue publiée : PIVOT renvoie déjà toutes les traductions dans la même
  * réponse.
  *
+ * Entre deux reconstructions complètes, l'index se tient à jour par le mode
+ * différentiel de PIVOT (query/CODE/diff) : chaque nuit, seules les offres
+ * entrées, modifiées ou sorties de la requête sont redemandées. Les fiches
+ * neutres de la dernière construction sont gardées dans le cache privé pour
+ * cela ; tout écart détecté ramène à une reconstruction complète.
+ *
  * @package Pivot_Offres
  */
 
@@ -20,6 +26,15 @@ class Pivot_Index_Builder {
 
 	const GROUP       = 'index';
 	const STATE_GROUP = 'build';
+
+	/** Échecs consécutifs du différentiel avant de le réinitialiser chez PIVOT. */
+	const SYNC_FAILURES = 3;
+
+	/** Au-delà de ce nombre de changements, on reconstruit plutôt que d'appliquer. */
+	const SYNC_MAX_CHANGES = 50;
+
+	/** Idem, en proportion des offres de la page. */
+	const SYNC_MAX_RATIO = 0.2;
 
 	/** @var array Index déjà décodés pendant cette requête. */
 	private static $read_memo = array();
@@ -75,22 +90,42 @@ class Pivot_Index_Builder {
 	public static function is_fresh( $listing, $lang = null ) {
 		$id    = pivot_get( $listing, 'id', '' );
 		$langs = $lang ? array( $lang ) : Pivot_I18n::enabled();
+		$ttl   = self::index_ttl( $listing );
 
+		// Un différentiel sans changement ne réécrit pas les fichiers : c'est
+		// la date de cette vérification qui fait foi. Sans elle, un index
+		// confirmé chaque nuit mais inchangé depuis une semaine passerait pour
+		// périmé et serait reconstruit en pleine journée.
+		$checked = self::diff_enabled( $listing ) ? (int) pivot_get( $listing, 'index_checked', 0 ) : 0;
+
+		foreach ( $langs as $code ) {
+			$path = self::path( $id, $code );
+
+			if ( ! file_exists( $path ) || ( time() - max( (int) filemtime( $path ), $checked ) ) >= $ttl ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Durée de vie d'un index : réglage de la page, sinon réglage général.
+	 *
+	 * Avec le différentiel, c'est l'intervalle entre deux reconstructions
+	 * complètes de sécurité.
+	 *
+	 * @param array $listing Configuration.
+	 * @return int Secondes.
+	 */
+	public static function index_ttl( $listing ) {
 		$ttl = (int) pivot_get( $listing, 'cache_ttl', 0 );
 
 		if ( $ttl <= 0 ) {
 			$ttl = (int) pivot_settings( 'ttl_index', 6 * HOUR_IN_SECONDS );
 		}
 
-		foreach ( $langs as $code ) {
-			$path = self::path( $id, $code );
-
-			if ( ! file_exists( $path ) || ( time() - (int) filemtime( $path ) ) >= $ttl ) {
-				return false;
-			}
-		}
-
-		return true;
+		return $ttl;
 	}
 
 	/**
@@ -171,6 +206,7 @@ class Pivot_Index_Builder {
 		}
 
 		Pivot_Cache::delete( self::STATE_GROUP, 'state|' . $listing_id );
+		self::forget_sync( $listing_id );
 
 		self::forget( $listing_id );
 	}
@@ -182,6 +218,11 @@ class Pivot_Index_Builder {
 	 */
 	public static function invalidate( $listing_id ) {
 		Pivot_Cache::delete( self::STATE_GROUP, 'state|' . $listing_id );
+
+		// Les fiches gardées pour le différentiel ne correspondent plus à ce
+		// qu'on attend de l'index : la reconstruction repartira de zéro.
+		Pivot_Cache::delete( self::STATE_GROUP, self::sync_key( $listing_id ) );
+		Pivot_Listings::update_meta( $listing_id, array( 'index_checked' => 0 ) );
 
 		foreach ( Pivot_I18n::all_known() as $lang ) {
 			$path = self::path( $listing_id, $lang );
@@ -342,6 +383,9 @@ class Pivot_Index_Builder {
 		$listing_id = pivot_get( $listing, 'id', '' );
 		$batch      = max( 10, (int) pivot_settings( 'batch_size', 100 ) );
 
+		// Référence du différentiel posée avant le téléchargement, pas après.
+		$anchored = self::diff_enabled( $listing ) && self::anchor( $listing );
+
 		$page = Pivot_Repository::query_first_page( $listing, $batch );
 
 		if ( is_wp_error( $page ) ) {
@@ -359,8 +403,10 @@ class Pivot_Index_Builder {
 			'pages'     => max( 1, (int) pivot_get( $page, 'pagesCount', 1 ) ),
 			'total'     => (int) pivot_get( $page, 'count', 0 ),
 			'processed' => 0,
+			'warmed'    => 0,
 			'records'   => array(),
 			'keymap'    => array(),
+			'anchored'  => $anchored,
 			'started'   => time(),
 			'done'      => false,
 		);
@@ -417,12 +463,27 @@ class Pivot_Index_Builder {
 	 * @return array
 	 */
 	private static function absorb( $listing, $state, $offers ) {
+		// Une page réglée sur « complet avec offres liées » reçoit chaque offre
+		// exactement comme la fiche détail la demande : on la range au
+		// passage, au lieu de faire payer un appel à PIVOT au premier visiteur
+		// de chaque fiche. Aux niveaux inférieurs, les offres liées arrivent
+		// sans leurs champs — médias sans titre ni crédit, contact vide — et
+		// ne suffiraient pas à la fiche.
+		$warm = 3 === (int) pivot_get( $listing, 'content', 2 );
+		$ttl  = $warm ? self::detail_ttl( $listing ) : 0;
+
 		foreach ( (array) $offers as $offer ) {
 			$record = self::build_record( $listing, $offer, $state );
 
-			if ( $record ) {
-				$state['records'][] = $record;
+			// Indexées par code : le différentiel remplace ou retire une fiche
+			// sans parcourir les autres.
+			if ( $record && pivot_get( $record, 'c' ) ) {
+				$state['records'][ (string) $record['c'] ] = $record;
 				$state['processed']++;
+			}
+
+			if ( $warm && Pivot_Repository::remember_offer( $offer, 3, $ttl ) ) {
+				$state['warmed'] = (int) pivot_get( $state, 'warmed', 0 ) + 1;
 			}
 		}
 
@@ -573,6 +634,18 @@ class Pivot_Index_Builder {
 				continue;
 			}
 
+			// Un critère numérique compare des nombres : ils sont gardés tels
+			// quels, sans clé stable ni libellé. En clé stable, « 9.50 »
+			// deviendrait « 9-50 », qu'aucune comparaison ne saurait lire.
+			if ( 'range' === pivot_get( $filter, 'type' ) ) {
+				$numbers = self::numeric_values( $filter, $offer, $record );
+
+				if ( $numbers ) {
+					$record['facets'][ $key ] = $numbers;
+				}
+				continue;
+			}
+
 			foreach ( self::filter_entries( $filter, $offer, $record ) as $entry ) {
 				$stable = self::stable_key( $key, pivot_get( $entry, 'raw', '' ), $state );
 
@@ -700,6 +773,31 @@ class Pivot_Index_Builder {
 			default:
 				return self::spec_entries( $filter, $offer );
 		}
+	}
+
+	/**
+	 * Valeurs numériques d'un critère pour une offre.
+	 *
+	 * Une valeur qui n'est pas un nombre est ignorée : l'offre n'a alors pas
+	 * de valeur pour ce critère, comme si le champ était absent.
+	 *
+	 * @param array $filter Définition du filtre.
+	 * @param array $offer  Offre normalisée.
+	 * @param array $record Fiche neutre en cours.
+	 * @return array Nombres distincts.
+	 */
+	private static function numeric_values( $filter, $offer, $record ) {
+		$numbers = array();
+
+		foreach ( self::filter_entries( $filter, $offer, $record ) as $entry ) {
+			$number = pivot_parse_number( pivot_get( $entry, 'raw', '' ) );
+
+			if ( null !== $number && ! in_array( $number, $numbers, true ) ) {
+				$numbers[] = $number;
+			}
+		}
+
+		return $numbers;
 	}
 
 	/**
@@ -866,8 +964,6 @@ class Pivot_Index_Builder {
 	private static function finish( $listing, $state ) {
 		$listing_id = pivot_get( $listing, 'id', '' );
 		$records    = isset( $state['records'] ) ? $state['records'] : array();
-		$facets     = array();
-		$types      = array();
 
 		// Une moisson vide n'écrase jamais un index garni.
 		//
@@ -892,6 +988,72 @@ class Pivot_Index_Builder {
 
 			return $state;
 		}
+
+		self::publish(
+			$listing,
+			$records,
+			array(
+				'index_built'   => time(),
+				'index_checked' => time(),
+				'index_changes' => 0,
+			)
+		);
+
+		// Fiches gardées pour appliquer les différentiels des nuits suivantes.
+		if ( self::diff_enabled( $listing ) ) {
+			self::save_records( $listing_id, $records, (array) pivot_get( $state, 'keymap', array() ) );
+			self::save_sync_state(
+				$listing_id,
+				array(
+					'anchored'  => ! empty( $state['anchored'] ),
+					'signature' => self::signature( $listing ),
+					'fails'     => 0,
+				)
+			);
+		} else {
+			self::forget_sync( $listing_id );
+		}
+
+		$message = sprintf(
+			'Index « %1$s » reconstruit : %2$d offres, %3$d langue(s).',
+			$listing_id,
+			count( $records ),
+			count( Pivot_I18n::enabled() )
+		);
+
+		if ( ! empty( $state['warmed'] ) ) {
+			$message .= sprintf( ' %d fiche(s) détail mise(s) en cache.', (int) $state['warmed'] );
+		}
+
+		Pivot_Logger::info(
+			$message,
+			array( 'service' => 'index', 'cache_status' => 'rebuild', 'context' => array( 'listing' => $listing_id ) )
+		);
+
+		$state['done']      = true;
+		$state['records']   = array();
+		$state['finished']  = time();
+		$state['processed'] = count( $records );
+
+		self::save_state( $listing_id, $state );
+
+		return $state;
+	}
+
+	/**
+	 * Écrit les fichiers d'index de toutes les langues à partir des fiches neutres.
+	 *
+	 * Ne parle pas à PIVOT : sert à la fin d'une reconstruction complète comme
+	 * après l'application d'un différentiel.
+	 *
+	 * @param array $listing Configuration.
+	 * @param array $records Fiches neutres.
+	 * @param array $meta    Champs techniques enregistrés en plus sur la page.
+	 */
+	private static function publish( $listing, $records, $meta = array() ) {
+		$listing_id = pivot_get( $listing, 'id', '' );
+		$facets     = array();
+		$types      = array();
 
 		// Les types d'offres réellement présents alimentent le sélecteur de
 		// champs de l'écran d'édition.
@@ -931,14 +1093,6 @@ class Pivot_Index_Builder {
 			}
 
 			foreach ( $records as $record ) {
-				// Le registre suit les dénominations : c'est lui qui repère
-				// qu'une offre a été renommée dans PIVOT.
-				Pivot_Slugs::observe(
-					pivot_get( $record, 'c', '' ),
-					$lang,
-					pivot_get( $record, array( 'names', $lang ), '' )
-				);
-
 				$item = self::render_item(
 					$listing,
 					$record,
@@ -985,8 +1139,27 @@ class Pivot_Index_Builder {
 		}
 
 		// Valeurs découvertes, proposées à l'administrateur pour la traduction.
+		// Un critère numérique n'a rien à traduire : on n'en retient que
+		// l'étendue, écrite comme le shortcode l'attend (« 1..165 »).
+		$ranges = array();
+
+		foreach ( (array) pivot_get( $listing, 'filters', array() ) as $filter ) {
+			if ( 'range' === pivot_get( $filter, 'type' ) && pivot_get( $filter, 'key' ) ) {
+				$ranges[ $filter['key'] ] = true;
+			}
+		}
+
 		foreach ( $records as $record ) {
 			foreach ( (array) pivot_get( $record, 'facets', array() ) as $key => $values ) {
+				if ( isset( $ranges[ $key ] ) ) {
+					foreach ( $values as $value ) {
+						$ranges[ $key ] = true === $ranges[ $key ]
+							? array( $value, $value )
+							: array( min( $ranges[ $key ][0], $value ), max( $ranges[ $key ][1], $value ) );
+					}
+					continue;
+				}
+
 				foreach ( $values as $value ) {
 					if ( ! isset( $facets[ $key ] ) ) {
 						$facets[ $key ] = array();
@@ -1003,37 +1176,23 @@ class Pivot_Index_Builder {
 		}
 		unset( $values );
 
-		$renamed = Pivot_Slugs::commit();
+		foreach ( $ranges as $key => $bounds ) {
+			if ( is_array( $bounds ) ) {
+				$facets[ $key ] = array( $bounds[0] . '..' . $bounds[1] );
+			}
+		}
 
 		Pivot_Listings::update_meta(
 			$listing_id,
-			array(
-				'renamed'      => $renamed,
-				'index_built'  => time(),
-				'index_count'  => count( $records ),
-				'facet_values' => $facets,
-				'offer_types'  => $types,
+			array_merge(
+				$meta,
+				array(
+					'index_count'  => count( $records ),
+					'facet_values' => $facets,
+					'offer_types'  => $types,
+				)
 			)
 		);
-
-		Pivot_Logger::info(
-			sprintf(
-				'Index « %1$s » reconstruit : %2$d offres, %3$d langue(s).',
-				$listing_id,
-				count( $records ),
-				count( Pivot_I18n::enabled() )
-			),
-			array( 'service' => 'index', 'cache_status' => 'rebuild', 'context' => array( 'listing' => $listing_id ) )
-		);
-
-		$state['done']      = true;
-		$state['records']   = array();
-		$state['finished']  = time();
-		$state['processed'] = count( $records );
-
-		self::save_state( $listing_id, $state );
-
-		return $state;
 	}
 
 	/**
@@ -1078,12 +1237,7 @@ class Pivot_Index_Builder {
 			}
 		}
 
-		$item['u'] = Pivot_Rewrites::detail_url(
-			$code,
-			(int) pivot_get( $record, 't', 0 ),
-			pivot_get( $item, 'n', '' ),
-			$lang
-		);
+		$item['u'] = Pivot_Rewrites::detail_url( $code, (int) pivot_get( $record, 't', 0 ), $lang );
 
 		$facets = (array) pivot_get( $record, 'facets', array() );
 
@@ -1181,6 +1335,12 @@ class Pivot_Index_Builder {
 		}
 
 		foreach ( (array) pivot_get( $record, 'facets', array() ) as $key => $values ) {
+			// Un nombre nu ne dit rien à la recherche : taper « 4 » ne doit pas
+			// ramener tous les hôtels de quatre chambres.
+			if ( 'range' === pivot_get( $filters, array( $key, 'type' ) ) ) {
+				continue;
+			}
+
 			foreach ( $values as $value ) {
 				$parts[] = self::value_label( $record, $value, isset( $filters[ $key ] ) ? $filters[ $key ] : array(), $lang );
 			}
@@ -1231,6 +1391,11 @@ class Pivot_Index_Builder {
 				'options'     => array(),
 			);
 
+			if ( 'range' === $entry['type'] ) {
+				$out[] = array_merge( $entry, self::range_facet( $filter, $records ) );
+				continue;
+			}
+
 			if ( in_array( $entry['type'], array( 'select', 'multiselect' ), true ) ) {
 				$counts = array();
 				$labels = array();
@@ -1260,6 +1425,602 @@ class Pivot_Index_Builder {
 		}
 
 		return $out;
+	}
+
+	/**
+	 * Étendue d'un critère numérique, pour borner la jauge et guider la saisie.
+	 *
+	 * Le pas vaut 1, ou 0,1 quand les valeurs sont décimales et resserrées
+	 * (une note sur 20, une distance de quelques kilomètres). Les bornes sont
+	 * arrondies sur ce pas : sans quoi une jauge qui part de 9,5 par pas de 1
+	 * ne pourrait jamais atteindre 740.
+	 *
+	 * @param array $filter  Définition du filtre.
+	 * @param array $records Fiches neutres.
+	 * @return array
+	 */
+	private static function range_facet( $filter, $records ) {
+		$numbers = array();
+
+		foreach ( $records as $record ) {
+			foreach ( (array) pivot_get( $record, array( 'facets', pivot_get( $filter, 'key' ) ), array() ) as $value ) {
+				if ( is_int( $value ) || is_float( $value ) ) {
+					$numbers[] = $value;
+				}
+			}
+		}
+
+		$facet = array(
+			'operator' => pivot_get( $filter, 'operator', 'gte' ),
+			'widget'   => pivot_get( $filter, 'widget', 'input' ),
+			'unit'     => pivot_get( $filter, 'unit', '' ),
+		);
+
+		if ( ! $numbers ) {
+			return $facet;
+		}
+
+		$min      = min( $numbers );
+		$max      = max( $numbers );
+		$decimals = count( array_filter( $numbers, 'is_float' ) ) > 0;
+		$scale    = ( $decimals && $max - $min < 10 ) ? 10 : 1;
+
+		// Calcul en dixièmes entiers : 9.5 / 0.1 donne 94,999… en virgule
+		// flottante, et la borne basse tomberait à 9,4.
+		$facet['min']  = pivot_parse_number( floor( round( $min * $scale, 6 ) ) / $scale );
+		$facet['max']  = pivot_parse_number( ceil( round( $max * $scale, 6 ) ) / $scale );
+		$facet['step'] = 10 === $scale ? 0.1 : 1;
+
+		return $facet;
+	}
+
+	/* ----------------------------------------------------------- différentiel */
+
+	/**
+	 * La page se tient-elle à jour par différentiel ?
+	 *
+	 * PIVOT tient un seul différentiel par clé et par requête. Deux pages sur
+	 * la même requête se voleraient les changements : la première à valider les
+	 * ferait disparaître pour la seconde. Elles restent donc en reconstruction
+	 * complète.
+	 *
+	 * @param array $listing Configuration.
+	 * @return bool
+	 */
+	public static function diff_enabled( $listing ) {
+		if ( ! pivot_settings( 'diff_enabled', 1 ) || '' === (string) pivot_get( $listing, 'query_code', '' ) ) {
+			return false;
+		}
+
+		return ! self::shares_query( $listing );
+	}
+
+	/**
+	 * Une autre page active interroge-t-elle la même requête ?
+	 *
+	 * @param array $listing Configuration.
+	 * @return bool
+	 */
+	public static function shares_query( $listing ) {
+		$id    = (string) pivot_get( $listing, 'id', '' );
+		$query = (string) pivot_get( $listing, 'query_code', '' );
+
+		foreach ( Pivot_Listings::active() as $other ) {
+			if ( (string) $other['id'] !== $id && (string) $other['query_code'] === $query ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Une reconstruction complète est-elle due ?
+	 *
+	 * Sans ancrage réussi, avec une configuration qui a changé depuis, ou
+	 * quand l'intervalle de sécurité est écoulé : les offres liées (médias,
+	 * contacts) peuvent changer sans que la date de l'offre principale bouge,
+	 * et le différentiel ne les signale pas.
+	 *
+	 * @param array $listing Configuration.
+	 * @return bool
+	 */
+	public static function needs_full_rebuild( $listing ) {
+		$sync = self::sync_state( pivot_get( $listing, 'id', '' ) );
+
+		if ( empty( $sync['anchored'] ) || pivot_get( $sync, 'signature' ) !== self::signature( $listing ) ) {
+			return true;
+		}
+
+		return ( time() - (int) pivot_get( $listing, 'index_built', 0 ) ) >= self::index_ttl( $listing );
+	}
+
+	/**
+	 * Mise à jour de nuit : différentiel, ou reconstruction complète si elle
+	 * est due ou si le différentiel n'est pas exploitable.
+	 *
+	 * @param string $listing_id Identifiant.
+	 * @param int    $budget     Secondes accordées à une reconstruction.
+	 * @return array|WP_Error Compte rendu, ou état de la reconstruction.
+	 */
+	public static function nightly( $listing_id, $budget = 25 ) {
+		$listing = Pivot_Listings::get( $listing_id );
+
+		if ( ! $listing ) {
+			return new WP_Error( 'pivot_unknown_listing', __( 'Page de listing introuvable.', 'pivot-offres' ) );
+		}
+
+		if ( self::needs_full_rebuild( $listing ) ) {
+			return self::run( $listing_id, $budget );
+		}
+
+		$result = self::sync( $listing_id );
+
+		if ( ! is_wp_error( $result ) && 'full' === $result['status'] ) {
+			return self::run( $listing_id, $budget );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Applique le différentiel de PIVOT à l'index d'une page.
+	 *
+	 * Un premier appel en `content=0` dit ce qui a changé : quelques centaines
+	 * d'octets quand rien n'a bougé, ce qui est le cas presque toutes les
+	 * nuits. S'il y a des changements, un second appel les rapporte au niveau
+	 * de détail de la page ; c'est celui-là que l'on valide, une fois l'index
+	 * réécrit. Si la validation se perd, le différentiel suivant rapporte les
+	 * mêmes changements, qui sont réappliqués sans dommage.
+	 *
+	 * @param string $listing_id Identifiant.
+	 * @return array|WP_Error status : unchanged, updated, building ou full.
+	 */
+	public static function sync( $listing_id ) {
+		$listing = Pivot_Listings::get( $listing_id );
+
+		if ( ! $listing ) {
+			return new WP_Error( 'pivot_unknown_listing', __( 'Page de listing introuvable.', 'pivot-offres' ) );
+		}
+
+		if ( ! self::diff_enabled( $listing ) ) {
+			return new WP_Error( 'pivot_diff_disabled', __( 'Le différentiel n\'est pas actif pour cette page.', 'pivot-offres' ) );
+		}
+
+		$lock = self::lock_name( $listing_id );
+
+		if ( ! Pivot_Cache::acquire_lock( $lock, 180 ) ) {
+			return new WP_Error(
+				'pivot_build_locked',
+				__( 'Une reconstruction de cette page est déjà en cours.', 'pivot-offres' )
+			);
+		}
+
+		try {
+			// Une reconstruction complète inachevée a posé sa propre référence :
+			// elle se termine d'abord.
+			$progress = self::progress( $listing_id );
+
+			if ( is_array( $progress ) && ! empty( $progress['token'] ) && empty( $progress['done'] ) ) {
+				return array( 'status' => 'building', 'changes' => 0 );
+			}
+
+			$probe = Pivot_Repository::query_diff( $listing, 0 );
+
+			if ( is_wp_error( $probe ) ) {
+				return self::sync_failed( $listing, $probe );
+			}
+
+			$changes = (array) pivot_get( $probe, 'offers', array() );
+
+			if ( ! $changes ) {
+				self::sync_succeeded( $listing_id, 0 );
+
+				return array( 'status' => 'unchanged', 'changes' => 0 );
+			}
+
+			$store = self::records_store( $listing_id );
+
+			if ( null === $store ) {
+				return self::desync( $listing, 'fiches locales introuvables' );
+			}
+
+			$reason = self::diff_mismatch( $changes, $store['records'] );
+
+			if ( $reason ) {
+				return self::desync( $listing, $reason );
+			}
+
+			$diff = Pivot_Repository::query_diff( $listing, max( 1, (int) pivot_get( $listing, 'content', 2 ) ) );
+
+			if ( is_wp_error( $diff ) ) {
+				return self::sync_failed( $listing, $diff );
+			}
+
+			// Relu : des changements ont pu arriver entre les deux appels.
+			$offers = (array) pivot_get( $diff, 'offers', array() );
+			$reason = self::diff_mismatch( $offers, $store['records'] );
+
+			if ( $reason ) {
+				return self::desync( $listing, $reason );
+			}
+
+			$records = $store['records'];
+			$state   = array( 'keymap' => $store['keymap'] );
+			$warm    = 3 === (int) pivot_get( $listing, 'content', 2 );
+			$ttl     = $warm ? self::detail_ttl( $listing ) : 0;
+			$counts  = array( 0, 0, 0 );
+
+			foreach ( $offers as $offer ) {
+				$code      = (string) pivot_get( $offer, 'code', '' );
+				$operation = (int) pivot_get( $offer, 'operation', 1 );
+
+				if ( '' === $code || $operation < 0 || $operation > 2 ) {
+					continue;
+				}
+
+				$counts[ $operation ]++;
+
+				if ( 2 === $operation ) {
+					unset( $records[ $code ] );
+					continue;
+				}
+
+				$record = self::build_record( $listing, $offer, $state );
+
+				if ( $record ) {
+					$records[ $code ] = $record;
+				}
+
+				// La fiche détail suit : réécrite si l'offre vient d'arriver au
+				// bon niveau de détail, oubliée sinon pour être relue à jour.
+				if ( $warm ) {
+					Pivot_Repository::remember_offer( $offer, 3, $ttl );
+				} else {
+					Pivot_Repository::forget_offer( $code );
+				}
+			}
+
+			self::publish(
+				$listing,
+				$records,
+				array(
+					'index_checked' => time(),
+					'index_changes' => count( $offers ),
+				)
+			);
+
+			self::save_records( $listing_id, $records, (array) pivot_get( $state, 'keymap', array() ) );
+
+			$ack = Pivot_Repository::query_ack( $listing );
+
+			if ( is_wp_error( $ack ) ) {
+				Pivot_Logger::warn(
+					sprintf(
+						'Différentiel de « %1$s » appliqué mais non validé chez PIVOT (%2$s) : il sera réappliqué au prochain passage.',
+						$listing_id,
+						$ack->get_error_message()
+					),
+					array( 'service' => 'index' )
+				);
+			}
+
+			self::sync_succeeded( $listing_id, count( $offers ), false );
+
+			Pivot_Logger::info(
+				sprintf(
+					'Index « %1$s » mis à jour par différentiel : %2$d ajout(s), %3$d modification(s), %4$d retrait(s).',
+					$listing_id,
+					$counts[0],
+					$counts[1],
+					$counts[2]
+				),
+				array( 'service' => 'index', 'cache_status' => 'diff', 'context' => array( 'listing' => $listing_id ) )
+			);
+
+			return array( 'status' => 'updated', 'changes' => count( $offers ) );
+		} finally {
+			Pivot_Cache::release_lock( $lock );
+		}
+	}
+
+	/**
+	 * Le différentiel contredit-il les fiches locales ?
+	 *
+	 * @param array $offers  Offres du différentiel.
+	 * @param array $records Fiches locales, par code.
+	 * @return string Motif, ou chaîne vide si tout concorde.
+	 */
+	private static function diff_mismatch( $offers, $records ) {
+		$limit = max( self::SYNC_MAX_CHANGES, (int) ceil( count( $records ) * self::SYNC_MAX_RATIO ) );
+
+		if ( count( $offers ) > $limit ) {
+			return sprintf( '%d changements', count( $offers ) );
+		}
+
+		$known_added = 0;
+
+		foreach ( $offers as $offer ) {
+			$code      = (string) pivot_get( $offer, 'code', '' );
+			$operation = (int) pivot_get( $offer, 'operation', 1 );
+			$known     = isset( $records[ $code ] );
+
+			// Modifiée ou retirée sans qu'on la connaisse : la référence de
+			// PIVOT est en avance sur nos fiches.
+			if ( ! $known && $operation > 0 ) {
+				return sprintf( 'offre %s inconnue', $code );
+			}
+
+			if ( $known && 0 === $operation ) {
+				$known_added++;
+			}
+		}
+
+		// Une offre déjà connue peut revenir « ajoutée » quand la validation
+		// précédente s'est perdue. La moitié des offres d'un coup, c'est que
+		// PIVOT n'a plus de référence : il renvoie tout, et les offres sorties
+		// entre-temps ne seraient jamais signalées.
+		if ( $known_added && $known_added >= count( $records ) / 2 ) {
+			return 'référence perdue chez PIVOT';
+		}
+
+		return '';
+	}
+
+	/**
+	 * Le différentiel n'est pas exploitable : on repartira d'une
+	 * reconstruction complète, qui repose la référence.
+	 *
+	 * @param array  $listing Configuration.
+	 * @param string $reason  Motif, pour le journal.
+	 * @return array
+	 */
+	private static function desync( $listing, $reason ) {
+		$listing_id = pivot_get( $listing, 'id', '' );
+		$sync       = self::sync_state( $listing_id );
+
+		$sync['anchored'] = false;
+		self::save_sync_state( $listing_id, $sync );
+
+		Pivot_Logger::warn(
+			sprintf( 'Différentiel de « %1$s » écarté (%2$s) : reconstruction complète.', $listing_id, $reason ),
+			array( 'service' => 'index' )
+		);
+
+		return array( 'status' => 'full', 'changes' => 0 );
+	}
+
+	/**
+	 * Compte un échec du différentiel.
+	 *
+	 * Au troisième d'affilée, le différentiel est réinitialisé chez PIVOT et
+	 * la page repart d'une reconstruction complète.
+	 *
+	 * @param array    $listing Configuration.
+	 * @param WP_Error $error   Erreur rencontrée.
+	 * @return array|WP_Error
+	 */
+	private static function sync_failed( $listing, $error ) {
+		$listing_id    = pivot_get( $listing, 'id', '' );
+		$sync          = self::sync_state( $listing_id );
+		$sync['fails'] = (int) pivot_get( $sync, 'fails', 0 ) + 1;
+
+		if ( $sync['fails'] < self::SYNC_FAILURES ) {
+			self::save_sync_state( $listing_id, $sync );
+
+			Pivot_Logger::error(
+				sprintf(
+					'Différentiel de « %1$s » indisponible (%2$s) : nouvel essai plus tard.',
+					$listing_id,
+					$error->get_error_message()
+				),
+				array( 'service' => 'index' )
+			);
+
+			return $error;
+		}
+
+		Pivot_Repository::query_clear( $listing );
+
+		$sync['fails']    = 0;
+		$sync['anchored'] = false;
+		self::save_sync_state( $listing_id, $sync );
+
+		Pivot_Logger::error(
+			sprintf(
+				'Différentiel de « %1$s » en échec %2$d fois (%3$s) : réinitialisé chez PIVOT, reconstruction complète.',
+				$listing_id,
+				self::SYNC_FAILURES,
+				$error->get_error_message()
+			),
+			array( 'service' => 'index' )
+		);
+
+		return array( 'status' => 'full', 'changes' => 0 );
+	}
+
+	/**
+	 * Enregistre une vérification réussie.
+	 *
+	 * @param string $listing_id Identifiant.
+	 * @param int    $changes    Changements appliqués.
+	 * @param bool   $refresh    Rafraîchir les métadonnées de la page (déjà
+	 *                           fait par publish() quand l'index est réécrit).
+	 */
+	private static function sync_succeeded( $listing_id, $changes, $refresh = true ) {
+		$sync = self::sync_state( $listing_id );
+
+		if ( ! empty( $sync['fails'] ) ) {
+			$sync['fails'] = 0;
+			self::save_sync_state( $listing_id, $sync );
+		}
+
+		if ( $refresh ) {
+			Pivot_Listings::update_meta(
+				$listing_id,
+				array(
+					'index_checked' => time(),
+					'index_changes' => (int) $changes,
+				)
+			);
+		}
+	}
+
+	/**
+	 * Pose la référence du différentiel.
+	 *
+	 * Appelée au début d'une reconstruction complète, avant le téléchargement :
+	 * une offre modifiée pendant la construction — qui peut durer plusieurs
+	 * minutes, par tranches — ressortira au différentiel suivant. Posée après,
+	 * elle serait perdue.
+	 *
+	 * @param array $listing Configuration.
+	 * @return bool
+	 */
+	private static function anchor( $listing ) {
+		$diff = Pivot_Repository::query_diff( $listing, 0 );
+		$ack  = is_wp_error( $diff ) ? $diff : Pivot_Repository::query_ack( $listing );
+
+		if ( is_wp_error( $ack ) ) {
+			Pivot_Logger::error(
+				sprintf(
+					'Différentiel de « %1$s » non ancré (%2$s) : la page restera en reconstruction complète.',
+					pivot_get( $listing, 'id', '' ),
+					$ack->get_error_message()
+				),
+				array( 'service' => 'index' )
+			);
+
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Durée de vie d'une fiche détail préchauffée.
+	 *
+	 * Tenue à jour par le différentiel, elle peut vivre jusqu'à la
+	 * reconstruction complète suivante, qui la réécrit.
+	 *
+	 * @param array $listing Configuration.
+	 * @return int Secondes.
+	 */
+	private static function detail_ttl( $listing ) {
+		$ttl = (int) pivot_settings( 'ttl_offer', 12 * HOUR_IN_SECONDS );
+
+		if ( self::diff_enabled( $listing ) ) {
+			$ttl = max( $ttl, self::index_ttl( $listing ) + 2 * DAY_IN_SECONDS );
+		}
+
+		return $ttl;
+	}
+
+	/**
+	 * Empreinte de ce dont dépendent les fiches neutres.
+	 *
+	 * Si elle change, les fiches gardées ne correspondent plus à la page.
+	 *
+	 * @param array $listing Configuration.
+	 * @return string
+	 */
+	private static function signature( $listing ) {
+		return md5(
+			(string) wp_json_encode(
+				array(
+					(string) pivot_get( $listing, 'query_code', '' ),
+					(array) pivot_get( $listing, 'query_params', array() ),
+					(int) pivot_get( $listing, 'content', 2 ),
+					(array) pivot_get( $listing, 'filters', array() ),
+					Pivot_I18n::enabled(),
+				)
+			)
+		);
+	}
+
+	/**
+	 * État du différentiel d'une page : ancrage, empreinte, échecs.
+	 *
+	 * @param string $listing_id Identifiant.
+	 * @return array
+	 */
+	public static function sync_state( $listing_id ) {
+		$state = Pivot_Cache::get( self::STATE_GROUP, self::sync_key( $listing_id ) );
+
+		return is_array( $state ) ? $state : array();
+	}
+
+	/**
+	 * @param string $listing_id Identifiant.
+	 * @param array  $state      État.
+	 */
+	private static function save_sync_state( $listing_id, $state ) {
+		Pivot_Cache::set( self::STATE_GROUP, self::sync_key( $listing_id ), $state, 0 );
+	}
+
+	/**
+	 * Fiches neutres gardées pour le différentiel.
+	 *
+	 * @param string $listing_id Identifiant.
+	 * @return array|null array{records:array, keymap:array}, null si absentes.
+	 */
+	private static function records_store( $listing_id ) {
+		$store = Pivot_Cache::get( self::STATE_GROUP, self::records_key( $listing_id ) );
+
+		if ( ! is_array( $store ) || ! isset( $store['records'] ) || ! is_array( $store['records'] ) ) {
+			return null;
+		}
+
+		return array(
+			'records' => $store['records'],
+			'keymap'  => isset( $store['keymap'] ) ? (array) $store['keymap'] : array(),
+		);
+	}
+
+	/**
+	 * @param string $listing_id Identifiant.
+	 * @param array  $records    Fiches neutres, par code.
+	 * @param array  $keymap     Clés stables des valeurs de facettes.
+	 */
+	private static function save_records( $listing_id, $records, $keymap ) {
+		// Sans expiration ni mémorisation : relues une fois par nuit au plus,
+		// et plusieurs mégaoctets sur les grosses pages.
+		Pivot_Cache::set(
+			self::STATE_GROUP,
+			self::records_key( $listing_id ),
+			array(
+				'records' => $records,
+				'keymap'  => $keymap,
+			),
+			0,
+			false
+		);
+	}
+
+	/**
+	 * Oublie le différentiel d'une page.
+	 *
+	 * @param string $listing_id Identifiant.
+	 */
+	private static function forget_sync( $listing_id ) {
+		Pivot_Cache::delete( self::STATE_GROUP, self::sync_key( $listing_id ) );
+		Pivot_Cache::delete( self::STATE_GROUP, self::records_key( $listing_id ) );
+	}
+
+	/**
+	 * @param string $listing_id Identifiant.
+	 * @return string
+	 */
+	private static function sync_key( $listing_id ) {
+		return 'sync|' . $listing_id;
+	}
+
+	/**
+	 * @param string $listing_id Identifiant.
+	 * @return string
+	 */
+	private static function records_key( $listing_id ) {
+		return 'records|' . $listing_id;
 	}
 
 	/**

@@ -66,9 +66,6 @@ msgstr "PIVOT settings"
 msgid "Réglages"
 msgstr "Settings"
 
-msgid "Cache et redirections"
-msgstr "Cache and redirects"
-
 msgid "Cache et outils"
 msgstr "Cache and tools"
 
@@ -383,14 +380,14 @@ msgstr "Summary — name, address, geolocation, default media"
 msgid "Complet — tous les champs de l'offre, nécessaire pour filtrer sur un champ PIVOT"
 msgstr "Full — every field of the offer, required to filter on a PIVOT field"
 
-msgid "Complet avec offres liées"
-msgstr "Full, with linked offers"
+msgid "Complet avec offres liées — met aussi en cache les fiches détail"
+msgstr "Full, with linked offers — also caches the detail pages"
 
 msgid "Richesse des données"
 msgstr "Data richness"
 
-msgid "Le mode résumé construit l'index plus vite ; le mode complet est indispensable dès qu'un filtre porte sur un champ PIVOT."
-msgstr "Summary mode builds the index faster; full mode is essential as soon as a filter works on a PIVOT field."
+msgid "Le mode résumé construit l'index plus vite ; le mode complet est indispensable dès qu'un filtre porte sur un champ PIVOT. Avec les offres liées, la construction est environ trois fois plus longue, mais chaque fiche détail est déjà en cache à la première visite."
+msgstr "Summary mode builds the index faster; full mode is essential as soon as a filter works on a PIVOT field. With linked offers, building takes about three times longer, but every detail page is already cached on its first visit."
 
 msgid "Tri"
 msgstr "Sorting"
@@ -734,8 +731,8 @@ msgstr "This link opens the catalogue read from the thesaurus: fields grouped by
 msgid "4. Contrôle"
 msgstr "4. Control"
 
-msgid "Ce que manipule le visiteur. Liste déroulante pour un choix unique, cases à cocher pour cumuler plusieurs valeurs, saisie libre pour une recherche partielle, interrupteur pour un champ oui/non. Le catalogue de champs le présélectionne correctement."
-msgstr "What the visitor operates. Drop-down for a single choice, checkboxes to combine several values, free text for a partial search, switch for a yes/no field. The field catalogue preselects the right one."
+msgid "Ce que manipule le visiteur. Liste déroulante pour un choix unique, cases à cocher pour cumuler plusieurs valeurs, saisie libre pour une recherche partielle, interrupteur pour un champ oui/non, nombre à comparer pour une capacité, un prix ou une distance : au moins, au plus, entre deux valeurs. Le catalogue de champs le présélectionne correctement."
+msgstr "What the visitor operates. Drop-down for a single choice, checkboxes to combine several values, free text for a partial search, switch for a yes/no field, number to compare for a capacity, a price or a distance: at least, at most, between two values. The field catalogue preselects the right one."
 
 msgid "5. Clé d'URL"
 msgstr "5. URL key"
@@ -875,8 +872,8 @@ msgstr "No offer is written to the database. Everything is cached in JSON files,
 msgid "Listes d'offres"
 msgstr "Offer lists"
 
-msgid "Fréquence de reconstruction de l'index qui alimente les pages de listing."
-msgstr "How often the index that feeds the listing pages is rebuilt."
+msgid "Fréquence de reconstruction complète de l'index qui alimente les pages de listing. Avec la mise à jour par différentiel, c'est une reconstruction de sécurité, faite la nuit : 7 jours suffisent."
+msgstr "How often the index that feeds the listing pages is fully rebuilt. With differential updates, this is a safety rebuild done at night: 7 days is enough."
 
 msgid "Fiches détail"
 msgstr "Detail pages"
@@ -911,47 +908,11 @@ msgstr "REST route"
 msgid "Le fichier statique évite de charger WordPress à chaque affichage de liste. Passez en REST si votre dossier uploads n'est pas servi directement."
 msgstr "The static file avoids loading WordPress on every list view. Switch to REST if your uploads folder is not served directly."
 
-msgid "Affichage et URL"
-msgstr "Display and URLs"
+msgid "Affichage"
+msgstr "Display"
 
 msgid "Réglages communs à toutes les pages générées par le plugin."
 msgstr "Settings shared by every page the plugin creates."
-
-msgid "Préfixe des pages détail"
-msgstr "Detail page prefix"
-
-msgid "Les fiches seront publiées sous %s."
-msgstr "The pages will be published under %s."
-
-msgid "Préfixe traduit"
-msgstr "Translated prefix"
-
-msgid "Facultatif : un préfixe propre à chaque langue, par exemple aanbod en néerlandais. Une langue laissée vide reprend le préfixe ci-dessus."
-msgstr "Optional: a prefix of its own per language, for example offer in English. A language left empty reuses the prefix above."
-
-msgid "Si une offre est renommée"
-msgstr "If an offer is renamed"
-
-msgid "L'adresse suit le nouveau nom"
-msgstr "The address follows the new name"
-
-msgid "L'adresse ne change plus"
-msgstr "The address no longer changes"
-
-msgid "Dans les deux cas l'ancienne adresse continue de fonctionner et redirige en 301 : le code PIVOT termine toujours le segment. Suivre le nom garde des adresses parlantes ; les figer évite qu'une correction de faute de frappe ne déplace une page déjà référencée."
-msgstr "In both cases the old address keeps working and redirects with a 301: the PIVOT code always ends the segment. Following the name keeps addresses meaningful; freezing them prevents a typo fix from moving an already indexed page."
-
-msgid "Anciennes URL /details/CODE"
-msgstr "Legacy /details/CODE URLs"
-
-msgid "Rediriger en 301 vers la nouvelle URL"
-msgstr "Redirect with a 301 to the new URL"
-
-msgid "Afficher la fiche directement à cette adresse"
-msgstr "Serve the page directly at this address"
-
-msgid "La forme /details/CODEPIVOT&type=IDTYPE reste comprise dans les deux cas : les liens existants et les référencements externes continuent de fonctionner."
-msgstr "The /details/CODEPIVOT&type=IDTYPE form keeps working in both cases: existing links and external references stay valid."
 
 msgid "Taille des vignettes"
 msgstr "Thumbnail size"
@@ -1133,26 +1094,6 @@ msgstr "Rendered with the plugin's styles. Your theme may present it differently
 msgid "Clés et valeurs disponibles"
 msgstr "Available keys and values"
 
-msgid "%d redirection"
-msgid_plural "%d redirections"
-msgstr[0] "%d redirect"
-msgstr[1] "%d redirects"
-
-msgid "%d adresse déjà gérée par le plugin, ignorée"
-msgid_plural "%d adresses déjà gérées par le plugin, ignorées"
-msgstr[0] "%d address already handled by the plugin, skipped"
-msgstr[1] "%d addresses already handled by the plugin, skipped"
-
-msgid "%d inchangée"
-msgid_plural "%d inchangées"
-msgstr[0] "%d unchanged"
-msgstr[1] "%d unchanged"
-
-msgid "Enregistrer cette redirection"
-msgid_plural "Enregistrer ces %d redirections"
-msgstr[0] "Save this redirect"
-msgstr[1] "Save these %d redirects"
-
 msgid "Cache vidé : %d fichiers supprimés. Les prochaines visites rechargeront les données depuis PIVOT."
 msgstr "Cache cleared: %d files deleted. The next visits will reload the data from PIVOT."
 
@@ -1165,38 +1106,8 @@ msgstr "Detail page cache cleared: %d files deleted."
 msgid "Reconstruction lancée pour toutes les pages actives. Elle se poursuit en arrière-plan."
 msgstr "Rebuild started for every active page. It continues in the background."
 
-msgid "Indiquez le code de la requête à traiter."
-msgstr "Enter the code of the query to process."
-
-msgid "Simulation terminée : %d redirections seraient créées. Rien n'a été enregistré."
-msgstr "Simulation complete: %d redirects would be created. Nothing was saved."
-
-msgid "%1$d redirections enregistrées. La table en compte %2$d au total."
-msgstr "%1$d redirects saved. The table now holds %2$d in total."
-
-msgid "Simulation abandonnée. Rien n'a été enregistré."
-msgstr "Simulation discarded. Nothing was saved."
-
-msgid "Redirection ajoutée."
-msgstr "Redirect added."
-
-msgid "Redirection refusée : vérifiez que la source et la cible sont différentes et non vides."
-msgstr "Redirect refused: check that the source and target differ and are not empty."
-
-msgid "Redirection supprimée."
-msgstr "Redirect deleted."
-
-msgid "Relevé des renommages effacé."
-msgstr "Rename report cleared."
-
-msgid "Registre des adresses vidé. Les fiches repartiront du nom actuel de chaque offre à la prochaine construction d'index."
-msgstr "Address registry cleared. Pages will restart from each offer's current name at the next index build."
-
 msgid "Les visites guidées vous seront reproposées à votre prochaine visite de chaque écran."
 msgstr "The guided tours will be offered again the next time you open each screen."
-
-msgid "Table de redirections vidée."
-msgstr "Redirect table cleared."
 
 msgid "Index des pages de listing"
 msgstr "Listing page indexes"
@@ -1230,123 +1141,6 @@ msgstr "Rebuild every index"
 
 msgid "Tout vider"
 msgstr "Clear everything"
-
-msgid "Redirections 301"
-msgstr "301 redirects"
-
-msgid "La forme /details/CODEPIVOT&type=IDTYPE est déjà reconnue sans configuration. Cet outil sert à couvrir d'autres anciennes adresses, par lot, à partir des offres d'une requête."
-msgstr "The /details/CODEPIVOT&type=IDTYPE form is already recognised without configuration. This tool covers other legacy addresses in bulk, based on the offers of a query."
-
-msgid "Requête à parcourir"
-msgstr "Query to walk through"
-
-msgid "Toutes les offres retournées par cette requête recevront une redirection vers leur nouvelle fiche."
-msgstr "Every offer returned by this query gets a redirect to its new page."
-
-msgid "Gabarits des anciennes URL"
-msgstr "Legacy URL patterns"
-
-msgid "Jetons disponibles : {code}, {type}, {slug}, {lang}. Chaque gabarit pointe vers la fiche dans sa langue : une seule passe suffit pour tout le site. Une langue laissée vide est ignorée."
-msgstr "Available tokens: {code}, {type}, {slug}, {lang}. Each pattern points to the page in its own language: one pass covers the whole site. A language left empty is skipped."
-
-msgid "Inutile de viser /details/ : cette forme est déjà reconnue par le plugin, les entrées correspondantes sont ignorées."
-msgstr "No need to target /details/: that form is already recognised by the plugin, and matching entries are skipped."
-
-msgid "Mode"
-msgstr "Mode"
-
-msgid "Simuler sans enregistrer"
-msgstr "Simulate without saving"
-
-msgid "Générer les redirections"
-msgstr "Generate the redirects"
-
-msgid "Ajouter une redirection"
-msgstr "Add a redirect"
-
-msgid "/ancienne-page"
-msgstr "/old-page"
-
-msgid "Table actuelle (%d)"
-msgstr "Current table (%d)"
-
-msgid "Cible"
-msgstr "Target"
-
-msgid "Retirer"
-msgstr "Remove"
-
-msgid "%d autres redirections ne sont pas affichées. Exportez la table pour la consulter en entier."
-msgstr "%d further redirects are not shown. Export the table to see it in full."
-
-msgid "Exporter"
-msgstr "Export"
-
-msgid "Vider la table"
-msgstr "Clear the table"
-
-msgid "Aucune redirection enregistrée."
-msgstr "No redirect saved."
-
-msgid "Aperçu de ce qui serait créé"
-msgstr "Preview of what would be created"
-
-msgid "Redirections créées"
-msgstr "Redirects created"
-
-msgid "destinations en %s"
-msgstr "targets in %s"
-
-msgid "Offre"
-msgstr "Offer"
-
-msgid "Langue"
-msgstr "Language"
-
-msgid "Ancienne adresse"
-msgstr "Old address"
-
-msgid "Nouvelle adresse"
-msgstr "New address"
-
-msgid "%d autres ne sont pas affichées ici."
-msgstr "%d others are not shown here."
-
-msgid "Abandonner"
-msgstr "Discard"
-
-msgid "Rien n'a encore été écrit. La simulation reste disponible tant que vous n'avez pas tranché, même si vous quittez cet écran."
-msgstr "Nothing has been written yet. The simulation stays available until you decide, even if you leave this screen."
-
-msgid "Offres renommées"
-msgstr "Renamed offers"
-
-msgid "Aucun changement de dénomination relevé depuis la mise en service. Les renommages faits dans PIVOT apparaîtront ici après la reconstruction de l'index."
-msgstr "No name change recorded since setup. Renames made in PIVOT will appear here after the index is rebuilt."
-
-msgid "Ces offres ont changé de nom dans PIVOT. Leur adresse est figée : elle n'a pas bougé."
-msgstr "These offers were renamed in PIVOT. Their address is frozen: it has not moved."
-
-msgid "Ces offres ont changé de nom dans PIVOT, et leur adresse a suivi. L'ancienne redirige en 301 vers la nouvelle ; pensez à prévenir vos partenaires si vous leur aviez communiqué un lien."
-msgstr "These offers were renamed in PIVOT, and their address followed. The old one redirects with a 301 to the new one; let your partners know if you had shared a link with them."
-
-msgid "Ancien nom"
-msgstr "Old name"
-
-msgid "Nouveau nom"
-msgstr "New name"
-
-msgid "Adresse"
-msgstr "Address"
-
-msgid "inchangée"
-msgstr "unchanged"
-
-msgid "Effacer ce relevé"
-msgstr "Clear this report"
-
-msgid "Réinitialiser le registre des adresses"
-msgstr "Reset the address registry"
 
 msgid "Aide"
 msgstr "Help"
@@ -1628,9 +1422,6 @@ msgstr "Unreadable XML document."
 msgid "Aucune offre dans la réponse du service."
 msgstr "No offer in the service's response."
 
-msgid "Indiquez au moins un gabarit d'ancienne adresse."
-msgstr "Enter at least one legacy address pattern."
-
 msgid "Code d'offre invalide."
 msgstr "Invalid offer code."
 
@@ -1706,3 +1497,98 @@ msgstr "The folder %s is not writable. The plugin stores its cache there."
 msgid "PIVOT Offres n'a pas pu démarrer."
 msgstr "PIVOT Offers could not start."
 
+msgid "Mise à jour par différentiel"
+msgstr "Differential update"
+
+msgid "Chaque nuit, ne demander à PIVOT que les offres ajoutées, modifiées ou retirées"
+msgstr "Every night, only ask PIVOT for offers that were added, changed or removed"
+
+msgid "PIVOT tient un seul différentiel par clé et par requête. Décochez cette case sur une copie du site qui utilise la même clé : les deux sites se voleraient les changements."
+msgstr "PIVOT keeps a single differential per key and per query. Untick this box on a copy of the site that uses the same key: the two sites would steal each other's changes."
+
+msgid "Heure de la mise à jour"
+msgstr "Update time"
+
+msgid "Heure du site. WordPress lance ses tâches à la première visite qui suit : pour une heure exacte, faites appeler wp-cron.php par une tâche cron du serveur."
+msgstr "Site time. WordPress runs its tasks on the first visit after that time: for an exact time, have a server cron job call wp-cron.php."
+
+msgid "PIVOT a refusé l'opération sur le différentiel."
+msgstr "PIVOT refused the operation on the differential."
+
+msgid "Le différentiel n'est pas actif pour cette page."
+msgstr "Differential updates are not active for this page."
+
+msgid "Une autre page active interroge la même requête PIVOT : le différentiel est désactivé pour les deux, et leurs index sont reconstruits entièrement."
+msgstr "Another active page uses the same PIVOT query: differential updates are disabled for both, and their indexes are fully rebuilt."
+
+msgid "Mise à jour par différentiel chaque nuit à %s. La prochaine sera une reconstruction complète, qui pose la référence du différentiel."
+msgstr "Differential update every night at %s. The next one will be a full rebuild, which sets the differential's reference point."
+
+msgid "Mise à jour par différentiel chaque nuit à %1$s. Dernière vérification il y a %2$s : %3$d changement(s)."
+msgstr "Differential update every night at %1$s. Last check %2$s ago: %3$d change(s)."
+
+msgid "Mise à jour par différentiel chaque nuit à %s."
+msgstr "Differential update every night at %s."
+
+msgid "vérifié il y a %s"
+msgstr "checked %s ago"
+
+msgid "Nombre à comparer"
+msgstr "Number to compare"
+
+msgid "Au moins (≥)"
+msgstr "At least (≥)"
+
+msgid "Au plus (≤)"
+msgstr "At most (≤)"
+
+msgid "Entre deux valeurs"
+msgstr "Between two values"
+
+msgid "Égal à (=)"
+msgstr "Equal to (=)"
+
+msgid "Champ de saisie"
+msgstr "Input field"
+
+msgid "Jauge (curseur)"
+msgstr "Slider"
+
+msgid "Comparaison"
+msgstr "Comparison"
+
+msgid "Unité"
+msgstr "Unit"
+
+msgid "Le visiteur saisit un nombre, ou règle la jauge entre la plus petite et la plus grande valeur des offres. Une offre sans valeur pour ce champ est écartée dès que le critère est utilisé. Une jauge ne sert pas l'égalité : ce réglage bascule sur le champ de saisie."
+msgstr "Visitors type a number, or set the slider between the smallest and the largest value of the offers. An offer with no value for this field is left out as soon as the criterion is used. A slider cannot express equality: this setting then switches to the input field."
+
+msgid "de %1$s à %2$s · %3$d %% des offres"
+msgstr "from %1$s to %2$s · %3$d %% of the offers"
+
+msgid "entre"
+msgstr "between"
+
+msgid "et"
+msgstr "and"
+
+msgid "au moins"
+msgstr "at least"
+
+msgid "au plus"
+msgstr "at most"
+
+msgid "entre %1$s et %2$s"
+msgstr "between %1$s and %2$s"
+
+msgid "au moins %s"
+msgstr "at least %s"
+
+msgid "au plus %s"
+msgstr "at most %s"
+
+msgid "Indifférent"
+msgstr "Any"
+
+msgid "Saisissez un nombre, par exemple 12 ou 9,50."
+msgstr "Enter a number, for example 12 or 9.50."

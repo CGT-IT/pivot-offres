@@ -72,6 +72,18 @@ class Pivot_Client {
 	}
 
 	/**
+	 * Requête DELETE (réinitialisation du cache différentiel d'une requête).
+	 *
+	 * @param string $path   Chemin du service.
+	 * @param array  $matrix Paramètres matriciels.
+	 * @param array  $args   Options.
+	 * @return array|WP_Error
+	 */
+	public static function delete( $path, $matrix = array(), $args = array() ) {
+		return self::request( 'DELETE', $path, $matrix, null, $args );
+	}
+
+	/**
 	 * Exécute la requête.
 	 *
 	 * @param string      $method HTTP.

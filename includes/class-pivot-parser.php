@@ -668,11 +668,15 @@ class Pivot_Parser {
 			$entry['dynamic'] = true;
 		}
 
-		foreach ( array( 'userGlobalId' => 'user_global', 'deprecated' => 'deprecated' ) as $source => $target ) {
-			$value = self::attr( $node, $source );
-			if ( null !== $value ) {
-				$entry[ $target ] = $value;
-			}
+		$user_global = self::attr( $node, 'userGlobalId' );
+		if ( null !== $user_global ) {
+			$entry['user_global'] = $user_global;
+		}
+
+		// PIVOT pose l'attribut sur presque chaque noeud, le plus souvent à
+		// "false" : c'est sa valeur qui compte, pas sa présence.
+		if ( 'true' === strtolower( (string) self::attr( $node, 'deprecated' ) ) ) {
+			$entry['deprecated'] = true;
 		}
 
 		foreach ( self::children( $node, 'picto' ) as $picto ) {

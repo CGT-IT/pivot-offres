@@ -239,7 +239,11 @@ class Pivot_Fields {
 
 		// Un champ dynamique est un filtre de catégorisation propre à un
 		// opérateur : le thesaurus le signale lui-même.
-		if ( ! empty( $entry['dynamic'] ) || ! empty( $entry['deprecated'] ) ) {
+		//
+		// La valeur est comparée, pas seulement sa présence : un thesaurus
+		// déjà en cache peut porter `deprecated` sous forme de chaîne, "false"
+		// sur presque tous les champs.
+		if ( self::is_flag_set( $entry, 'dynamic' ) || self::is_flag_set( $entry, 'deprecated' ) ) {
 			return true;
 		}
 
@@ -278,6 +282,19 @@ class Pivot_Fields {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Un drapeau du thesaurus est-il levé ?
+	 *
+	 * @param array  $entry Définition.
+	 * @param string $key   Drapeau.
+	 * @return bool
+	 */
+	private static function is_flag_set( $entry, $key ) {
+		$value = pivot_get( $entry, $key );
+
+		return true === $value || ( is_string( $value ) && in_array( strtolower( $value ), array( 'true', '1' ), true ) );
 	}
 
 	/**

@@ -31,7 +31,6 @@ class Pivot_Admin {
 
 		Pivot_Settings::instance();
 		Pivot_Listing_Edit::instance();
-		Pivot_Tools::instance();
 		Pivot_Types_Admin::instance();
 		Pivot_Fields_Admin::instance();
 		Pivot_Onboarding::instance();
@@ -175,7 +174,7 @@ class Pivot_Admin {
 
 		add_submenu_page(
 			'pivot-listings',
-			__( 'Cache et redirections', 'pivot-offres' ),
+			__( 'Cache et outils', 'pivot-offres' ),
 			__( 'Cache et outils', 'pivot-offres' ),
 			$cap,
 			'pivot-tools',
@@ -244,6 +243,8 @@ class Pivot_Admin {
 					'sugAdded'    => __( 'Ajouté', 'pivot-offres' ),
 					'sugSummary'  => __( '%1$d valeurs · %2$d %% des offres', 'pivot-offres' ),
 					'sugBoolean'  => __( 'oui / non · %d %% des offres', 'pivot-offres' ),
+					/* translators: 1 : plus petite valeur, 2 : plus grande valeur, 3 : pourcentage d'offres. */
+					'sugRange'    => __( 'de %1$s à %2$s · %3$d %% des offres', 'pivot-offres' ),
 					'sugBasis'    => __( 'Déduit de %1$d offres analysées sur %2$d.', 'pivot-offres' ),
 					'sugNone'     => __( 'Aucun critère ne se dégage de ces offres. Ajoutez-en un sur mesure.', 'pivot-offres' ),
 					'sugFailed'   => __( 'L\'analyse a échoué : %s', 'pivot-offres' ),
@@ -373,6 +374,16 @@ class Pivot_Admin {
 					(int) $listing['index_count'],
 					esc_html( human_time_diff( (int) $listing['index_built'] ) )
 				);
+
+				if ( (int) pivot_get( $listing, 'index_checked', 0 ) > (int) $listing['index_built'] && Pivot_Index_Builder::diff_enabled( $listing ) ) {
+					echo '<br /><small>';
+					printf(
+						/* translators: %s: date relative. */
+						esc_html__( 'vérifié il y a %s', 'pivot-offres' ),
+						esc_html( human_time_diff( (int) $listing['index_checked'] ) )
+					);
+					echo '</small>';
+				}
 			} else {
 				echo '<em>' . esc_html__( 'jamais construit', 'pivot-offres' ) . '</em>';
 			}

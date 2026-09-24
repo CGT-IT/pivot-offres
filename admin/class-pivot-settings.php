@@ -95,7 +95,16 @@ class Pivot_Settings {
 		);
 
 		$this->field( 'ttl_index', __( 'Listes d\'offres', 'pivot-offres' ), 'pivot_cache', 'duration', array(
-			'help' => __( 'Fréquence de reconstruction de l\'index qui alimente les pages de listing.', 'pivot-offres' ),
+			'help' => __( 'Fréquence de reconstruction complète de l\'index qui alimente les pages de listing. Avec la mise à jour par différentiel, c\'est une reconstruction de sécurité, faite la nuit : 7 jours suffisent.', 'pivot-offres' ),
+		) );
+
+		$this->field( 'diff_enabled', __( 'Mise à jour par différentiel', 'pivot-offres' ), 'pivot_cache', 'checkbox', array(
+			'label' => __( 'Chaque nuit, ne demander à PIVOT que les offres ajoutées, modifiées ou retirées', 'pivot-offres' ),
+			'help'  => __( 'PIVOT tient un seul différentiel par clé et par requête. Décochez cette case sur une copie du site qui utilise la même clé : les deux sites se voleraient les changements.', 'pivot-offres' ),
+		) );
+
+		$this->field( 'sync_time', __( 'Heure de la mise à jour', 'pivot-offres' ), 'pivot_cache', 'time', array(
+			'help' => __( 'Heure du site. WordPress lance ses tâches à la première visite qui suit : pour une heure exacte, faites appeler wp-cron.php par une tâche cron du serveur.', 'pivot-offres' ),
 		) );
 
 		$this->field( 'ttl_offer', __( 'Fiches détail', 'pivot-offres' ), 'pivot_cache', 'duration' );
@@ -124,40 +133,12 @@ class Pivot_Settings {
 
 		add_settings_section(
 			'pivot_display',
-			__( 'Affichage et URL', 'pivot-offres' ),
+			__( 'Affichage', 'pivot-offres' ),
 			function () {
 				echo '<p>' . esc_html__( 'Réglages communs à toutes les pages générées par le plugin.', 'pivot-offres' ) . '</p>';
 			},
 			'pivot-settings'
 		);
-
-		$this->field( 'detail_base', __( 'Préfixe des pages détail', 'pivot-offres' ), 'pivot_display', 'text', array(
-			'help' => sprintf(
-				/* translators: %s: exemple d'URL. */
-				__( 'Les fiches seront publiées sous %s.', 'pivot-offres' ),
-				'<code>' . esc_html( home_url( '/' ) ) . '<strong>' . esc_html( Pivot_Rewrites::detail_base() ) . '</strong>/nom-de-loffre-ald-01-00096z/</code>'
-			),
-		) );
-
-		$this->field( 'detail_bases', __( 'Préfixe traduit', 'pivot-offres' ), 'pivot_display', 'bases', array(
-			'help' => __( 'Facultatif : un préfixe propre à chaque langue, par exemple aanbod en néerlandais. Une langue laissée vide reprend le préfixe ci-dessus.', 'pivot-offres' ),
-		) );
-
-		$this->field( 'slug_mode', __( 'Si une offre est renommée', 'pivot-offres' ), 'pivot_display', 'select', array(
-			'options' => array(
-				'follow' => __( 'L\'adresse suit le nouveau nom', 'pivot-offres' ),
-				'freeze' => __( 'L\'adresse ne change plus', 'pivot-offres' ),
-			),
-			'help'    => __( 'Dans les deux cas l\'ancienne adresse continue de fonctionner et redirige en 301 : le code PIVOT termine toujours le segment. Suivre le nom garde des adresses parlantes ; les figer évite qu\'une correction de faute de frappe ne déplace une page déjà référencée.', 'pivot-offres' ),
-		) );
-
-		$this->field( 'legacy_mode', __( 'Anciennes URL /details/CODE', 'pivot-offres' ), 'pivot_display', 'select', array(
-			'options' => array(
-				'301' => __( 'Rediriger en 301 vers la nouvelle URL', 'pivot-offres' ),
-				'200' => __( 'Afficher la fiche directement à cette adresse', 'pivot-offres' ),
-			),
-			'help'    => __( 'La forme /details/CODEPIVOT&type=IDTYPE reste comprise dans les deux cas : les liens existants et les référencements externes continuent de fonctionner.', 'pivot-offres' ),
-		) );
 
 		$this->field( 'thumb', __( 'Taille des vignettes', 'pivot-offres' ), 'pivot_display', 'select', array(
 			'options' => array(
@@ -297,6 +278,15 @@ class Pivot_Settings {
 				$this->render_duration( $id, $name, (int) $value );
 				break;
 
+			case 'time':
+				printf(
+					'<input type="time" id="%s" name="%s" value="%s" />',
+					esc_attr( $id ),
+					esc_attr( $name ),
+					esc_attr( $value )
+				);
+				break;
+
 			case 'detected':
 				$langs = Pivot_I18n::languages();
 
@@ -340,21 +330,6 @@ class Pivot_Settings {
 				}
 
 				echo '</div>';
-				break;
-
-			case 'bases':
-				$bases = (array) pivot_settings( 'detail_bases', array() );
-
-				foreach ( Pivot_I18n::enabled() as $code ) {
-					printf(
-						'<p><label><span class="pivot-lang-tag">%1$s</span> <input type="text" name="%2$s[%3$s]" value="%4$s" class="regular-text code" placeholder="%5$s" /></label></p>',
-						esc_html( strtoupper( $code ) ),
-						esc_attr( self::OPTION . '[detail_bases]' ),
-						esc_attr( $code ),
-						esc_attr( isset( $bases[ $code ] ) ? $bases[ $code ] : '' ),
-						esc_attr( pivot_settings( 'detail_base', 'offre' ) )
-					);
-				}
 				break;
 
 			case 'password':
@@ -443,7 +418,7 @@ class Pivot_Settings {
 		$current = is_array( $current ) ? $current : array();
 		$clean   = $current;
 
-		$text_keys = array( 'environment', 'legacy_mode', 'slug_mode', 'thumb', 'map_provider', 'index_delivery', 'logs_level' );
+		$text_keys = array( 'environment', 'thumb', 'map_provider', 'index_delivery', 'logs_level' );
 		foreach ( $text_keys as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = sanitize_text_field( $input[ $key ] );
@@ -462,11 +437,6 @@ class Pivot_Settings {
 			}
 		}
 
-		if ( isset( $input['detail_base'] ) ) {
-			$base = Pivot_Listings::sanitize_path( $input['detail_base'] );
-			$clean['detail_base'] = $base ? $base : 'offre';
-		}
-
 		foreach ( array( 'map_tiles', 'map_attribution' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = wp_kses_post( trim( $input[ $key ] ) );
@@ -477,23 +447,12 @@ class Pivot_Settings {
 		$clean['batch_size']     = isset( $input['batch_size'] ) ? max( 10, min( 500, (int) $input['batch_size'] ) ) : 100;
 		$clean['logs_retention'] = isset( $input['logs_retention'] ) ? max( 1, min( 90, (int) $input['logs_retention'] ) ) : 7;
 
-		foreach ( array( 'logs_enabled', 'map_cluster', 'schema_org', 'hreflang' ) as $key ) {
+		foreach ( array( 'logs_enabled', 'map_cluster', 'schema_org', 'hreflang', 'diff_enabled' ) as $key ) {
 			$clean[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
 		}
 
-		// Préfixes traduits des fiches détail.
-		$bases = array();
-
-		foreach ( (array) pivot_get( $input, 'detail_bases', array() ) as $code => $base ) {
-			$code = Pivot_I18n::code( $code );
-			$base = Pivot_Listings::sanitize_path( $base );
-
-			if ( $code && $base ) {
-				$bases[ $code ] = $base;
-			}
-		}
-
-		$clean['detail_bases'] = $bases;
+		$sync_time          = isset( $input['sync_time'] ) ? trim( (string) $input['sync_time'] ) : '';
+		$clean['sync_time'] = preg_match( '/^([01]\d|2[0-3]):[0-5]\d$/', $sync_time ) ? $sync_time : '04:00';
 
 		foreach ( array( 'ttl_index', 'ttl_offer', 'ttl_thesaurus', 'ttl_negative' ) as $key ) {
 			if ( ! isset( $input[ $key ] ) ) {
@@ -502,16 +461,6 @@ class Pivot_Settings {
 			$amount        = isset( $input[ $key ]['amount'] ) ? max( 0, (int) $input[ $key ]['amount'] ) : 0;
 			$unit          = isset( $input[ $key ]['unit'] ) ? max( 1, (int) $input[ $key ]['unit'] ) : MINUTE_IN_SECONDS;
 			$clean[ $key ] = $amount * $unit;
-		}
-
-		// Le préfixe des fiches a pu changer : les permaliens doivent être régénérés.
-		$url_keys = array( 'detail_base', 'detail_bases' );
-
-		foreach ( $url_keys as $key ) {
-			if ( wp_json_encode( pivot_get( $current, $key ) ) !== wp_json_encode( pivot_get( $clean, $key ) ) ) {
-				update_option( 'pivot_flush_rewrites', 1, false );
-				break;
-			}
 		}
 
 		// Changer d'environnement invalide les caches : les données ne viennent plus du même serveur.

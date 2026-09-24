@@ -2,12 +2,10 @@
 /**
  * Règles de réécriture et résolution des URL.
  *
- * Trois familles d'URL :
+ * Deux familles d'URL :
  *  - les pages de listing, à l'adresse choisie par l'administrateur, avec un
  *    chemin propre à chaque langue ;
- *  - les fiches détail optimisées : /offre/nom-de-loffre-CODE/ ;
- *  - l'ancienne forme /details/CODEPIVOT&type=IDTYPE, conservée pour ne pas
- *    casser le maillage interne ni les liens entrants.
+ *  - les fiches détail : /details/CODEPIVOT&type=IDTYPE.
  *
  * @package Pivot_Offres
  */
@@ -35,32 +33,10 @@ class Pivot_Rewrites {
 	private function __construct() {
 		add_action( 'init', array( $this, 'register_rules' ), 20 );
 		add_filter( 'query_vars', array( $this, 'register_query_vars' ) );
-		add_action( 'parse_request', array( $this, 'parse_legacy_request' ), 5 );
+		add_action( 'parse_request', array( $this, 'parse_detail_request' ), 5 );
 		add_action( 'wp', array( $this, 'resolve_context' ) );
+		add_filter( 'redirect_canonical', array( $this, 'keep_detail_url' ) );
 		add_action( 'admin_init', array( $this, 'maybe_flush' ) );
-	}
-
-	/**
-	 * Préfixe des fiches détail dans une langue.
-	 *
-	 * @param string|null $lang Langue.
-	 * @return string
-	 */
-	public static function detail_base( $lang = null ) {
-		$lang  = $lang ? $lang : Pivot_I18n::current();
-		$bases = pivot_settings( 'detail_bases', array() );
-
-		$base = '';
-
-		if ( is_array( $bases ) && isset( $bases[ $lang ] ) ) {
-			$base = Pivot_Listings::sanitize_path( $bases[ $lang ] );
-		}
-
-		if ( ! $base ) {
-			$base = Pivot_Listings::sanitize_path( pivot_settings( 'detail_base', 'offre' ) );
-		}
-
-		return $base ? $base : 'offre';
 	}
 
 	/**
@@ -75,28 +51,6 @@ class Pivot_Rewrites {
 	private function routes() {
 		$routes = array();
 		$langs  = Pivot_I18n::languages();
-
-		// Fiches détail.
-		$bases = array();
-
-		foreach ( $langs as $lang ) {
-			$bases[ self::detail_base( $lang ) ][] = $lang;
-		}
-
-		foreach ( $bases as $base => $base_langs ) {
-			$routes[] = array(
-				'regex' => '^' . preg_quote( $base, '#' ) . '/([^/]+)/?$',
-				'query' => 'index.php?pivot_detail=$matches[1]'
-					. ( 1 === count( $base_langs ) ? '&pivot_lang=' . $base_langs[0] : '' ),
-			);
-
-			foreach ( $base_langs as $lang ) {
-				$routes[] = array(
-					'regex' => '^' . $lang . '/' . preg_quote( $base, '#' ) . '/([^/]+)/?$',
-					'query' => 'index.php?pivot_detail=$matches[1]&pivot_lang=' . $lang,
-				);
-			}
-		}
 
 		// Pages de listing.
 		foreach ( Pivot_Listings::active() as $listing ) {
@@ -136,16 +90,17 @@ class Pivot_Rewrites {
 			}
 		}
 
-		// Ancienne forme, avec et sans préfixe de langue.
+		// Fiches détail, avec et sans préfixe de langue. La forme avec &type=
+		// ne passe pas par ces règles : voir parse_detail_request().
 		$routes[] = array(
 			'regex' => '^details/([^/&]+)/?$',
-			'query' => 'index.php?pivot_legacy=$matches[1]',
+			'query' => 'index.php?pivot_detail=$matches[1]',
 		);
 
 		foreach ( $langs as $lang ) {
 			$routes[] = array(
 				'regex' => '^' . $lang . '/details/([^/&]+)/?$',
-				'query' => 'index.php?pivot_legacy=$matches[1]&pivot_lang=' . $lang,
+				'query' => 'index.php?pivot_detail=$matches[1]&pivot_lang=' . $lang,
 			);
 		}
 
@@ -170,14 +125,8 @@ class Pivot_Rewrites {
 	public function register_query_vars( $vars ) {
 		$vars[] = 'pivot_listing';
 		$vars[] = 'pivot_detail';
-		$vars[] = 'pivot_legacy';
 		$vars[] = 'pivot_page';
 		$vars[] = 'pivot_lang';
-		// Préfixée, comme les autres : déclarer « type » en variable publique la
-		// rendait reconnue sur tout le site et exposait le plugin aux collisions
-		// avec les thèmes et les autres extensions. La forme ancienne ?type=ID
-		// reste honorée, elle est lue directement dans $_GET plus bas.
-		$vars[] = 'pivot_type';
 
 		return $vars;
 	}
@@ -186,11 +135,12 @@ class Pivot_Rewrites {
 	 * Intercepte /details/CODE&type=ID avant l'analyse standard.
 	 *
 	 * L'esperluette dans un chemin n'est pas une syntaxe d'URL valide : le
-	 * segment arrive tel quel et doit être découpé à la main.
+	 * segment arrive tel quel et doit être découpé à la main. Seul le code sert
+	 * à retrouver l'offre ; le type qui le suit n'est pas lu.
 	 *
 	 * @param WP $wp Objet requête.
 	 */
-	public function parse_legacy_request( $wp ) {
+	public function parse_detail_request( $wp ) {
 		$request = isset( $wp->request ) ? (string) $wp->request : '';
 
 		if ( '' === $request ) {
@@ -202,7 +152,7 @@ class Pivot_Rewrites {
 		// publique du site, et la détection du préfixe de langue ci-dessous
 		// interroge l'extension de traduction puis compile une expression
 		// régulière — un travail inutile sur l'immense majorité des pages, qui
-		// n'ont rien à voir avec les anciennes adresses. Le test porte sur la
+		// n'ont rien à voir avec les fiches. Le test porte sur la
 		// présence du segment n'importe où, pour laisser passer /nl/details/…
 		// dont le préfixe n'a pas encore été retiré.
 		if ( false === stripos( $request, 'details/' ) ) {
@@ -222,29 +172,13 @@ class Pivot_Rewrites {
 		}
 
 		$rest = rawurldecode( substr( $request, strlen( 'details/' ) ) );
-		$code = $rest;
-		$type = 0;
-
-		if ( preg_match( '/^([^&?]+)[&?](.*)$/', $rest, $matches ) ) {
-			$code = $matches[1];
-			parse_str( str_replace( '&amp;', '&', $matches[2] ), $extra );
-			if ( isset( $extra['type'] ) ) {
-				$type = (int) $extra['type'];
-			}
-		}
-
-		if ( ! $type && isset( $_GET['type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			$type = (int) $_GET['type']; // phpcs:ignore WordPress.Security.NonceVerification
-		}
-
-		$code = trim( $code, '/' );
+		$code = trim( (string) preg_split( '/[&?]/', $rest )[0], '/' );
 
 		if ( ! pivot_is_code( $code ) ) {
 			return;
 		}
 
-		$wp->query_vars['pivot_legacy'] = $code;
-		$wp->query_vars['pivot_type']   = $type;
+		$wp->query_vars['pivot_detail'] = strtoupper( $code );
 
 		if ( $lang ) {
 			$wp->query_vars['pivot_lang'] = $lang;
@@ -268,20 +202,12 @@ class Pivot_Rewrites {
 			Pivot_I18n::set_current( $lang );
 		}
 
-		$legacy = get_query_var( 'pivot_legacy' );
-
-		if ( $legacy ) {
-			$this->handle_legacy( $legacy, (int) get_query_var( 'pivot_type' ) );
-			return;
-		}
-
 		$detail = get_query_var( 'pivot_detail' );
 
 		if ( $detail ) {
 			$this->context = array(
 				'kind' => 'detail',
-				'code' => self::code_from_slug( $detail ),
-				'slug' => $detail,
+				'code' => strtoupper( $detail ),
 				'lang' => Pivot_I18n::current(),
 			);
 			return;
@@ -306,57 +232,20 @@ class Pivot_Rewrites {
 	}
 
 	/**
-	 * Traite une ancienne URL : redirection 301 ou affichage direct.
+	 * Laisse l'adresse d'une fiche telle qu'elle a été demandée.
 	 *
-	 * L'offre est chargée avant de rediriger : sans son nom, on enverrait vers
-	 * /offre/CODE/ qui redirigerait à son tour vers l'adresse complète. Une
-	 * chaîne de redirections dilue le référencement et coûte un aller-retour au
-	 * visiteur. L'appel est mis en cache et sert ensuite à la page elle-même.
+	 * WordPress ajouterait sinon une barre oblique finale, en 301 :
+	 * /details/CODE&type=ID deviendrait /details/CODE&type=ID/.
 	 *
-	 * @param string $code Code PIVOT.
-	 * @param int    $type Identifiant de type d'offre.
+	 * @param string|false $redirect_url Redirection calculée par WordPress.
+	 * @return string|false
 	 */
-	private function handle_legacy( $code, $type ) {
-		$lang = Pivot_I18n::current();
-
-		if ( '200' === pivot_settings( 'legacy_mode', '301' ) ) {
-			$this->context = array(
-				'kind'   => 'detail',
-				'code'   => $code,
-				'legacy' => true,
-				'type'   => $type,
-				'lang'   => $lang,
-			);
-			return;
+	public function keep_detail_url( $redirect_url ) {
+		if ( $this->context && 'detail' === $this->context['kind'] ) {
+			return false;
 		}
 
-		$offer = Pivot_Repository::get_offer( $code, array( 'content' => 3 ) );
-
-		if ( is_wp_error( $offer ) ) {
-			// Offre inconnue : mieux vaut une 404 franche qu'une redirection
-			// vers une adresse qui n'existe pas davantage.
-			$this->context = array(
-				'kind' => 'detail',
-				'code' => $code,
-				'lang' => $lang,
-			);
-			return;
-		}
-
-		$target = self::detail_url(
-			$code,
-			(int) pivot_get( $offer, 'type', $type ),
-			Pivot_Templates::offer_name( $offer, $lang ),
-			$lang
-		);
-
-		Pivot_Logger::debug(
-			sprintf( 'Redirection 301 de /details/%s vers %s', $code, $target ),
-			array( 'service' => 'redirect', 'endpoint' => '/details/' . $code )
-		);
-
-		wp_redirect( $target, 301 ); // phpcs:ignore WordPress.Security.SafeRedirect
-		exit;
+		return $redirect_url;
 	}
 
 	/**
@@ -369,101 +258,24 @@ class Pivot_Rewrites {
 	}
 
 	/**
-	 * URL canonique d'une fiche détail.
-	 *
-	 * Le code PIVOT termine toujours le segment : l'URL reste résoluble même
-	 * si le nom de l'offre change dans PIVOT.
+	 * URL d'une fiche détail : /details/CODE&type=ID.
 	 *
 	 * @param string      $code Code PIVOT.
-	 * @param int         $type Type d'offre.
-	 * @param string      $name Nom de l'offre dans la langue visée.
+	 * @param int         $type Type d'offre ; omis de l'URL s'il est inconnu.
 	 * @param string|null $lang Langue.
 	 * @return string
 	 */
-	public static function detail_url( $code, $type = 0, $name = '', $lang = null ) {
+	public static function detail_url( $code, $type = 0, $lang = null ) {
 		$lang = $lang ? $lang : Pivot_I18n::current();
 		$code = strtoupper( trim( (string) $code ) );
-		$slug = Pivot_Slugs::slug_for( $code, $lang, $name );
+		$url  = Pivot_I18n::url( 'details/' . rawurlencode( $code ), $lang );
 
-		/**
-		 * Permet de réécrire le segment d'URL des fiches détail.
-		 *
-		 * @param string $slug Segment.
-		 * @param string $code Code PIVOT.
-		 * @param int    $type Type d'offre.
-		 * @param string $name Nom de l'offre.
-		 * @param string $lang Langue.
-		 */
-		$slug = apply_filters( 'pivot_detail_slug', $slug, $code, $type, $name, $lang );
+		// Le type se colle au code, sans barre oblique finale. Une chaîne de
+		// requête ajoutée par l'extension de traduction (?lang=nl) reste après.
+		$parts = explode( '?', $url, 2 );
+		$url   = untrailingslashit( $parts[0] ) . ( $type ? '&type=' . (int) $type : '' );
 
-		return Pivot_I18n::url( self::detail_base( $lang ) . '/' . $slug, $lang );
-	}
-
-	/**
-	 * Ancienne URL d'une offre.
-	 *
-	 * @param string $code Code PIVOT.
-	 * @param int    $type Type d'offre.
-	 * @return string
-	 */
-	public static function legacy_url( $code, $type = 0 ) {
-		$url = home_url( '/details/' . rawurlencode( $code ) );
-
-		if ( $type ) {
-			$url .= '&type=' . (int) $type;
-		}
-
-		return $url;
-	}
-
-	/**
-	 * Extrait le code PIVOT d'un segment d'URL.
-	 *
-	 * Le code termine le segment, mais le nom de l'offre le précède et contient
-	 * lui aussi des tirets : on teste les suffixes du plus long au plus court,
-	 * en privilégiant la forme stricte LETTRES-CHIFFRES-ALPHANUM.
-	 *
-	 * @param string $slug Segment.
-	 * @return string
-	 */
-	public static function code_from_slug( $slug ) {
-		$slug = trim( (string) $slug, '/' );
-
-		if ( '' === $slug ) {
-			return '';
-		}
-
-		/**
-		 * Forme stricte d'un code d'offre, par exemple ALD-01-00096Z.
-		 *
-		 * @param string $pattern Expression régulière.
-		 */
-		$strict = apply_filters( 'pivot_code_pattern', '/^[A-Z]{2,6}-[0-9]{2}-[A-Z0-9]{3,12}(-[A-Z0-9]{1,12})?$/i' );
-
-		$segments = explode( '-', $slug );
-		$count    = count( $segments );
-		$fallback = '';
-
-		for ( $take = min( 5, $count ); $take >= 2; $take-- ) {
-			$candidate = strtoupper( implode( '-', array_slice( $segments, $count - $take ) ) );
-
-			if ( preg_match( $strict, $candidate ) ) {
-				return $candidate;
-			}
-
-			// Repli : forme générique, mais exigeante — préfixe alphabétique,
-			// au moins deux séparateurs et deux chiffres. Sans cela « pas-de-
-			// code-ici » passerait pour un code. La boucle va du plus long au
-			// plus court, donc le candidat le plus court l'emporte.
-			$plausible = preg_match( '/^[A-Z]{2,6}(-[A-Z0-9]{1,12}){2,4}$/i', $candidate )
-				&& preg_match_all( '/\d/', $candidate ) >= 2;
-
-			if ( $plausible && pivot_is_code( $candidate ) ) {
-				$fallback = $candidate;
-			}
-		}
-
-		return $fallback;
+		return isset( $parts[1] ) ? $url . '?' . $parts[1] : $url;
 	}
 
 	/**

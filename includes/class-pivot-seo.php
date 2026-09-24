@@ -204,7 +204,7 @@ class Pivot_Seo {
 		$lang        = Pivot_I18n::current();
 		$code        = pivot_get( $offer, 'code' );
 		$name        = Pivot_Templates::offer_name( $offer, $lang );
-		$url         = Pivot_Rewrites::detail_url( $code, (int) pivot_get( $offer, 'type', 0 ), $name, $lang );
+		$url         = Pivot_Rewrites::detail_url( $code, (int) pivot_get( $offer, 'type', 0 ), $lang );
 		$description = Pivot_Templates::offer_description( $offer, 30, $lang );
 
 		if ( $description ) {
@@ -508,7 +508,6 @@ class Pivot_Seo {
 				return Pivot_Rewrites::detail_url(
 					pivot_get( $offer, 'code' ),
 					(int) pivot_get( $offer, 'type', 0 ),
-					Pivot_Templates::offer_name( $offer, $lang ),
 					$lang
 				);
 			}

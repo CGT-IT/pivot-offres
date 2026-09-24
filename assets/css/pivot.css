@@ -117,6 +117,54 @@
 	font-style: normal;
 }
 
+/* Critère numérique : « au moins [ 3 ] », « entre [ 10 ] € et [ 50 ] € ».
+   Les variables ont une valeur de repli : un thème qui réécrit le gabarit de
+   listing sans la classe pivot-listing peut réutiliser ce contrôle tel quel. */
+.pivot-range {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.4em;
+}
+
+.pivot-field .pivot-range input[type="text"] {
+	width: 6.5em;
+	border: var( --pivot-border, 1px solid rgba( 0, 0, 0, 0.2 ) );
+	border-radius: var( --pivot-radius, 6px );
+}
+
+.pivot-range-word,
+.pivot-range-unit {
+	color: var( --pivot-muted, rgba( 0, 0, 0, 0.6 ) );
+	font-size: 0.9em;
+}
+
+.pivot-field input[type="range"] {
+	display: block;
+	width: 100%;
+	margin: 0.35em 0;
+	accent-color: var( --pivot-accent, currentColor );
+}
+
+.pivot-range-output {
+	display: block;
+	font-size: 0.9em;
+}
+
+.pivot-field .pivot-range input[aria-invalid="true"] {
+	border-color: #b32d2e;
+}
+
+.pivot-field-error {
+	margin: 0.35em 0 0;
+	color: #b32d2e;
+	font-size: 0.85em;
+}
+
+.pivot-field-error[hidden] {
+	display: none;
+}
+
 .pivot-criteria-actions {
 	display: flex;
 	gap: 0.5rem;
@@ -437,6 +485,14 @@
 	.pivot-field select {
 		background: rgba( 255, 255, 255, 0.04 );
 		color: inherit;
+	}
+
+	.pivot-field .pivot-range input[aria-invalid="true"] {
+		border-color: #f86368;
+	}
+
+	.pivot-field-error {
+		color: #f86368;
 	}
 }
 

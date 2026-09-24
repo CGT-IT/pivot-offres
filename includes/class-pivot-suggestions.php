@@ -33,6 +33,8 @@ class Pivot_Suggestions {
 			'urn:fld:phone1', 'urn:fld:phone2', 'urn:fld:gsm', 'urn:fld:fax',
 			'urn:fld:mail1', 'urn:fld:mail2', 'urn:fld:email',
 			'urn:fld:web1', 'urn:fld:web2', 'urn:fld:latitude', 'urn:fld:longitude',
+			// Numérique, mais c'est l'identifiant du type d'offre, pas une mesure.
+			'urn:fld:typeofr',
 		);
 
 		/**
@@ -52,7 +54,9 @@ class Pivot_Suggestions {
 	 */
 	public static function analyse( $listing, $force = false ) {
 		$listing_id = pivot_get( $listing, 'id', '' );
-		$key        = 'suggestions|' . $listing_id . '|' . pivot_get( $listing, 'query_code', '' );
+		// Le suffixe suit le format des suggestions : une analyse mise en
+		// cache avant les critères numériques n'en proposerait aucun.
+		$key        = 'suggestions|' . $listing_id . '|' . pivot_get( $listing, 'query_code', '' ) . '|2';
 
 		if ( ! $force ) {
 			$cached = Pivot_Cache::get( self::GROUP, $key );
@@ -259,17 +263,27 @@ class Pivot_Suggestions {
 			$coverage = $sample > 0 ? min( 100, (int) round( ( $hits / $sample ) * 100 ) ) : 0;
 
 			$boolean = 'Boolean' === $entry['field_type'];
+			$numeric = in_array( $entry['field_type'], Pivot_Thesaurus::NUMERIC_TYPES, true );
+			$bounds  = $numeric ? self::bounds( array_keys( $values ) ) : null;
+
+			// Un nombre qui ne se lit pas comme tel, ou toujours le même, ne
+			// se compare à rien.
+			if ( $numeric && ( ! $bounds || $bounds[0] === $bounds[1] ) ) {
+				continue;
+			}
 
 			// Une seule valeur pour tout le monde ne filtre rien ; trop de
-			// valeurs distinctes non plus.
-			if ( ! $boolean && ( $distinct < 2 || $distinct > self::MAX_VALUES ) ) {
+			// valeurs distinctes non plus. Un nombre y échappe : il se compare,
+			// il ne se choisit pas dans une liste, et cent prix différents font
+			// une très bonne jauge.
+			if ( ! $boolean && ! $numeric && ( $distinct < 2 || $distinct > self::MAX_VALUES ) ) {
 				continue;
 			}
 
 			// Presque autant de valeurs distinctes que d'offres concernées :
 			// c'est une référence ou un texte libre, pas un critère. Un filtre
 			// dont chaque choix ne renvoie qu'une offre ne sert à rien.
-			if ( ! $boolean && $distinct >= 5 && $distinct > $hits * 0.8 ) {
+			if ( ! $boolean && ! $numeric && $distinct >= 5 && $distinct > $hits * 0.8 ) {
 				continue;
 			}
 
@@ -285,7 +299,7 @@ class Pivot_Suggestions {
 
 			arsort( $values );
 
-			$out[] = array(
+			$suggestion = array(
 				'key'        => self::make_key( $entry ),
 				'label'      => $entry['label'],
 				'source'     => $entry['source'],
@@ -294,9 +308,17 @@ class Pivot_Suggestions {
 				'control'    => self::control_for( $entry, $distinct ),
 				'values'     => $distinct,
 				'coverage'   => $coverage,
-				'examples'   => array_slice( array_keys( $values ), 0, 3 ),
+				'examples'   => $numeric ? array() : array_slice( array_keys( $values ), 0, 3 ),
 				'score'      => self::score( $entry, $distinct, $coverage ),
 			);
+
+			if ( $numeric ) {
+				$suggestion['operator'] = Pivot_Thesaurus::suggested_operator( $entry['field_type'] );
+				$suggestion['min']      = $bounds[0];
+				$suggestion['max']      = $bounds[1];
+			}
+
+			$out[] = $suggestion;
 		}
 
 		usort(
@@ -320,6 +342,12 @@ class Pivot_Suggestions {
 	 */
 	private static function score( $entry, $distinct, $coverage ) {
 		$score = $coverage;
+
+		// Le nombre de valeurs n'a pas de sens pour une jauge : un critère
+		// numérique vaut par sa couverture, et passe derrière les bons choix.
+		if ( in_array( $entry['field_type'], Pivot_Thesaurus::NUMERIC_TYPES, true ) ) {
+			return (int) $score + 30;
+		}
 
 		if ( $distinct >= 2 && $distinct <= 12 ) {
 			$score += 40;
@@ -356,6 +384,10 @@ class Pivot_Suggestions {
 			return 'multiselect';
 		}
 
+		if ( in_array( $entry['field_type'], Pivot_Thesaurus::NUMERIC_TYPES, true ) ) {
+			return 'range';
+		}
+
 		// Peu de valeurs : les cases à cocher se lisent d'un coup d'œil et
 		// permettent de cumuler. Au-delà, la liste déroulante reste plus sobre.
 		if ( $distinct <= 6 ) {
@@ -363,6 +395,23 @@ class Pivot_Suggestions {
 		}
 
 		return 'select';
+	}
+
+	/**
+	 * Plus petite et plus grande des valeurs lisibles comme des nombres.
+	 *
+	 * @param array $values Valeurs observées.
+	 * @return array|null array( min, max ), ou null si aucune n'est un nombre.
+	 */
+	private static function bounds( $values ) {
+		$numbers = array_filter(
+			array_map( 'pivot_parse_number', $values ),
+			static function ( $number ) {
+				return null !== $number;
+			}
+		);
+
+		return $numbers ? array( min( $numbers ), max( $numbers ) ) : null;
 	}
 
 	/**

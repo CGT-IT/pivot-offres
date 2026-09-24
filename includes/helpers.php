@@ -90,7 +90,6 @@ function pivot_settings( $key = null, $default = null ) {
 	if ( null === $cache ) {
 		$defaults = array(
 			'environment'        => 'stage',
-			'detail_bases'       => array(),
 			'hreflang'           => 1,
 			'url_prod'           => 'https://pivotweb.tourismewallonie.be/PivotWeb-3.1',
 			'url_stage'          => 'https://pivotweb-stage.tourismewallonie.be/PivotWeb-3.1',
@@ -102,13 +101,12 @@ function pivot_settings( $key = null, $default = null ) {
 			'ttl_thesaurus'      => 30 * DAY_IN_SECONDS,
 			'ttl_negative'       => 5 * MINUTE_IN_SECONDS,
 			'batch_size'         => 100,
+			'diff_enabled'       => 1,
+			'sync_time'          => '04:00',
 			'logs_enabled'       => 1,
 			'logs_level'         => 'error',
 			'logs_retention'     => 7,
 			'thumb'              => 'THB_MW',
-			'detail_base'        => 'offre',
-			'legacy_mode'        => '301',
-			'slug_mode'          => 'follow',
 			'map_provider'       => 'leaflet',
 			'map_tiles'          => 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 			'map_attribution'    => '&copy; OpenStreetMap',
@@ -176,6 +174,44 @@ function pivot_normalize( $string ) {
 }
 
 /**
+ * Lit un nombre, tel que PIVOT l'écrit ou tel qu'un visiteur le tape.
+ *
+ * PIVOT écrit « 9.50 » ; un visiteur belge tape plutôt « 9,50 », parfois
+ * « 1 250 ». Les deux séparateurs décimaux sont donc admis, les espaces de
+ * groupement ignorés. Tout le reste — unité, texte, heure « 3:30 » — n'est pas
+ * un nombre.
+ *
+ * @param mixed $value Valeur brute.
+ * @return int|float|null Entier si la valeur est ronde, null si ce n'est pas un nombre.
+ */
+function pivot_parse_number( $value ) {
+	if ( is_int( $value ) ) {
+		return $value;
+	}
+
+	if ( is_float( $value ) ) {
+		if ( ! is_finite( $value ) ) {
+			return null;
+		}
+
+		$number = $value;
+	} elseif ( is_string( $value ) ) {
+		$value = str_replace( array( ' ', "\xc2\xa0", "\xe2\x80\xaf" ), '', trim( $value ) );
+		$value = str_replace( ',', '.', $value );
+
+		if ( ! preg_match( '/^[-+]?(\d+(\.\d*)?|\.\d+)$/', $value ) ) {
+			return null;
+		}
+
+		$number = (float) $value;
+	} else {
+		return null;
+	}
+
+	return ( floor( $number ) === $number && abs( $number ) < PHP_INT_MAX ) ? (int) $number : $number;
+}
+
+/**
  * Construit un segment d'URL lisible à partir d'un libellé.
  *
  * @param string $text Texte source.
@@ -192,13 +228,16 @@ function pivot_slugify( $text, $max = 70 ) {
 }
 
 /**
- * Vérifie qu'un code ressemble à un codeCgt PIVOT (ex. ALD-01-00096Z).
+ * Vérifie qu'un code ressemble à un codeCgt PIVOT.
+ *
+ * Deux séparateurs coexistent dans PIVOT : le tiret (ALD-01-00096Z) et le
+ * soulignement (CGT_0001_00000087).
  *
  * @param string $code Code à tester.
  * @return bool
  */
 function pivot_is_code( $code ) {
-	return (bool) preg_match( '/^[A-Z0-9]{2,5}(-[A-Z0-9]{2,8}){1,4}$/i', (string) $code );
+	return (bool) preg_match( '/^[A-Z0-9]{2,5}([-_][A-Z0-9]{2,8}){1,4}$/i', (string) $code );
 }
 
 /**

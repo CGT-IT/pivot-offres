@@ -59,10 +59,12 @@
 				fill( row, '.pivot-filter-source', prefill.source );
 				fill( row, '.pivot-urn-input', prefill.urn || '' );
 				fill( row, 'select[name*="[type]"]', prefill.control );
+				fill( row, 'select[name*="[operator]"]', prefill.operator );
 				fill( row, 'input[name*="[key]"]', prefill.key || '' );
 			}
 
 			toggleUrnField( row );
+			toggleRangeOptions( row );
 
 			return row;
 		};
@@ -93,11 +95,34 @@
 			if ( event.target.classList.contains( 'pivot-filter-source' ) ) {
 				toggleUrnField( event.target.closest( '.pivot-filter-row' ) );
 			}
+
+			if ( event.target.matches( 'select[name*="[type]"]' ) ) {
+				toggleRangeOptions( event.target.closest( '.pivot-filter-row' ) );
+			}
 		} );
 
-		Array.prototype.forEach.call( container.querySelectorAll( '.pivot-filter-row' ), toggleUrnField );
+		Array.prototype.forEach.call( container.querySelectorAll( '.pivot-filter-row' ), function ( row ) {
+			toggleUrnField( row );
+			toggleRangeOptions( row );
+		} );
 
 		initFieldPicker( container );
+	}
+
+	/**
+	 * Comparaison, affichage et unité ne concernent que le contrôle numérique.
+	 */
+	function toggleRangeOptions( row ) {
+		if ( ! row ) {
+			return;
+		}
+
+		var control = row.querySelector( 'select[name*="[type]"]' );
+		var options = row.querySelector( '.pivot-filter-range' );
+
+		if ( control && options ) {
+			options.hidden = control.value !== 'range';
+		}
 	}
 
 	/**
@@ -190,9 +215,22 @@
 		}
 
 		function card( item ) {
-			var summary = 'toggle' === item.control
-				? text( 'sugBoolean' ).replace( '%d', item.coverage )
-				: text( 'sugSummary' ).replace( '%1$d', item.values ).replace( '%2$d', item.coverage );
+			var summary;
+
+			if ( 'toggle' === item.control ) {
+				summary = text( 'sugBoolean' ).replace( '%d', item.coverage );
+			} else if ( 'range' === item.control ) {
+				summary = text( 'sugRange' )
+					.replace( '%1$s', Number( item.min ).toLocaleString() )
+					.replace( '%2$s', Number( item.max ).toLocaleString() )
+					.replace( '%3$d', item.coverage );
+			} else {
+				summary = text( 'sugSummary' ).replace( '%1$d', item.values ).replace( '%2$d', item.coverage );
+			}
+
+			// « %% » est l'échappement de gettext pour « % » : sprintf le résout
+			// en PHP, pas ici.
+			summary = summary.replace( /%%/g, '%' );
 
 			var html = '<div class="pivot-suggestion" data-suggestion="' + escapeHtml( JSON.stringify( item ) ) + '">';
 			html += '<div class="pivot-suggestion-main">';
@@ -408,7 +446,8 @@
 			html += '<button type="button" class="pivot-field-item" role="option"' +
 				' data-urn="' + escapeHtml( field.urn ) + '"' +
 				' data-label="' + escapeHtml( field.label ) + '"' +
-				' data-control="' + escapeHtml( field.control ) + '">' +
+				' data-control="' + escapeHtml( field.control ) + '"' +
+				' data-operator="' + escapeHtml( field.operator || '' ) + '">' +
 				'<span class="pivot-field-label">' + escapeHtml( field.label ) + '</span>' +
 				'<code>' + escapeHtml( field.urn ) + '</code>' +
 				'<span class="pivot-field-type-tag">' + escapeHtml( field.type || '' ) + '</span>' +
@@ -524,6 +563,9 @@
 					control.value = suggested;
 				}
 			}
+
+			fill( row, 'select[name*="[operator]"]', item.getAttribute( 'data-operator' ) );
+			toggleRangeOptions( row );
 
 			row.querySelector( '.pivot-field-picker' ).hidden = true;
 		} );

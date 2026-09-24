@@ -17,6 +17,13 @@ class Pivot_Thesaurus {
 	const GROUP = 'thesaurus';
 
 	/**
+	 * Types de champ qui portent un nombre : entier positif, décimal positif
+	 * ou signé (un dénivelé), montant. Durées et heures (« 3:30 ») n'en sont
+	 * pas : elles s'écrivent autrement.
+	 */
+	const NUMERIC_TYPES = array( 'UInt', 'UFloat', 'SFloat', 'Currency' );
+
+	/**
 	 * Récupère et met en cache un document du thesaurus.
 	 *
 	 * @param string   $path   Chemin relatif après /thesaurus.
@@ -314,11 +321,12 @@ class Pivot_Thesaurus {
 			$type = (string) pivot_get( $entry, 'type', '' );
 
 			$fields[] = array(
-				'urn'     => $urn,
-				'label'   => $label,
-				'type'    => $type,
-				'cat'     => $cat_label,
-				'control' => self::suggested_control( $type ),
+				'urn'      => $urn,
+				'label'    => $label,
+				'type'     => $type,
+				'cat'      => $cat_label,
+				'control'  => self::suggested_control( $type ),
+				'operator' => self::suggested_operator( $type ),
 			);
 		}
 
@@ -340,18 +348,28 @@ class Pivot_Thesaurus {
 	 * @return string
 	 */
 	public static function suggested_control( $type ) {
+		// Types tels que le thesaurus les écrit. Les nombres sont listés à
+		// part, dans NUMERIC_TYPES.
 		$map = array(
-			'Boolean'     => 'toggle',
-			'Choice'      => 'select',
-			'MultiChoice' => 'multiselect',
-			'Text'        => 'text',
-			'Textarea'    => 'text',
-			'Url'         => 'text',
-			'Email'       => 'text',
-			'Integer'     => 'text',
-			'Float'       => 'text',
-			'Date'        => 'text',
+			'Boolean'            => 'toggle',
+			'Choice'             => 'select',
+			'HChoice'            => 'select',
+			'MultiChoice'        => 'multiselect',
+			'HMultiChoice'       => 'multiselect',
+			'String'             => 'text',
+			'StringML'           => 'text',
+			'FirstUpperString'   => 'text',
+			'FirstUpperStringML' => 'text',
+			'TextML'             => 'text',
+			'TextRawML'          => 'text',
+			'URL'                => 'text',
+			'EMail'              => 'text',
+			'Date'               => 'text',
 		);
+
+		foreach ( self::NUMERIC_TYPES as $numeric ) {
+			$map[ $numeric ] = 'range';
+		}
 
 		/**
 		 * Permet d'ajuster le contrôle proposé pour un type de champ.
@@ -361,6 +379,27 @@ class Pivot_Thesaurus {
 		$map = apply_filters( 'pivot_field_control_map', $map );
 
 		return isset( $map[ $type ] ) ? $map[ $type ] : 'select';
+	}
+
+	/**
+	 * Comparaison la plus probable pour un champ numérique.
+	 *
+	 * Un prix se borne par le haut (« au plus 50 € »), un effectif par le bas
+	 * (« au moins 3 chambres »), une mesure se cherche dans un intervalle.
+	 *
+	 * @param string $type Type déclaré dans le thesaurus.
+	 * @return string Opérateur, ou chaîne vide pour un champ non numérique.
+	 */
+	public static function suggested_operator( $type ) {
+		if ( ! in_array( $type, self::NUMERIC_TYPES, true ) ) {
+			return '';
+		}
+
+		if ( 'Currency' === $type ) {
+			return 'lte';
+		}
+
+		return 'UInt' === $type ? 'gte' : 'between';
 	}
 
 	/**

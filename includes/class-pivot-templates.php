@@ -37,7 +37,6 @@ class Pivot_Templates {
 
 	private function __construct() {
 		add_action( 'wp', array( $this, 'prepare' ), 20 );
-		add_action( 'template_redirect', array( $this, 'canonical_redirect' ), 5 );
 		add_filter( 'template_include', array( $this, 'template' ), 99 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue' ) );
 	}
@@ -126,88 +125,6 @@ class Pivot_Templates {
 		$pages = $total ? (int) ceil( $total / $per ) : 1;
 
 		return $page > $pages;
-	}
-
-	/**
-	 * Ramène toute variante d'URL vers l'adresse canonique de la fiche.
-	 *
-	 * Une offre n'a qu'une adresse par langue : celle qui porte son nom suivi
-	 * de son code. Les formes abrégées, ou celles construites avec un ancien
-	 * nom, sont redirigées en 301 pour que le référencement se concentre sur
-	 * une seule URL.
-	 */
-	public function canonical_redirect() {
-		$context = $this->context();
-
-		if ( ! $context || 'detail' !== $context['kind'] ) {
-			return;
-		}
-
-		// En mode compatibilité, l'ancienne adresse doit répondre elle-même.
-		if ( ! empty( $context['legacy'] ) ) {
-			return;
-		}
-
-		$offer = $this->current_offer();
-
-		if ( ! $offer ) {
-			return;
-		}
-
-		$lang      = Pivot_I18n::current();
-		$canonical = Pivot_Rewrites::detail_url(
-			pivot_get( $offer, 'code' ),
-			(int) pivot_get( $offer, 'type', 0 ),
-			self::offer_name( $offer, $lang ),
-			$lang
-		);
-
-		$request = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-
-		// La comparaison porte sur le dernier segment seulement. Comparer le
-		// chemin entier provoquerait une boucle : les extensions de traduction
-		// retirent leur segment de langue de la requête avant que WordPress ne
-		// l'analyse, si bien que l'adresse demandée ne ressemble jamais à
-		// l'adresse canonique. Le préfixe de langue et la base sont leur
-		// affaire ; le nôtre est que le slug porte le nom de l'offre.
-		$target_slug  = self::last_segment( (string) wp_parse_url( $canonical, PHP_URL_PATH ) );
-		$current_slug = self::last_segment( (string) wp_parse_url( $request, PHP_URL_PATH ) );
-
-		if ( '' === $target_slug || $target_slug === $current_slug ) {
-			return;
-		}
-
-		$query = (string) wp_parse_url( $request, PHP_URL_QUERY );
-
-		if ( $query ) {
-			$canonical .= ( false === strpos( $canonical, '?' ) ? '?' : '&' ) . $query;
-		}
-
-		Pivot_Logger::debug(
-			sprintf( 'Redirection canonique : %1$s vers %2$s', $current_slug, $canonical ),
-			array( 'service' => 'redirect', 'endpoint' => $request )
-		);
-
-		wp_redirect( $canonical, 301 ); // phpcs:ignore WordPress.Security.SafeRedirect
-		exit;
-	}
-
-	/**
-	 * Dernier segment d'un chemin, décodé et en minuscules.
-	 *
-	 * @param string $path Chemin.
-	 * @return string
-	 */
-	private static function last_segment( $path ) {
-		$path = trim( rawurldecode( (string) $path ), '/' );
-
-		if ( '' === $path ) {
-			return '';
-		}
-
-		$parts = explode( '/', $path );
-
-		return strtolower( (string) end( $parts ) );
 	}
 
 	/**
@@ -1147,7 +1064,6 @@ class Pivot_Templates {
 			$out[ $lang ] = Pivot_Rewrites::detail_url(
 				pivot_get( $offer, 'code' ),
 				(int) pivot_get( $offer, 'type', 0 ),
-				self::offer_name( $offer, $lang ),
 				$lang
 			);
 		}

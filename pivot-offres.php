@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       PIVOT Offres Installed
  * Description:       Publie les offres touristiques de PIVOT/Web (CGT Wallonie) : pages de listing paramétrables, recherche et pagination 100 % côté client, cartographie, pages détail optimisées SEO, multilingue fr/nl/en/de à partir des traductions renvoyées par PIVOT. Aucune offre n'est stockée en base de données.
- * Version:           2.5.1
+ * Version:           2.7.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * License:           GPL-2.0-or-later
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PIVOT_VERSION', '2.5.1' );
+define( 'PIVOT_VERSION', '2.7.0' );
 define( 'PIVOT_FILE', __FILE__ );
 define( 'PIVOT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PIVOT_URL', plugin_dir_url( __FILE__ ) );
@@ -48,9 +48,7 @@ require_once PIVOT_DIR . 'includes/class-pivot-index-builder.php';
 require_once PIVOT_DIR . 'includes/class-pivot-suggestions.php';
 require_once PIVOT_DIR . 'includes/class-pivot-fields.php';
 require_once PIVOT_DIR . 'includes/class-pivot-types.php';
-require_once PIVOT_DIR . 'includes/class-pivot-slugs.php';
 require_once PIVOT_DIR . 'includes/class-pivot-rewrites.php';
-require_once PIVOT_DIR . 'includes/class-pivot-redirects.php';
 require_once PIVOT_DIR . 'includes/class-pivot-rest.php';
 require_once PIVOT_DIR . 'includes/class-pivot-seo.php';
 require_once PIVOT_DIR . 'includes/class-pivot-templates.php';
@@ -127,7 +125,52 @@ final class Pivot_Offres {
 
 		Pivot_Cache::ensure_directory();
 
+		if ( version_compare( $installed, '2.6.0', '<' ) ) {
+			self::drop_old_detail_urls();
+		}
+
 		update_option( 'pivot_version', PIVOT_VERSION, false );
+	}
+
+	/**
+	 * Retire ce qui servait aux anciennes adresses de fiches.
+	 *
+	 * Jusqu'en 2.5, une fiche était publiée sous /offre/nom-CODE/, vers
+	 * laquelle /details/ et une table de 301 redirigeaient. Depuis 2.6.0,
+	 * /details/CODE&type=ID est l'adresse des fiches : la table, les réglages
+	 * d'URL et le relevé des renommages n'ont plus d'usage. Les index portent
+	 * encore les anciennes adresses : ils sont reconstruits.
+	 */
+	private static function drop_old_detail_urls() {
+		delete_option( 'pivot_redirects' );
+		delete_option( 'pivot_redirects_count' );
+
+		// Tourne à admin_init priorité 1, avant que Pivot_Settings n'accroche
+		// son nettoyage de formulaire à cette option : elle est réécrite telle
+		// quelle.
+		$settings = get_option( 'pivot_settings', array() );
+
+		if ( is_array( $settings ) ) {
+			unset( $settings['detail_base'], $settings['detail_bases'], $settings['legacy_mode'], $settings['slug_mode'] );
+			update_option( 'pivot_settings', $settings );
+		}
+
+		$listings = get_option( Pivot_Listings::OPTION, array() );
+
+		if ( is_array( $listings ) ) {
+			foreach ( array_keys( $listings ) as $id ) {
+				unset( $listings[ $id ]['renamed'] );
+			}
+
+			update_option( Pivot_Listings::OPTION, $listings, false );
+		}
+
+		foreach ( array_keys( Pivot_Listings::active() ) as $listing_id ) {
+			Pivot_Index_Builder::invalidate( $listing_id );
+			wp_schedule_single_event( time() + 5, 'pivot_continue_index', array( $listing_id ) );
+		}
+
+		Pivot_Rewrites::instance()->schedule_flush();
 	}
 
 	/**
@@ -144,7 +187,6 @@ final class Pivot_Offres {
 		Pivot_I18n::bootstrap();
 		Pivot_Logger::instance();
 		Pivot_Rewrites::instance();
-		Pivot_Redirects::instance();
 		Pivot_Templates::instance();
 		Pivot_Shortcodes::instance();
 		Pivot_Seo::instance();

@@ -279,7 +279,7 @@ class Pivot_Listing_Edit {
 		$content_options = array(
 			1 => __( 'Résumé — nom, adresse, géolocalisation, média par défaut', 'pivot-offres' ),
 			2 => __( 'Complet — tous les champs de l\'offre, nécessaire pour filtrer sur un champ PIVOT', 'pivot-offres' ),
-			3 => __( 'Complet avec offres liées', 'pivot-offres' ),
+			3 => __( 'Complet avec offres liées — met aussi en cache les fiches détail', 'pivot-offres' ),
 		);
 
 		$select = '<select name="pivot_listing[content]">';
@@ -298,7 +298,7 @@ class Pivot_Listing_Edit {
 		self::row(
 			__( 'Richesse des données', 'pivot-offres' ),
 			$select,
-			__( 'Le mode résumé construit l\'index plus vite ; le mode complet est indispensable dès qu\'un filtre porte sur un champ PIVOT.', 'pivot-offres' )
+			__( 'Le mode résumé construit l\'index plus vite ; le mode complet est indispensable dès qu\'un filtre porte sur un champ PIVOT. Avec les offres liées, la construction est environ trois fois plus longue, mais chaque fiche détail est déjà en cache à la première visite.', 'pivot-offres' )
 		);
 
 		self::row(
@@ -537,6 +537,8 @@ class Pivot_Listing_Edit {
 
 		echo '</div>';
 
+		self::range_options( $name, $filter );
+
 		// Traductions du libellé et des valeurs.
 		$langs = Pivot_I18n::enabled();
 
@@ -632,6 +634,51 @@ class Pivot_Listing_Edit {
 		echo '</div>';
 
 		echo '<p class="pivot-filter-actions"><button type="button" class="button-link pivot-remove-filter">' . esc_html__( 'Retirer ce critère', 'pivot-offres' ) . '</button></p>';
+
+		echo '</div>';
+	}
+
+	/**
+	 * Réglages d'un critère numérique, affichés quand le contrôle l'est.
+	 *
+	 * @param string $name   Préfixe des champs.
+	 * @param array  $filter Données.
+	 */
+	private static function range_options( $name, $filter ) {
+		$hidden = 'range' === pivot_get( $filter, 'type', 'select' ) ? '' : ' hidden';
+
+		echo '<div class="pivot-filter-grid pivot-filter-range"' . $hidden . '>'; // phpcs:ignore WordPress.Security.EscapeOutput
+
+		$selects = array(
+			'operator' => array( __( 'Comparaison', 'pivot-offres' ), Pivot_Listings::filter_operators(), 'gte' ),
+			'widget'   => array( __( 'Affichage', 'pivot-offres' ), Pivot_Listings::filter_widgets(), 'input' ),
+		);
+
+		foreach ( $selects as $field => $select ) {
+			list( $label, $options, $default ) = $select;
+
+			printf( '<label>%s<select name="%s[%s]">', esc_html( $label ), esc_attr( $name ), esc_attr( $field ) );
+
+			foreach ( $options as $value => $text ) {
+				printf(
+					'<option value="%s"%s>%s</option>',
+					esc_attr( $value ),
+					selected( pivot_get( $filter, $field, $default ), $value, false ),
+					esc_html( $text )
+				);
+			}
+
+			echo '</select></label>';
+		}
+
+		printf(
+			'<label>%s<input type="text" name="%s[unit]" value="%s" maxlength="12" placeholder="€, km, m…" /></label>',
+			esc_html__( 'Unité', 'pivot-offres' ),
+			esc_attr( $name ),
+			esc_attr( pivot_get( $filter, 'unit', '' ) )
+		);
+
+		echo '<p class="description">' . esc_html__( 'Le visiteur saisit un nombre, ou règle la jauge entre la plus petite et la plus grande valeur des offres. Une offre sans valeur pour ce champ est écartée dès que le critère est utilisé. Une jauge ne sert pas l\'égalité : ce réglage bascule sur le champ de saisie.', 'pivot-offres' ) . '</p>';
 
 		echo '</div>';
 	}
@@ -783,6 +830,8 @@ class Pivot_Listing_Edit {
 			echo '<p>' . esc_html__( 'Cet index n\'a pas encore été construit. Il le sera à la première visite, ou dès maintenant avec le bouton ci-dessous.', 'pivot-offres' ) . '</p>';
 		}
 
+		self::diff_status( $listing );
+
 		printf(
 			'<p><button type="button" class="button button-secondary pivot-rebuild" data-listing="%s">%s</button> <span class="pivot-rebuild-status" role="status"></span></p>',
 			esc_attr( $listing['id'] ),
@@ -792,6 +841,52 @@ class Pivot_Listing_Edit {
 		echo '<div class="pivot-progress" hidden><div class="pivot-progress-bar"></div></div>';
 
 		self::section_shortcode( $listing );
+	}
+
+	/**
+	 * État de la mise à jour par différentiel.
+	 *
+	 * @param array $listing Configuration.
+	 */
+	private static function diff_status( $listing ) {
+		if ( empty( $listing['id'] ) || ! pivot_settings( 'diff_enabled', 1 ) ) {
+			return;
+		}
+
+		if ( Pivot_Index_Builder::shares_query( $listing ) ) {
+			printf(
+				'<div class="notice notice-warning inline"><p>%s</p></div>',
+				esc_html__( 'Une autre page active interroge la même requête PIVOT : le différentiel est désactivé pour les deux, et leurs index sont reconstruits entièrement.', 'pivot-offres' )
+			);
+
+			return;
+		}
+
+		$time = (string) pivot_settings( 'sync_time', '04:00' );
+
+		if ( Pivot_Index_Builder::needs_full_rebuild( $listing ) ) {
+			$line = sprintf(
+				/* translators: %s : heure de la mise à jour de nuit. */
+				__( 'Mise à jour par différentiel chaque nuit à %s. La prochaine sera une reconstruction complète, qui pose la référence du différentiel.', 'pivot-offres' ),
+				$time
+			);
+		} elseif ( ! empty( $listing['index_checked'] ) ) {
+			$line = sprintf(
+				/* translators: 1 : heure de la mise à jour de nuit, 2 : durée, 3 : nombre de changements. */
+				__( 'Mise à jour par différentiel chaque nuit à %1$s. Dernière vérification il y a %2$s : %3$d changement(s).', 'pivot-offres' ),
+				$time,
+				human_time_diff( (int) $listing['index_checked'] ),
+				(int) pivot_get( $listing, 'index_changes', 0 )
+			);
+		} else {
+			$line = sprintf(
+				/* translators: %s : heure de la mise à jour de nuit. */
+				__( 'Mise à jour par différentiel chaque nuit à %s.', 'pivot-offres' ),
+				$time
+			);
+		}
+
+		echo '<p>' . esc_html( $line ) . '</p>';
 	}
 
 	/**

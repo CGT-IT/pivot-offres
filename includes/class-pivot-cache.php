@@ -12,7 +12,7 @@
  *  - `index` est **servi au navigateur** : ces fichiers doivent rester sous
  *    uploads/, à une adresse stable et devinable, c'est leur raison d'être.
  *  - tout le reste — offres normalisées, état de construction, thésaurus,
- *    réponses brutes, registre des adresses — n'a **aucune raison d'être
+ *    réponses brutes — n'a **aucune raison d'être
  *    accessible par le Web**. Ces fichiers vivent sous wp-content/, hors de
  *    l'arborescence publiée.
  *
@@ -65,7 +65,7 @@ class Pivot_Cache {
 	 * @return array
 	 */
 	public static function groups() {
-		return array( 'index', 'offers', 'thesaurus', 'build', 'raw', 'registry' );
+		return array( 'index', 'offers', 'thesaurus', 'build', 'raw' );
 	}
 
 	/**
@@ -111,7 +111,7 @@ class Pivot_Cache {
 	 *
 	 * Un secret propre au site, et non wp_salt() : la rotation des sels de
 	 * WordPress est une opération d'hygiène courante, et elle rendrait alors
-	 * le registre des adresses introuvable — or lui n'est pas reconstructible.
+	 * tout le cache introuvable d'un coup.
 	 *
 	 * @return string
 	 */
@@ -135,7 +135,7 @@ class Pivot_Cache {
 	/**
 	 * Chemin absolu du dossier de cache (créé si nécessaire).
 	 *
-	 * @param string $group Sous-dossier (index, offers, thesaurus, build, raw, registry).
+	 * @param string $group Sous-dossier (index, offers, thesaurus, build, raw).
 	 * @return string
 	 */
 	public static function directory( $group = '' ) {
@@ -326,9 +326,13 @@ class Pivot_Cache {
 	 * @param string $key   Clé.
 	 * @param mixed  $value Valeur sérialisable en JSON.
 	 * @param int    $ttl   Durée de vie en secondes (0 = pas d'expiration).
+	 * @param bool   $memoize Garder la valeur en mémoire pour le reste de la
+	 *                        requête. À couper pour les écritures en masse
+	 *                        qui ne seront pas relues, sans quoi la mémoire
+	 *                        de la requête enfle à chaque entrée.
 	 * @return bool
 	 */
-	public static function set( $group, $key, $value, $ttl = 3600 ) {
+	public static function set( $group, $key, $value, $ttl = 3600, $memoize = true ) {
 		self::ensure_directory();
 
 		$payload = array(
@@ -355,7 +359,13 @@ class Pivot_Cache {
 			return false;
 		}
 
-		self::$memory[ $group . '|' . $key ] = $value;
+		if ( $memoize ) {
+			self::$memory[ $group . '|' . $key ] = $value;
+		} else {
+			// Une lecture antérieure de la même clé ne doit pas survivre à
+			// l'écriture.
+			unset( self::$memory[ $group . '|' . $key ] );
+		}
 
 		return true;
 	}
@@ -382,13 +392,7 @@ class Pivot_Cache {
 	public static function flush( $group = '' ) {
 		self::$memory = array();
 		$count        = 0;
-
-		// « Tout vider » épargne le registre des adresses : lui seul n'est pas
-		// reconstructible depuis PIVOT. En mode slug figé, le purger rendrait à
-		// chaque fiche une adresse dérivée de son nom actuel — exactement ce que
-		// ce mode existe pour empêcher. Il reste purgeable explicitement, par
-		// flush( 'registry' ).
-		$groups = $group ? array( $group ) : array( 'index', 'offers', 'thesaurus', 'build', 'raw' );
+		$groups       = $group ? array( $group ) : self::groups();
 
 		foreach ( $groups as $name ) {
 			$dir = self::directory( $name );
@@ -420,7 +424,7 @@ class Pivot_Cache {
 
 		// `index` est écarté : il ne contient que des fichiers bruts, sans
 		// enveloppe ni date d'expiration, et les décoder coûterait cher pour
-		// rien. `registry` l'est aussi : il n'expire jamais.
+		// rien.
 		foreach ( array( 'offers', 'raw', 'thesaurus', 'build' ) as $group ) {
 			$dir = self::directory( $group );
 			foreach ( (array) glob( $dir . '*.json' ) as $file ) {
@@ -545,8 +549,11 @@ class Pivot_Cache {
 	 * non déplacés : le cache se reconstruit entièrement depuis PIVOT, et les
 	 * conserver reviendrait à garder en ligne précisément ce que l'on cherche à
 	 * en retirer. Le premier passage sur une page de listing reconstruit son
-	 * index ; offres, thésaurus et registre des adresses se remplissent à la
-	 * demande.
+	 * index ; offres et thésaurus se remplissent à la demande.
+	 *
+	 * Jusqu'à la 2.6.0, un registre des adresses de fiches vivait aussi dans
+	 * le cache. Une fiche n'a plus qu'une adresse, /details/CODE&type=ID : il
+	 * est supprimé de même.
 	 *
 	 * Idempotente : sans ancien fichier, elle ne fait rien.
 	 *
@@ -558,9 +565,17 @@ class Pivot_Cache {
 		$report   = array( 'deleted' => 0 );
 
 		// Les groupes désormais privés n'ont plus rien à faire sous uploads.
-		foreach ( array( 'offers', 'thesaurus', 'build', 'raw' ) as $group ) {
-			$dir = $old_base . $group;
+		$dirs = array();
 
+		foreach ( array( 'offers', 'thesaurus', 'build', 'raw' ) as $group ) {
+			$dirs[] = $old_base . $group;
+		}
+
+		// Ancien registre des adresses, côté privé. Chemin construit à la main :
+		// directory() recréerait le dossier.
+		$dirs[] = trailingslashit( self::base( 'registry' ) ) . 'registry';
+
+		foreach ( $dirs as $dir ) {
 			if ( ! is_dir( $dir ) ) {
 				continue;
 			}
@@ -574,8 +589,8 @@ class Pivot_Cache {
 			@rmdir( $dir ); // phpcs:ignore
 		}
 
-		// Dans le groupe public, les entrées à enveloppe (registre des adresses)
-		// portaient un nom en md5 non salé. Les index de listing, eux, ont un
+		// Dans le groupe public, les entrées à enveloppe (ancien registre des
+		// adresses) portaient un nom en md5 non salé. Les index de listing, eux, ont un
 		// nom lisible « listing-<page>-<langue>.json » : on n'y touche pas.
 		foreach ( array( 'slugs', 'slug-changes' ) as $key ) {
 			$old = $old_base . 'index/' . md5( $key ) . '.json';

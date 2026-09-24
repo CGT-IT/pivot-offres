@@ -87,6 +87,13 @@ get_header();
 					if ( in_array( $pivot_type, array( 'select', 'multiselect' ), true ) && ! $pivot_options ) {
 						continue;
 					}
+
+					// Un nombre se compare au lieu de se choisir : son contrôle a
+					// son propre gabarit, surchargeable par le thème.
+					if ( 'range' === $pivot_type ) {
+						$pivot_templates->part( 'filter-range', array( 'filter' => $pivot_filter ) );
+						continue;
+					}
 					?>
 					<div class="pivot-field pivot-field-<?php echo esc_attr( $pivot_type ); ?>" data-filter="<?php echo esc_attr( $pivot_key ); ?>">
 						<?php if ( 'multiselect' === $pivot_type ) : ?>

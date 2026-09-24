@@ -253,6 +253,11 @@ class Pivot_Shortcodes {
 	/**
 	 * Restreint la sélection, par exemple filtre="province:namur|type:hotel".
 	 *
+	 * Une étendue compare des nombres : « chambres:3.. » (au moins 3),
+	 * « prix:..50 » (au plus 50), « prix:10..50 ». Les signes < et > sont
+	 * évités à dessein : WordPress vide un attribut de shortcode qui contient
+	 * un « < » sans « > » correspondant.
+	 *
 	 * @param array  $items  Entrées.
 	 * @param string $filtre Expression de filtre.
 	 * @return array
@@ -265,6 +270,7 @@ class Pivot_Shortcodes {
 		}
 
 		$criteria = array();
+		$ranges   = array();
 
 		foreach ( explode( '|', $filtre ) as $pair ) {
 			$parts = array_map( 'trim', explode( ':', $pair, 2 ) );
@@ -273,17 +279,24 @@ class Pivot_Shortcodes {
 				continue;
 			}
 
+			$range = self::parse_range( $parts[1] );
+
+			if ( $range ) {
+				$ranges[ $parts[0] ][] = $range;
+				continue;
+			}
+
 			$criteria[ $parts[0] ][] = pivot_normalize( $parts[1] );
 		}
 
-		if ( ! $criteria ) {
+		if ( ! $criteria && ! $ranges ) {
 			return $items;
 		}
 
 		return array_values(
 			array_filter(
 				$items,
-				static function ( $item ) use ( $criteria ) {
+				static function ( $item ) use ( $criteria, $ranges ) {
 					foreach ( $criteria as $key => $wanted ) {
 						$owned = array_map( 'pivot_normalize', (array) pivot_get( $item, array( 'f', $key ), array() ) );
 
@@ -292,10 +305,73 @@ class Pivot_Shortcodes {
 						}
 					}
 
+					foreach ( $ranges as $key => $wanted ) {
+						if ( ! self::in_ranges( (array) pivot_get( $item, array( 'f', $key ), array() ), $wanted ) ) {
+							return false;
+						}
+					}
+
 					return true;
 				}
 			)
 		);
+	}
+
+	/**
+	 * Lit une étendue « min..max », l'une des bornes pouvant manquer.
+	 *
+	 * @param string $value Valeur du critère.
+	 * @return array|null array( min|null, max|null ), ou null si ce n'est pas une étendue.
+	 */
+	private static function parse_range( $value ) {
+		if ( false === strpos( $value, '..' ) ) {
+			return null;
+		}
+
+		list( $low, $high ) = array_map( 'trim', explode( '..', $value, 2 ) );
+
+		$min = '' === $low ? null : pivot_parse_number( $low );
+		$max = '' === $high ? null : pivot_parse_number( $high );
+
+		// Une borne illisible, ou deux bornes absentes, ne font pas une étendue.
+		if ( ( '' !== $low && null === $min ) || ( '' !== $high && null === $max ) || ( null === $min && null === $max ) ) {
+			return null;
+		}
+
+		if ( null !== $min && null !== $max && $min > $max ) {
+			list( $min, $max ) = array( $max, $min );
+		}
+
+		return array( $min, $max );
+	}
+
+	/**
+	 * Une des valeurs tombe-t-elle dans l'une des étendues ?
+	 *
+	 * Les valeurs sont celles de l'index : des nombres pour un critère
+	 * numérique, des clés texte ailleurs — un code postal, par exemple, se lit
+	 * aussi comme un nombre.
+	 *
+	 * @param array $values Valeurs de l'offre.
+	 * @param array $ranges Étendues voulues.
+	 * @return bool
+	 */
+	private static function in_ranges( $values, $ranges ) {
+		foreach ( $values as $value ) {
+			$number = pivot_parse_number( $value );
+
+			if ( null === $number ) {
+				continue;
+			}
+
+			foreach ( $ranges as $range ) {
+				if ( ( null === $range[0] || $number >= $range[0] ) && ( null === $range[1] || $number <= $range[1] ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

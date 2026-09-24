@@ -87,10 +87,6 @@ msgstr ""
 msgid "Réglages"
 msgstr ""
 
-#: admin/class-pivot-admin.php
-msgid "Cache et redirections"
-msgstr ""
-
 #: admin/class-pivot-admin.php admin/class-pivot-tools.php
 msgid "Cache et outils"
 msgstr ""
@@ -510,7 +506,7 @@ msgid "Complet — tous les champs de l'offre, nécessaire pour filtrer sur un c
 msgstr ""
 
 #: admin/class-pivot-listing-edit.php
-msgid "Complet avec offres liées"
+msgid "Complet avec offres liées — met aussi en cache les fiches détail"
 msgstr ""
 
 #: admin/class-pivot-listing-edit.php admin/class-pivot-onboarding.php
@@ -518,7 +514,7 @@ msgid "Richesse des données"
 msgstr ""
 
 #: admin/class-pivot-listing-edit.php
-msgid "Le mode résumé construit l'index plus vite ; le mode complet est indispensable dès qu'un filtre porte sur un champ PIVOT."
+msgid "Le mode résumé construit l'index plus vite ; le mode complet est indispensable dès qu'un filtre porte sur un champ PIVOT. Avec les offres liées, la construction est environ trois fois plus longue, mais chaque fiche détail est déjà en cache à la première visite."
 msgstr ""
 
 #: admin/class-pivot-listing-edit.php
@@ -978,7 +974,7 @@ msgid "4. Contrôle"
 msgstr ""
 
 #: admin/class-pivot-onboarding.php
-msgid "Ce que manipule le visiteur. Liste déroulante pour un choix unique, cases à cocher pour cumuler plusieurs valeurs, saisie libre pour une recherche partielle, interrupteur pour un champ oui/non. Le catalogue de champs le présélectionne correctement."
+msgid "Ce que manipule le visiteur. Liste déroulante pour un choix unique, cases à cocher pour cumuler plusieurs valeurs, saisie libre pour une recherche partielle, interrupteur pour un champ oui/non, nombre à comparer pour une capacité, un prix ou une distance : au moins, au plus, entre deux valeurs. Le catalogue de champs le présélectionne correctement."
 msgstr ""
 
 #: admin/class-pivot-onboarding.php
@@ -1166,7 +1162,7 @@ msgid "Listes d'offres"
 msgstr ""
 
 #: admin/class-pivot-settings.php
-msgid "Fréquence de reconstruction de l'index qui alimente les pages de listing."
+msgid "Fréquence de reconstruction complète de l'index qui alimente les pages de listing. Avec la mise à jour par différentiel, c'est une reconstruction de sécurité, faite la nuit : 7 jours suffisent."
 msgstr ""
 
 #: admin/class-pivot-settings.php admin/class-pivot-tools.php
@@ -1214,59 +1210,12 @@ msgid "Le fichier statique évite de charger WordPress à chaque affichage de li
 msgstr ""
 
 #: admin/class-pivot-settings.php
-msgid "Affichage et URL"
+#: admin/class-pivot-listing-edit.php
+msgid "Affichage"
 msgstr ""
 
 #: admin/class-pivot-settings.php
 msgid "Réglages communs à toutes les pages générées par le plugin."
-msgstr ""
-
-#: admin/class-pivot-settings.php
-msgid "Préfixe des pages détail"
-msgstr ""
-
-#: admin/class-pivot-settings.php
-msgid "Les fiches seront publiées sous %s."
-msgstr ""
-
-#: admin/class-pivot-settings.php
-msgid "Préfixe traduit"
-msgstr ""
-
-#: admin/class-pivot-settings.php
-msgid "Facultatif : un préfixe propre à chaque langue, par exemple aanbod en néerlandais. Une langue laissée vide reprend le préfixe ci-dessus."
-msgstr ""
-
-#: admin/class-pivot-settings.php
-msgid "Si une offre est renommée"
-msgstr ""
-
-#: admin/class-pivot-settings.php
-msgid "L'adresse suit le nouveau nom"
-msgstr ""
-
-#: admin/class-pivot-settings.php
-msgid "L'adresse ne change plus"
-msgstr ""
-
-#: admin/class-pivot-settings.php
-msgid "Dans les deux cas l'ancienne adresse continue de fonctionner et redirige en 301 : le code PIVOT termine toujours le segment. Suivre le nom garde des adresses parlantes ; les figer évite qu'une correction de faute de frappe ne déplace une page déjà référencée."
-msgstr ""
-
-#: admin/class-pivot-settings.php
-msgid "Anciennes URL /details/CODE"
-msgstr ""
-
-#: admin/class-pivot-settings.php
-msgid "Rediriger en 301 vers la nouvelle URL"
-msgstr ""
-
-#: admin/class-pivot-settings.php
-msgid "Afficher la fiche directement à cette adresse"
-msgstr ""
-
-#: admin/class-pivot-settings.php
-msgid "La forme /details/CODEPIVOT&type=IDTYPE reste comprise dans les deux cas : les liens existants et les référencements externes continuent de fonctionner."
 msgstr ""
 
 #: admin/class-pivot-settings.php
@@ -1510,30 +1459,6 @@ msgid "Clés et valeurs disponibles"
 msgstr ""
 
 #: admin/class-pivot-tools.php
-msgid "%d redirection"
-msgid_plural "%d redirections"
-msgstr[0] ""
-msgstr[1] ""
-
-#: admin/class-pivot-tools.php
-msgid "%d adresse déjà gérée par le plugin, ignorée"
-msgid_plural "%d adresses déjà gérées par le plugin, ignorées"
-msgstr[0] ""
-msgstr[1] ""
-
-#: admin/class-pivot-tools.php
-msgid "%d inchangée"
-msgid_plural "%d inchangées"
-msgstr[0] ""
-msgstr[1] ""
-
-#: admin/class-pivot-tools.php
-msgid "Enregistrer cette redirection"
-msgid_plural "Enregistrer ces %d redirections"
-msgstr[0] ""
-msgstr[1] ""
-
-#: admin/class-pivot-tools.php
 msgid "Cache vidé : %d fichiers supprimés. Les prochaines visites rechargeront les données depuis PIVOT."
 msgstr ""
 
@@ -1550,47 +1475,7 @@ msgid "Reconstruction lancée pour toutes les pages actives. Elle se poursuit en
 msgstr ""
 
 #: admin/class-pivot-tools.php
-msgid "Indiquez le code de la requête à traiter."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Simulation terminée : %d redirections seraient créées. Rien n'a été enregistré."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "%1$d redirections enregistrées. La table en compte %2$d au total."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Simulation abandonnée. Rien n'a été enregistré."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Redirection ajoutée."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Redirection refusée : vérifiez que la source et la cible sont différentes et non vides."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Redirection supprimée."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Relevé des renommages effacé."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Registre des adresses vidé. Les fiches repartiront du nom actuel de chaque offre à la prochaine construction d'index."
-msgstr ""
-
-#: admin/class-pivot-tools.php
 msgid "Les visites guidées vous seront reproposées à votre prochaine visite de chaque écran."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Table de redirections vidée."
 msgstr ""
 
 #: admin/class-pivot-tools.php
@@ -1635,162 +1520,6 @@ msgstr ""
 
 #: admin/class-pivot-tools.php
 msgid "Tout vider"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Redirections 301"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "La forme /details/CODEPIVOT&type=IDTYPE est déjà reconnue sans configuration. Cet outil sert à couvrir d'autres anciennes adresses, par lot, à partir des offres d'une requête."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Requête à parcourir"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Toutes les offres retournées par cette requête recevront une redirection vers leur nouvelle fiche."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Gabarits des anciennes URL"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Jetons disponibles : {code}, {type}, {slug}, {lang}. Chaque gabarit pointe vers la fiche dans sa langue : une seule passe suffit pour tout le site. Une langue laissée vide est ignorée."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Inutile de viser /details/ : cette forme est déjà reconnue par le plugin, les entrées correspondantes sont ignorées."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Mode"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Simuler sans enregistrer"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Générer les redirections"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Ajouter une redirection"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "/ancienne-page"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Table actuelle (%d)"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Cible"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Retirer"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "%d autres redirections ne sont pas affichées. Exportez la table pour la consulter en entier."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Exporter"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Vider la table"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Aucune redirection enregistrée."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Aperçu de ce qui serait créé"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Redirections créées"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "destinations en %s"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Offre"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Langue"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Ancienne adresse"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Nouvelle adresse"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "%d autres ne sont pas affichées ici."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Abandonner"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Rien n'a encore été écrit. La simulation reste disponible tant que vous n'avez pas tranché, même si vous quittez cet écran."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Offres renommées"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Aucun changement de dénomination relevé depuis la mise en service. Les renommages faits dans PIVOT apparaîtront ici après la reconstruction de l'index."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Ces offres ont changé de nom dans PIVOT. Leur adresse est figée : elle n'a pas bougé."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Ces offres ont changé de nom dans PIVOT, et leur adresse a suivi. L'ancienne redirige en 301 vers la nouvelle ; pensez à prévenir vos partenaires si vous leur aviez communiqué un lien."
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Ancien nom"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Nouveau nom"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Adresse"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "inchangée"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Effacer ce relevé"
-msgstr ""
-
-#: admin/class-pivot-tools.php
-msgid "Réinitialiser le registre des adresses"
 msgstr ""
 
 #: admin/class-pivot-tools.php
@@ -2165,10 +1894,6 @@ msgstr ""
 msgid "Aucune offre dans la réponse du service."
 msgstr ""
 
-#: includes/class-pivot-redirects.php
-msgid "Indiquez au moins un gabarit d'ancienne adresse."
-msgstr ""
-
 #: includes/class-pivot-repository.php
 msgid "Code d'offre invalide."
 msgstr ""
@@ -2269,3 +1994,140 @@ msgstr ""
 msgid "PIVOT Offres n'a pas pu démarrer."
 msgstr ""
 
+#: admin/class-pivot-settings.php
+msgid "Mise à jour par différentiel"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Chaque nuit, ne demander à PIVOT que les offres ajoutées, modifiées ou retirées"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "PIVOT tient un seul différentiel par clé et par requête. Décochez cette case sur une copie du site qui utilise la même clé : les deux sites se voleraient les changements."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Heure de la mise à jour"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Heure du site. WordPress lance ses tâches à la première visite qui suit : pour une heure exacte, faites appeler wp-cron.php par une tâche cron du serveur."
+msgstr ""
+
+#: includes/class-pivot-repository.php
+msgid "PIVOT a refusé l'opération sur le différentiel."
+msgstr ""
+
+#: includes/class-pivot-index-builder.php
+msgid "Le différentiel n'est pas actif pour cette page."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Une autre page active interroge la même requête PIVOT : le différentiel est désactivé pour les deux, et leurs index sont reconstruits entièrement."
+msgstr ""
+
+#. translators: %s : heure de la mise à jour de nuit.
+#: admin/class-pivot-listing-edit.php
+msgid "Mise à jour par différentiel chaque nuit à %s. La prochaine sera une reconstruction complète, qui pose la référence du différentiel."
+msgstr ""
+
+#. translators: 1 : heure de la mise à jour de nuit, 2 : durée, 3 : nombre de changements.
+#: admin/class-pivot-listing-edit.php
+msgid "Mise à jour par différentiel chaque nuit à %1$s. Dernière vérification il y a %2$s : %3$d changement(s)."
+msgstr ""
+
+#. translators: %s : heure de la mise à jour de nuit.
+#: admin/class-pivot-listing-edit.php
+msgid "Mise à jour par différentiel chaque nuit à %s."
+msgstr ""
+
+#. translators: %s: date relative.
+#: admin/class-pivot-admin.php
+msgid "vérifié il y a %s"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Nombre à comparer"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Au moins (≥)"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Au plus (≤)"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Entre deux valeurs"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Égal à (=)"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Champ de saisie"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Jauge (curseur)"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Comparaison"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Unité"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Le visiteur saisit un nombre, ou règle la jauge entre la plus petite et la plus grande valeur des offres. Une offre sans valeur pour ce champ est écartée dès que le critère est utilisé. Une jauge ne sert pas l'égalité : ce réglage bascule sur le champ de saisie."
+msgstr ""
+
+#. translators: 1 : plus petite valeur, 2 : plus grande valeur, 3 : pourcentage d'offres.
+#: admin/class-pivot-admin.php
+msgid "de %1$s à %2$s · %3$d %% des offres"
+msgstr ""
+
+#. translators: devant le premier champ d'un intervalle : « entre [10] et [50] ».
+#: templates/parts/filter-range.php
+msgid "entre"
+msgstr ""
+
+#. translators: devant le second champ d'un intervalle : « entre [10] et [50] ».
+#: templates/parts/filter-range.php
+msgid "et"
+msgstr ""
+
+#: templates/parts/filter-range.php
+msgid "au moins"
+msgstr ""
+
+#: templates/parts/filter-range.php
+msgid "au plus"
+msgstr ""
+
+#. translators: 1 : borne basse, 2 : borne haute, avec leur unité.
+#: templates/parts/filter-range.php
+msgid "entre %1$s et %2$s"
+msgstr ""
+
+#. translators: %s : valeur, avec son unité.
+#: templates/parts/filter-range.php
+msgid "au moins %s"
+msgstr ""
+
+#. translators: %s : valeur, avec son unité.
+#: templates/parts/filter-range.php
+msgid "au plus %s"
+msgstr ""
+
+#: templates/parts/filter-range.php
+msgid "Indifférent"
+msgstr ""
+
+#: templates/parts/filter-range.php
+msgid "Saisissez un nombre, par exemple 12 ou 9,50."
+msgstr ""

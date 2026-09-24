@@ -66,9 +66,6 @@ msgstr "PIVOT-instellingen"
 msgid "Réglages"
 msgstr "Instellingen"
 
-msgid "Cache et redirections"
-msgstr "Cache en omleidingen"
-
 msgid "Cache et outils"
 msgstr "Cache en hulpmiddelen"
 
@@ -383,14 +380,14 @@ msgstr "Beknopt — naam, adres, geolocatie, standaardmedia"
 msgid "Complet — tous les champs de l'offre, nécessaire pour filtrer sur un champ PIVOT"
 msgstr "Volledig — alle velden van de aanbieding, nodig om op een PIVOT-veld te filteren"
 
-msgid "Complet avec offres liées"
-msgstr "Volledig met gekoppelde aanbiedingen"
+msgid "Complet avec offres liées — met aussi en cache les fiches détail"
+msgstr "Volledig met gekoppelde aanbiedingen — zet ook de detailfiches in de cache"
 
 msgid "Richesse des données"
 msgstr "Hoeveelheid gegevens"
 
-msgid "Le mode résumé construit l'index plus vite ; le mode complet est indispensable dès qu'un filtre porte sur un champ PIVOT."
-msgstr "De beknopte modus bouwt de index sneller op; de volledige modus is onmisbaar zodra een filter op een PIVOT-veld werkt."
+msgid "Le mode résumé construit l'index plus vite ; le mode complet est indispensable dès qu'un filtre porte sur un champ PIVOT. Avec les offres liées, la construction est environ trois fois plus longue, mais chaque fiche détail est déjà en cache à la première visite."
+msgstr "De beknopte modus bouwt de index sneller op; de volledige modus is onmisbaar zodra een filter op een PIVOT-veld werkt. Met gekoppelde aanbiedingen duurt het opbouwen ongeveer drie keer zo lang, maar elke detailfiche staat al bij het eerste bezoek in de cache."
 
 msgid "Tri"
 msgstr "Sortering"
@@ -734,8 +731,8 @@ msgstr "Deze link opent de catalogus uit de thesaurus: de velden gegroepeerd per
 msgid "4. Contrôle"
 msgstr "4. Bedieningselement"
 
-msgid "Ce que manipule le visiteur. Liste déroulante pour un choix unique, cases à cocher pour cumuler plusieurs valeurs, saisie libre pour une recherche partielle, interrupteur pour un champ oui/non. Le catalogue de champs le présélectionne correctement."
-msgstr "Wat de bezoeker bedient. Keuzelijst voor één keuze, selectievakjes om meerdere waarden te combineren, vrije invoer voor een gedeeltelijke zoekopdracht, schakelaar voor een ja-neeveld. De veldencatalogus kiest het juiste alvast."
+msgid "Ce que manipule le visiteur. Liste déroulante pour un choix unique, cases à cocher pour cumuler plusieurs valeurs, saisie libre pour une recherche partielle, interrupteur pour un champ oui/non, nombre à comparer pour une capacité, un prix ou une distance : au moins, au plus, entre deux valeurs. Le catalogue de champs le présélectionne correctement."
+msgstr "Wat de bezoeker bedient. Keuzelijst voor één keuze, selectievakjes om meerdere waarden te combineren, vrije invoer voor een gedeeltelijke zoekopdracht, schakelaar voor een ja-neeveld, getal om te vergelijken voor een capaciteit, een prijs of een afstand: minstens, hoogstens, tussen twee waarden. De veldencatalogus kiest het juiste alvast."
 
 msgid "5. Clé d'URL"
 msgstr "5. URL-sleutel"
@@ -875,8 +872,8 @@ msgstr "Geen enkele aanbieding wordt in de database opgeslagen. Alles zit in JSO
 msgid "Listes d'offres"
 msgstr "Lijsten met aanbiedingen"
 
-msgid "Fréquence de reconstruction de l'index qui alimente les pages de listing."
-msgstr "Hoe vaak de index die de overzichtspagina's voedt, opnieuw wordt opgebouwd."
+msgid "Fréquence de reconstruction complète de l'index qui alimente les pages de listing. Avec la mise à jour par différentiel, c'est une reconstruction de sécurité, faite la nuit : 7 jours suffisent."
+msgstr "Hoe vaak de index die de overzichtspagina's voedt, volledig opnieuw wordt opgebouwd. Met differentiële updates is dit een veiligheidsheropbouw, 's nachts uitgevoerd: 7 dagen volstaat."
 
 msgid "Fiches détail"
 msgstr "Detailfiches"
@@ -911,47 +908,11 @@ msgstr "REST-route"
 msgid "Le fichier statique évite de charger WordPress à chaque affichage de liste. Passez en REST si votre dossier uploads n'est pas servi directement."
 msgstr "Het statische bestand vermijdt dat WordPress bij elke lijstweergave geladen wordt. Schakel over naar REST als uw uploads-map niet rechtstreeks bediend wordt."
 
-msgid "Affichage et URL"
-msgstr "Weergave en URL's"
+msgid "Affichage"
+msgstr "Weergave"
 
 msgid "Réglages communs à toutes les pages générées par le plugin."
 msgstr "Instellingen die gelden voor alle pagina's die de plugin aanmaakt."
-
-msgid "Préfixe des pages détail"
-msgstr "Voorvoegsel van de detailpagina's"
-
-msgid "Les fiches seront publiées sous %s."
-msgstr "De fiches worden gepubliceerd onder %s."
-
-msgid "Préfixe traduit"
-msgstr "Vertaald voorvoegsel"
-
-msgid "Facultatif : un préfixe propre à chaque langue, par exemple aanbod en néerlandais. Une langue laissée vide reprend le préfixe ci-dessus."
-msgstr "Optioneel: een eigen voorvoegsel per taal, bijvoorbeeld aanbod in het Nederlands. Een taal die u leeg laat, neemt het voorvoegsel hierboven over."
-
-msgid "Si une offre est renommée"
-msgstr "Als een aanbieding hernoemd wordt"
-
-msgid "L'adresse suit le nouveau nom"
-msgstr "Het adres volgt de nieuwe naam"
-
-msgid "L'adresse ne change plus"
-msgstr "Het adres verandert niet meer"
-
-msgid "Dans les deux cas l'ancienne adresse continue de fonctionner et redirige en 301 : le code PIVOT termine toujours le segment. Suivre le nom garde des adresses parlantes ; les figer évite qu'une correction de faute de frappe ne déplace une page déjà référencée."
-msgstr "In beide gevallen blijft het oude adres werken en stuurt het met een 301 door: de PIVOT-code sluit het segment altijd af. De naam volgen houdt sprekende adressen; ze bevriezen voorkomt dat het corrigeren van een typfout een reeds geïndexeerde pagina verplaatst."
-
-msgid "Anciennes URL /details/CODE"
-msgstr "Oude URL's /details/CODE"
-
-msgid "Rediriger en 301 vers la nouvelle URL"
-msgstr "Met een 301 doorverwijzen naar de nieuwe URL"
-
-msgid "Afficher la fiche directement à cette adresse"
-msgstr "De fiche rechtstreeks op dit adres tonen"
-
-msgid "La forme /details/CODEPIVOT&type=IDTYPE reste comprise dans les deux cas : les liens existants et les référencements externes continuent de fonctionner."
-msgstr "De vorm /details/CODEPIVOT&type=IDTYPE blijft in beide gevallen begrepen: bestaande links en externe verwijzingen blijven werken."
 
 msgid "Taille des vignettes"
 msgstr "Formaat van de miniaturen"
@@ -1133,26 +1094,6 @@ msgstr "Weergegeven met de stijlen van de plugin. Uw thema kan het anders presen
 msgid "Clés et valeurs disponibles"
 msgstr "Beschikbare sleutels en waarden"
 
-msgid "%d redirection"
-msgid_plural "%d redirections"
-msgstr[0] "%d omleiding"
-msgstr[1] "%d omleidingen"
-
-msgid "%d adresse déjà gérée par le plugin, ignorée"
-msgid_plural "%d adresses déjà gérées par le plugin, ignorées"
-msgstr[0] "%d adres al door de plugin beheerd, genegeerd"
-msgstr[1] "%d adressen al door de plugin beheerd, genegeerd"
-
-msgid "%d inchangée"
-msgid_plural "%d inchangées"
-msgstr[0] "%d ongewijzigd"
-msgstr[1] "%d ongewijzigd"
-
-msgid "Enregistrer cette redirection"
-msgid_plural "Enregistrer ces %d redirections"
-msgstr[0] "Deze omleiding opslaan"
-msgstr[1] "Deze %d omleidingen opslaan"
-
 msgid "Cache vidé : %d fichiers supprimés. Les prochaines visites rechargeront les données depuis PIVOT."
 msgstr "Cache geleegd: %d bestanden verwijderd. De volgende bezoeken halen de gegevens opnieuw bij PIVOT op."
 
@@ -1165,38 +1106,8 @@ msgstr "Cache van de fiches geleegd: %d bestanden verwijderd."
 msgid "Reconstruction lancée pour toutes les pages actives. Elle se poursuit en arrière-plan."
 msgstr "Heropbouw gestart voor alle actieve pagina's. Ze loopt op de achtergrond verder."
 
-msgid "Indiquez le code de la requête à traiter."
-msgstr "Geef de code van de te verwerken query op."
-
-msgid "Simulation terminée : %d redirections seraient créées. Rien n'a été enregistré."
-msgstr "Simulatie voltooid: er zouden %d omleidingen aangemaakt worden. Er is niets opgeslagen."
-
-msgid "%1$d redirections enregistrées. La table en compte %2$d au total."
-msgstr "%1$d omleidingen opgeslagen. De tabel telt er in totaal %2$d."
-
-msgid "Simulation abandonnée. Rien n'a été enregistré."
-msgstr "Simulatie afgebroken. Er is niets opgeslagen."
-
-msgid "Redirection ajoutée."
-msgstr "Omleiding toegevoegd."
-
-msgid "Redirection refusée : vérifiez que la source et la cible sont différentes et non vides."
-msgstr "Omleiding geweigerd: controleer of bron en doel verschillen en niet leeg zijn."
-
-msgid "Redirection supprimée."
-msgstr "Omleiding verwijderd."
-
-msgid "Relevé des renommages effacé."
-msgstr "Overzicht van hernoemingen gewist."
-
-msgid "Registre des adresses vidé. Les fiches repartiront du nom actuel de chaque offre à la prochaine construction d'index."
-msgstr "Adressenregister geleegd. De fiches vertrekken bij de volgende indexopbouw van de huidige naam van elke aanbieding."
-
 msgid "Les visites guidées vous seront reproposées à votre prochaine visite de chaque écran."
 msgstr "De rondleidingen worden opnieuw aangeboden zodra u elk scherm weer opent."
-
-msgid "Table de redirections vidée."
-msgstr "Tabel met omleidingen geleegd."
 
 msgid "Index des pages de listing"
 msgstr "Index van de overzichtspagina's"
@@ -1230,123 +1141,6 @@ msgstr "Alle indexen heropbouwen"
 
 msgid "Tout vider"
 msgstr "Alles leegmaken"
-
-msgid "Redirections 301"
-msgstr "301-omleidingen"
-
-msgid "La forme /details/CODEPIVOT&type=IDTYPE est déjà reconnue sans configuration. Cet outil sert à couvrir d'autres anciennes adresses, par lot, à partir des offres d'une requête."
-msgstr "De vorm /details/CODEPIVOT&type=IDTYPE wordt al zonder configuratie herkend. Dit hulpmiddel dient om andere oude adressen in bulk af te dekken, op basis van de aanbiedingen van een query."
-
-msgid "Requête à parcourir"
-msgstr "Te doorlopen query"
-
-msgid "Toutes les offres retournées par cette requête recevront une redirection vers leur nouvelle fiche."
-msgstr "Alle aanbiedingen die deze query teruggeeft, krijgen een omleiding naar hun nieuwe fiche."
-
-msgid "Gabarits des anciennes URL"
-msgstr "Sjablonen van de oude URL's"
-
-msgid "Jetons disponibles : {code}, {type}, {slug}, {lang}. Chaque gabarit pointe vers la fiche dans sa langue : une seule passe suffit pour tout le site. Une langue laissée vide est ignorée."
-msgstr "Beschikbare tekens: {code}, {type}, {slug}, {lang}. Elk sjabloon verwijst naar de fiche in zijn eigen taal: één doorloop volstaat voor de hele website. Een leeg gelaten taal wordt genegeerd."
-
-msgid "Inutile de viser /details/ : cette forme est déjà reconnue par le plugin, les entrées correspondantes sont ignorées."
-msgstr "/details/ is overbodig: die vorm wordt al door de plugin herkend, de bijbehorende regels worden genegeerd."
-
-msgid "Mode"
-msgstr "Modus"
-
-msgid "Simuler sans enregistrer"
-msgstr "Simuleren zonder op te slaan"
-
-msgid "Générer les redirections"
-msgstr "De omleidingen genereren"
-
-msgid "Ajouter une redirection"
-msgstr "Een omleiding toevoegen"
-
-msgid "/ancienne-page"
-msgstr "/oude-pagina"
-
-msgid "Table actuelle (%d)"
-msgstr "Huidige tabel (%d)"
-
-msgid "Cible"
-msgstr "Doel"
-
-msgid "Retirer"
-msgstr "Verwijderen"
-
-msgid "%d autres redirections ne sont pas affichées. Exportez la table pour la consulter en entier."
-msgstr "%d andere omleidingen worden niet getoond. Exporteer de tabel om ze volledig te bekijken."
-
-msgid "Exporter"
-msgstr "Exporteren"
-
-msgid "Vider la table"
-msgstr "Tabel leegmaken"
-
-msgid "Aucune redirection enregistrée."
-msgstr "Geen omleiding opgeslagen."
-
-msgid "Aperçu de ce qui serait créé"
-msgstr "Voorbeeld van wat aangemaakt zou worden"
-
-msgid "Redirections créées"
-msgstr "Aangemaakte omleidingen"
-
-msgid "destinations en %s"
-msgstr "bestemmingen in het %s"
-
-msgid "Offre"
-msgstr "Aanbieding"
-
-msgid "Langue"
-msgstr "Taal"
-
-msgid "Ancienne adresse"
-msgstr "Oud adres"
-
-msgid "Nouvelle adresse"
-msgstr "Nieuw adres"
-
-msgid "%d autres ne sont pas affichées ici."
-msgstr "%d andere worden hier niet getoond."
-
-msgid "Abandonner"
-msgstr "Afbreken"
-
-msgid "Rien n'a encore été écrit. La simulation reste disponible tant que vous n'avez pas tranché, même si vous quittez cet écran."
-msgstr "Er is nog niets weggeschreven. De simulatie blijft beschikbaar zolang u niet beslist hebt, ook als u dit scherm verlaat."
-
-msgid "Offres renommées"
-msgstr "Hernoemde aanbiedingen"
-
-msgid "Aucun changement de dénomination relevé depuis la mise en service. Les renommages faits dans PIVOT apparaîtront ici après la reconstruction de l'index."
-msgstr "Sinds de ingebruikname is geen naamswijziging vastgesteld. Hernoemingen in PIVOT verschijnen hier na het opnieuw opbouwen van de index."
-
-msgid "Ces offres ont changé de nom dans PIVOT. Leur adresse est figée : elle n'a pas bougé."
-msgstr "Deze aanbiedingen zijn in PIVOT hernoemd. Hun adres is bevroren: het is niet gewijzigd."
-
-msgid "Ces offres ont changé de nom dans PIVOT, et leur adresse a suivi. L'ancienne redirige en 301 vers la nouvelle ; pensez à prévenir vos partenaires si vous leur aviez communiqué un lien."
-msgstr "Deze aanbiedingen zijn in PIVOT hernoemd en hun adres is meegegaan. Het oude stuurt met een 301 door naar het nieuwe; verwittig uw partners als u hun een link had bezorgd."
-
-msgid "Ancien nom"
-msgstr "Oude naam"
-
-msgid "Nouveau nom"
-msgstr "Nieuwe naam"
-
-msgid "Adresse"
-msgstr "Adres"
-
-msgid "inchangée"
-msgstr "ongewijzigd"
-
-msgid "Effacer ce relevé"
-msgstr "Dit overzicht wissen"
-
-msgid "Réinitialiser le registre des adresses"
-msgstr "Het adressenregister resetten"
 
 msgid "Aide"
 msgstr "Hulp"
@@ -1628,9 +1422,6 @@ msgstr "Onleesbaar XML-document."
 msgid "Aucune offre dans la réponse du service."
 msgstr "Geen aanbieding in het antwoord van de dienst."
 
-msgid "Indiquez au moins un gabarit d'ancienne adresse."
-msgstr "Geef minstens één sjabloon van een oud adres op."
-
 msgid "Code d'offre invalide."
 msgstr "Ongeldige aanbiedingscode."
 
@@ -1706,3 +1497,98 @@ msgstr "De map %s is niet beschrijfbaar. De plugin bewaart er zijn cache."
 msgid "PIVOT Offres n'a pas pu démarrer."
 msgstr "PIVOT Aanbod kon niet starten."
 
+msgid "Mise à jour par différentiel"
+msgstr "Differentiële update"
+
+msgid "Chaque nuit, ne demander à PIVOT que les offres ajoutées, modifiées ou retirées"
+msgstr "Elke nacht aan PIVOT alleen de toegevoegde, gewijzigde of verwijderde aanbiedingen vragen"
+
+msgid "PIVOT tient un seul différentiel par clé et par requête. Décochez cette case sur une copie du site qui utilise la même clé : les deux sites se voleraient les changements."
+msgstr "PIVOT houdt één differentieel bij per sleutel en per query. Vink dit vakje uit op een kopie van de website die dezelfde sleutel gebruikt: de twee websites zouden elkaars wijzigingen afsnoepen."
+
+msgid "Heure de la mise à jour"
+msgstr "Tijdstip van de update"
+
+msgid "Heure du site. WordPress lance ses tâches à la première visite qui suit : pour une heure exacte, faites appeler wp-cron.php par une tâche cron du serveur."
+msgstr "Tijd van de website. WordPress voert zijn taken uit bij het eerste bezoek daarna: laat voor een exact tijdstip wp-cron.php oproepen door een cron-taak van de server."
+
+msgid "PIVOT a refusé l'opération sur le différentiel."
+msgstr "PIVOT heeft de bewerking op het differentieel geweigerd."
+
+msgid "Le différentiel n'est pas actif pour cette page."
+msgstr "Differentiële updates zijn niet actief voor deze pagina."
+
+msgid "Une autre page active interroge la même requête PIVOT : le différentiel est désactivé pour les deux, et leurs index sont reconstruits entièrement."
+msgstr "Een andere actieve pagina gebruikt dezelfde PIVOT-query: differentiële updates zijn voor beide uitgeschakeld en hun indexen worden volledig opnieuw opgebouwd."
+
+msgid "Mise à jour par différentiel chaque nuit à %s. La prochaine sera une reconstruction complète, qui pose la référence du différentiel."
+msgstr "Differentiële update elke nacht om %s. De volgende wordt een volledige heropbouw, die het referentiepunt van het differentieel vastlegt."
+
+msgid "Mise à jour par différentiel chaque nuit à %1$s. Dernière vérification il y a %2$s : %3$d changement(s)."
+msgstr "Differentiële update elke nacht om %1$s. Laatste controle %2$s geleden: %3$d wijziging(en)."
+
+msgid "Mise à jour par différentiel chaque nuit à %s."
+msgstr "Differentiële update elke nacht om %s."
+
+msgid "vérifié il y a %s"
+msgstr "%s geleden gecontroleerd"
+
+msgid "Nombre à comparer"
+msgstr "Getal om te vergelijken"
+
+msgid "Au moins (≥)"
+msgstr "Minstens (≥)"
+
+msgid "Au plus (≤)"
+msgstr "Hoogstens (≤)"
+
+msgid "Entre deux valeurs"
+msgstr "Tussen twee waarden"
+
+msgid "Égal à (=)"
+msgstr "Gelijk aan (=)"
+
+msgid "Champ de saisie"
+msgstr "Invoerveld"
+
+msgid "Jauge (curseur)"
+msgstr "Schuifregelaar"
+
+msgid "Comparaison"
+msgstr "Vergelijking"
+
+msgid "Unité"
+msgstr "Eenheid"
+
+msgid "Le visiteur saisit un nombre, ou règle la jauge entre la plus petite et la plus grande valeur des offres. Une offre sans valeur pour ce champ est écartée dès que le critère est utilisé. Une jauge ne sert pas l'égalité : ce réglage bascule sur le champ de saisie."
+msgstr "De bezoeker vult een getal in, of zet de schuifregelaar tussen de kleinste en de grootste waarde van de aanbiedingen. Een aanbieding zonder waarde voor dit veld valt weg zodra het criterium gebruikt wordt. Een schuifregelaar drukt geen gelijkheid uit: deze instelling schakelt dan over op het invoerveld."
+
+msgid "de %1$s à %2$s · %3$d %% des offres"
+msgstr "van %1$s tot %2$s · %3$d %% van de aanbiedingen"
+
+msgid "entre"
+msgstr "tussen"
+
+msgid "et"
+msgstr "en"
+
+msgid "au moins"
+msgstr "minstens"
+
+msgid "au plus"
+msgstr "hoogstens"
+
+msgid "entre %1$s et %2$s"
+msgstr "tussen %1$s en %2$s"
+
+msgid "au moins %s"
+msgstr "minstens %s"
+
+msgid "au plus %s"
+msgstr "hoogstens %s"
+
+msgid "Indifférent"
+msgstr "Maakt niet uit"
+
+msgid "Saisissez un nombre, par exemple 12 ou 9,50."
+msgstr "Vul een getal in, bijvoorbeeld 12 of 9,50."

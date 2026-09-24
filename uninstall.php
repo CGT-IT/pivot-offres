@@ -20,8 +20,6 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 $pivot_options = array(
 	'pivot_settings',            // Pivot_Settings::OPTION
 	'pivot_listings',            // Pivot_Listings::OPTION
-	'pivot_redirects',           // Pivot_Redirects::OPTION
-	'pivot_redirects_count',     // Pivot_Redirects::COUNT_OPTION
 	'pivot_types',               // Pivot_Types::OPTION
 	'pivot_field_rules',         // Pivot_Fields::RULES_OPTION
 	'pivot_cache_secret',        // Pivot_Cache::SECRET_OPTION
@@ -30,6 +28,10 @@ $pivot_options = array(
 	'pivot_lang_fingerprint',
 	'pivot_lang_changed',
 	'pivot_activation_failures',
+	// Table de redirections des versions antérieures à la 2.6.0, au cas où
+	// la reprise de version n'aurait pas tourné.
+	'pivot_redirects',
+	'pivot_redirects_count',
 );
 
 // Tâches planifiées propres à une page de listing.
@@ -91,3 +93,5 @@ foreach ( $pivot_dirs as $pivot_dir ) {
 wp_clear_scheduled_hook( 'pivot_refresh_indexes' );
 wp_clear_scheduled_hook( 'pivot_daily_maintenance' );
 wp_clear_scheduled_hook( 'pivot_purge_logs' );
+wp_clear_scheduled_hook( 'pivot_nightly_sync' );
+wp_clear_scheduled_hook( 'pivot_nightly_retry' );

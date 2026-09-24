@@ -47,7 +47,7 @@ function pivot_preflight_problems( $check_collisions = true ) {
 		// Les classes déclarées dans le fichier principal sont compilées avant
 		// l'exécution de la moindre ligne : seules celles des fichiers inclus
 		// plus loin sont testables ici.
-		$classes = array( 'Pivot_I18n', 'Pivot_Cache', 'Pivot_Logger', 'Pivot_Client', 'Pivot_Parser', 'Pivot_Thesaurus', 'Pivot_Listings', 'Pivot_Repository', 'Pivot_Index_Builder', 'Pivot_Rewrites', 'Pivot_Redirects', 'Pivot_Rest', 'Pivot_Seo', 'Pivot_Templates', 'Pivot_Cron' );
+		$classes = array( 'Pivot_I18n', 'Pivot_Cache', 'Pivot_Logger', 'Pivot_Client', 'Pivot_Parser', 'Pivot_Thesaurus', 'Pivot_Listings', 'Pivot_Repository', 'Pivot_Index_Builder', 'Pivot_Rewrites', 'Pivot_Rest', 'Pivot_Seo', 'Pivot_Templates', 'Pivot_Cron' );
 
 		$taken = array();
 

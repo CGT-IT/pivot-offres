@@ -268,7 +268,7 @@ class Pivot_Onboarding {
 					array(
 						'target' => '.pivot-filter-row:first-child select[name*="[type]"]',
 						'title'  => __( '4. Contrôle', 'pivot-offres' ),
-						'text'   => __( 'Ce que manipule le visiteur. Liste déroulante pour un choix unique, cases à cocher pour cumuler plusieurs valeurs, saisie libre pour une recherche partielle, interrupteur pour un champ oui/non. Le catalogue de champs le présélectionne correctement.', 'pivot-offres' ),
+						'text'   => __( 'Ce que manipule le visiteur. Liste déroulante pour un choix unique, cases à cocher pour cumuler plusieurs valeurs, saisie libre pour une recherche partielle, interrupteur pour un champ oui/non, nombre à comparer pour une capacité, un prix ou une distance : au moins, au plus, entre deux valeurs. Le catalogue de champs le présélectionne correctement.', 'pivot-offres' ),
 					),
 					array(
 						'target' => '.pivot-filter-row:first-child input[name*="[key]"]',

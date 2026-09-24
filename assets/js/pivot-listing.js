@@ -29,7 +29,10 @@
 		page: parseInt( config.page, 10 ) || 1,
 		perPage: parseInt( config.perPage, 10 ) || 12,
 		query: '',
-		filters: {}
+		filters: {},
+		// Critères numériques : clé => { min, max }, l'une des bornes pouvant
+		// valoir null. Une égalité pose les deux à la même valeur.
+		ranges: {}
 	};
 
 	var map = null;
@@ -77,6 +80,186 @@
 		return ( config.i18n && config.i18n[ key ] ) || '';
 	}
 
+	/* ------------------------------------------------- critères numériques */
+
+	function rangeFields() {
+		return form ? form.querySelectorAll( '[data-range]' ) : [];
+	}
+
+	/**
+	 * Lit un nombre tapé par le visiteur : « 9,50 » comme « 9.50 », espaces de
+	 * groupement ignorés. null pour un champ vide, NaN pour autre chose qu'un
+	 * nombre.
+	 */
+	function parseNumber( value ) {
+		var clean = String( value === null || value === undefined ? '' : value )
+			.replace( /[\s\u00a0\u202f]/g, '' )
+			.replace( ',', '.' );
+
+		if ( ! clean ) {
+			return null;
+		}
+
+		return /^[-+]?(\d+(\.\d*)?|\.\d+)$/.test( clean ) ? parseFloat( clean ) : NaN;
+	}
+
+	function formatValue( field, value ) {
+		var unit = field.getAttribute( 'data-unit' );
+		var formatted;
+
+		try {
+			formatted = new Intl.NumberFormat( config.lang || undefined, { maximumFractionDigits: 2 } ).format( value );
+		} catch ( error ) {
+			formatted = String( value );
+		}
+
+		return unit ? formatted + '\u00a0' + unit : formatted;
+	}
+
+	/**
+	 * Signale une saisie qui n'est pas un nombre, sans la corriger : le
+	 * visiteur voit ce qu'il a tapé et pourquoi le critère ne s'applique pas.
+	 */
+	function setInvalid( input, invalid ) {
+		var field = input.closest( '[data-range]' );
+
+		if ( invalid ) {
+			input.setAttribute( 'aria-invalid', 'true' );
+		} else {
+			input.removeAttribute( 'aria-invalid' );
+		}
+
+		var message = field && field.querySelector( '.pivot-field-error' );
+
+		if ( message ) {
+			message.hidden = ! field.querySelector( '[aria-invalid="true"]' );
+		}
+	}
+
+	/**
+	 * Bornes demandées par un critère numérique, ou null s'il n'est pas
+	 * utilisé. Une jauge laissée en butée ne restreint rien ; une saisie
+	 * illisible est ignorée, et signalée.
+	 */
+	function readRange( field ) {
+		var bounds = { min: null, max: null };
+
+		Array.prototype.forEach.call( field.querySelectorAll( '[data-bound]' ), function ( input ) {
+			var bound = input.getAttribute( 'data-bound' );
+			var value;
+
+			if ( input.type === 'range' ) {
+				value = parseFloat( input.value );
+
+				if ( value === parseFloat( input.getAttribute( 'data-neutral' ) ) ) {
+					value = null;
+				}
+			} else {
+				value = parseNumber( input.value );
+				setInvalid( input, Number.isNaN( value ) );
+
+				if ( Number.isNaN( value ) ) {
+					value = null;
+				}
+			}
+
+			if ( value === null ) {
+				return;
+			}
+
+			if ( bound === 'eq' ) {
+				bounds.min = value;
+				bounds.max = value;
+			} else {
+				bounds[ bound ] = value;
+			}
+		} );
+
+		if ( bounds.min === null && bounds.max === null ) {
+			return null;
+		}
+
+		// « entre 50 et 10 » : le visiteur a inversé les bornes, pas changé
+		// d'avis.
+		if ( bounds.min !== null && bounds.max !== null && bounds.min > bounds.max ) {
+			bounds = { min: bounds.max, max: bounds.min };
+		}
+
+		return bounds;
+	}
+
+	/**
+	 * Texte d'une jauge : « au moins 3 », « entre 10 € et 50 € », « Indifférent ».
+	 */
+	function updateOutput( field ) {
+		var output = field.querySelector( '.pivot-range-output' );
+
+		if ( ! output ) {
+			return;
+		}
+
+		Array.prototype.forEach.call( field.querySelectorAll( 'input[type="range"]' ), function ( input ) {
+			input.setAttribute( 'aria-valuetext', formatValue( field, parseFloat( input.value ) ) );
+		} );
+
+		var bounds = readRange( field ) || { min: null, max: null };
+		var label;
+
+		if ( bounds.min !== null && bounds.max !== null ) {
+			label = field.getAttribute( 'data-format-both' )
+				.replace( '%1$s', formatValue( field, bounds.min ) )
+				.replace( '%2$s', formatValue( field, bounds.max ) );
+		} else if ( bounds.min !== null ) {
+			label = field.getAttribute( 'data-format-min' ).replace( '%s', formatValue( field, bounds.min ) );
+		} else if ( bounds.max !== null ) {
+			label = field.getAttribute( 'data-format-max' ).replace( '%s', formatValue( field, bounds.max ) );
+		} else {
+			label = field.getAttribute( 'data-any' );
+		}
+
+		output.textContent = label;
+	}
+
+	/**
+	 * Les deux curseurs d'un intervalle ne se croisent pas : celui qu'on
+	 * pousse entraîne l'autre.
+	 */
+	function keepOrder( input ) {
+		var field = input.closest( '[data-range]' );
+		var low = field && field.querySelector( 'input[type="range"][data-bound="min"]' );
+		var high = field && field.querySelector( 'input[type="range"][data-bound="max"]' );
+
+		if ( ! low || ! high || parseFloat( low.value ) <= parseFloat( high.value ) ) {
+			return;
+		}
+
+		if ( input === low ) {
+			high.value = low.value;
+		} else {
+			low.value = high.value;
+		}
+	}
+
+	/**
+	 * Une valeur de l'offre tombe-t-elle entre les bornes ? Une offre sans
+	 * valeur pour ce champ ne répond pas au critère.
+	 */
+	function inRange( values, bounds ) {
+		for ( var i = 0; i < values.length; i++ ) {
+			var value = typeof values[ i ] === 'number' ? values[ i ] : parseNumber( values[ i ] );
+
+			if ( value === null || Number.isNaN( value ) ) {
+				continue;
+			}
+
+			if ( ( bounds.min === null || value >= bounds.min ) && ( bounds.max === null || value <= bounds.max ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/* ------------------------------------------------------------ chargement */
 
 	function loadIndex() {
@@ -116,6 +299,7 @@
 
 		state.query = params.get( 'q' ) || '';
 		state.filters = {};
+		state.ranges = {};
 
 		if ( searchInput ) {
 			searchInput.value = state.query;
@@ -154,11 +338,34 @@
 				box.checked = values.indexOf( box.value ) !== -1 || ( box.value === '1' && values.indexOf( '1' ) !== -1 );
 			} );
 		} );
+
+		Array.prototype.forEach.call( rangeFields(), function ( field ) {
+			Array.prototype.forEach.call( field.querySelectorAll( '[data-bound]' ), function ( input ) {
+				var raw = params.get( input.name );
+
+				if ( input.type === 'range' ) {
+					var value = parseNumber( raw );
+					// Le navigateur ramène de lui-même une valeur hors bornes.
+					input.value = value === null || Number.isNaN( value ) ? input.getAttribute( 'data-neutral' ) : value;
+				} else {
+					input.value = raw || '';
+				}
+			} );
+
+			var bounds = readRange( field );
+
+			if ( bounds ) {
+				state.ranges[ field.getAttribute( 'data-range' ) ] = bounds;
+			}
+
+			updateOutput( field );
+		} );
 	}
 
 	function readStateFromForm() {
 		state.query = searchInput ? searchInput.value : '';
 		state.filters = {};
+		state.ranges = {};
 
 		if ( ! form ) {
 			return;
@@ -186,6 +393,16 @@
 				state.filters[ key ] = values;
 			}
 		} );
+
+		Array.prototype.forEach.call( rangeFields(), function ( field ) {
+			var bounds = readRange( field );
+
+			if ( bounds ) {
+				state.ranges[ field.getAttribute( 'data-range' ) ] = bounds;
+			}
+
+			updateOutput( field );
+		} );
 	}
 
 	/**
@@ -204,6 +421,10 @@
 				if ( key ) {
 					keys.push( key, key + '[]' );
 				}
+			} );
+
+			Array.prototype.forEach.call( form.querySelectorAll( '[data-range] [data-bound]' ), function ( input ) {
+				keys.push( input.name );
 			} );
 		}
 
@@ -229,6 +450,23 @@
 		Object.keys( state.filters ).forEach( function ( key ) {
 			state.filters[ key ].forEach( function ( value ) {
 				params.append( key, value );
+			} );
+		} );
+
+		// Une borne par paramètre, sous le nom de son champ : ?prix_max=50.
+		Array.prototype.forEach.call( rangeFields(), function ( field ) {
+			var bounds = state.ranges[ field.getAttribute( 'data-range' ) ];
+
+			if ( ! bounds ) {
+				return;
+			}
+
+			Array.prototype.forEach.call( field.querySelectorAll( '[data-bound]' ), function ( input ) {
+				var value = input.getAttribute( 'data-bound' ) === 'max' ? bounds.max : bounds.min;
+
+				if ( value !== null ) {
+					params.set( input.name, String( value ) );
+				}
 			} );
 		} );
 
@@ -297,6 +535,14 @@
 			}
 
 			if ( ! found ) {
+				return false;
+			}
+		}
+
+		var rangeKeys = Object.keys( state.ranges );
+
+		for ( var r = 0; r < rangeKeys.length; r++ ) {
+			if ( ! inRange( ( item.f && item.f[ rangeKeys[ r ] ] ) || [], state.ranges[ rangeKeys[ r ] ] ) ) {
 				return false;
 			}
 		}
@@ -519,11 +765,21 @@
 				apply( true );
 			} );
 
+			// Une jauge filtre quand on la lâche, pas à chaque cran : la grille
+			// ne se redessine qu'une fois.
 			form.addEventListener( 'change', function ( event ) {
-				if ( event.target.matches( 'select, input[type="checkbox"]' ) ) {
+				if ( event.target.matches( 'select, input[type="checkbox"], input[type="range"]' ) ) {
 					readStateFromForm();
 					state.page = 1;
 					apply( true );
+				}
+			} );
+
+			// Son texte, lui, suit le curseur.
+			form.addEventListener( 'input', function ( event ) {
+				if ( event.target.matches( 'input[type="range"]' ) ) {
+					keepOrder( event.target );
+					updateOutput( event.target.closest( '[data-range]' ) );
 				}
 			} );
 
@@ -550,13 +806,23 @@
 					Array.prototype.forEach.call( form.querySelectorAll( 'input' ), function ( field ) {
 						if ( field.type === 'checkbox' || field.type === 'radio' ) {
 							field.checked = false;
+						} else if ( field.type === 'range' ) {
+							// Vide, une jauge se placerait au milieu : on la remet en butée.
+							field.value = field.getAttribute( 'data-neutral' );
 						} else {
 							field.value = '';
 						}
 					} );
+					Array.prototype.forEach.call( rangeFields(), function ( field ) {
+						Array.prototype.forEach.call( field.querySelectorAll( '[aria-invalid]' ), function ( input ) {
+							setInvalid( input, false );
+						} );
+						updateOutput( field );
+					} );
 				}
 				state.query = '';
 				state.filters = {};
+				state.ranges = {};
 				state.page = 1;
 				apply( true );
 			} );

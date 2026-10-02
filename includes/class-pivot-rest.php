@@ -50,6 +50,19 @@ class Pivot_Rest {
 			)
 		);
 
+		// Fichier GPX d'une offre, pour le tracé sur la carte d'un listing dont
+		// l'index ne le connaît pas (niveau inférieur à « complet avec offres
+		// liées »). Public, comme la fiche détail qui lit la même offre.
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/gpx/(?P<code>[A-Za-z0-9_\-]+)',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_gpx' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
 		register_rest_route(
 			self::NAMESPACE_V1,
 			'/fields',
@@ -207,6 +220,33 @@ class Pivot_Rest {
 	 */
 	public function can_manage() {
 		return current_user_can( pivot_capability() );
+	}
+
+	/**
+	 * Adresse du fichier GPX d'une offre à tracé.
+	 *
+	 * L'offre est lue au niveau de la fiche détail, dans le même cache : le
+	 * premier clic coûte un appel à PIVOT, les suivants et la fiche n'en
+	 * coûtent plus. Seuls les types à tracé sont servis (Pivot_Templates::
+	 * track_types()).
+	 *
+	 * @param WP_REST_Request $request Requête.
+	 * @return WP_REST_Response
+	 */
+	public function get_gpx( $request ) {
+		$code  = strtoupper( (string) $request->get_param( 'code' ) );
+		$offer = pivot_is_code( $code ) ? Pivot_Repository::get_offer( $code, array( 'content' => 3 ) ) : null;
+		$gpx   = null;
+
+		if ( $offer && ! is_wp_error( $offer ) && in_array( (int) pivot_get( $offer, 'type', 0 ), Pivot_Templates::track_types(), true ) ) {
+			$gpx = Pivot_Templates::offer_gpx( $offer );
+		}
+
+		$response = rest_ensure_response( array( 'url' => $gpx ? $gpx['url'] : '' ) );
+		$response->set_status( $gpx ? 200 : 404 );
+		$response->header( 'Cache-Control', 'public, max-age=' . HOUR_IN_SECONDS );
+
+		return $response;
 	}
 
 	/**

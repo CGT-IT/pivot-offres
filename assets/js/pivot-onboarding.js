@@ -267,6 +267,8 @@
 		nodes.skip.hidden = index >= steps.length - 1;
 
 		if ( entry.node ) {
+			// Une section repliée de l'écran d'édition s'ouvre sur la cible.
+			entry.node.dispatchEvent( new CustomEvent( 'pivot:reveal', { bubbles: true } ) );
 			scrollIntoView( entry.node );
 		}
 
@@ -282,8 +284,10 @@
 	function scrollIntoView( node ) {
 		var rect = node.getBoundingClientRect();
 		var viewport = window.innerHeight;
+		var nav = document.querySelector( '.pivot-section-nav' ); // Bandeau collant.
+		var top = ADMIN_BAR + MARGIN + ( nav ? nav.offsetHeight : 0 );
 
-		if ( rect.top >= ADMIN_BAR + MARGIN && rect.bottom <= viewport - 200 ) {
+		if ( rect.top >= top && rect.bottom <= viewport - 200 ) {
 			return; // Déjà bien placé : ne pas bouger l'écran pour rien.
 		}
 

@@ -60,6 +60,7 @@
 				fill( row, '.pivot-urn-input', prefill.urn || '' );
 				fill( row, 'select[name*="[type]"]', prefill.control );
 				fill( row, 'select[name*="[operator]"]', prefill.operator );
+				fill( row, 'select[name*="[date_operator]"]', prefill.operator );
 				fill( row, 'input[name*="[key]"]', prefill.key || '' );
 			}
 
@@ -99,6 +100,10 @@
 			if ( event.target.matches( 'select[name*="[type]"]' ) ) {
 				toggleRangeOptions( event.target.closest( '.pivot-filter-row' ) );
 			}
+
+			if ( event.target.classList.contains( 'pivot-group-input' ) ) {
+				refreshGroupSuggestions( container );
+			}
 		} );
 
 		Array.prototype.forEach.call( container.querySelectorAll( '.pivot-filter-row' ), function ( row ) {
@@ -110,7 +115,34 @@
 	}
 
 	/**
-	 * Comparaison, affichage et unité ne concernent que le contrôle numérique.
+	 * Propose dans chaque critère les groupes déjà saisis dans les autres.
+	 */
+	function refreshGroupSuggestions( container ) {
+		var list = document.getElementById( 'pivot-group-suggestions' );
+		var seen = {};
+
+		if ( ! list ) {
+			return;
+		}
+
+		list.innerHTML = '';
+
+		Array.prototype.forEach.call( container.querySelectorAll( '.pivot-group-input' ), function ( input ) {
+			var value = input.value.trim();
+
+			if ( value && ! seen[ value ] ) {
+				seen[ value ] = true;
+
+				var option = document.createElement( 'option' );
+				option.value = value;
+				list.appendChild( option );
+			}
+		} );
+	}
+
+	/**
+	 * Comparaison, affichage et unité ne concernent que le contrôle numérique ;
+	 * le critère de date a sa propre comparaison.
 	 */
 	function toggleRangeOptions( row ) {
 		if ( ! row ) {
@@ -119,9 +151,14 @@
 
 		var control = row.querySelector( 'select[name*="[type]"]' );
 		var options = row.querySelector( '.pivot-filter-range' );
+		var dates = row.querySelector( '.pivot-filter-date' );
 
 		if ( control && options ) {
 			options.hidden = control.value !== 'range';
+		}
+
+		if ( control && dates ) {
+			dates.hidden = control.value !== 'date';
 		}
 	}
 
@@ -224,6 +261,11 @@
 					.replace( '%1$s', Number( item.min ).toLocaleString() )
 					.replace( '%2$s', Number( item.max ).toLocaleString() )
 					.replace( '%3$d', item.coverage );
+			} else if ( 'date' === item.control ) {
+				summary = text( 'sugDates' )
+					.replace( '%1$s', formatDate( item.min ) )
+					.replace( '%2$s', formatDate( item.max ) )
+					.replace( '%3$d', item.coverage );
 			} else {
 				summary = text( 'sugSummary' ).replace( '%1$d', item.values ).replace( '%2$d', item.coverage );
 			}
@@ -297,6 +339,19 @@
 		}
 
 		load( false );
+	}
+
+	/**
+	 * Date ISO mise en forme dans la langue de l'administration : « 10/10/2026 ».
+	 */
+	function formatDate( iso ) {
+		var parts = String( iso || '' ).split( '-' );
+
+		if ( parts.length !== 3 ) {
+			return String( iso || '' );
+		}
+
+		return new Date( Number( parts[ 0 ] ), Number( parts[ 1 ] ) - 1, Number( parts[ 2 ] ) ).toLocaleDateString();
 	}
 
 	/**
@@ -565,6 +620,7 @@
 			}
 
 			fill( row, 'select[name*="[operator]"]', item.getAttribute( 'data-operator' ) );
+			fill( row, 'select[name*="[date_operator]"]', item.getAttribute( 'data-operator' ) );
 			toggleRangeOptions( row );
 
 			row.querySelector( '.pivot-field-picker' ).hidden = true;
@@ -770,6 +826,72 @@
 		} );
 	}
 
+	/* ------------------------------------------------------- image d'en-tête */
+
+	/**
+	 * Le champ garde l'adresse de l'image : la médiathèque ne fait que la
+	 * remplir. Sans elle, l'adresse se saisit à la main.
+	 */
+	function initImagePicker() {
+		var field = document.querySelector( '.pivot-image-field' );
+
+		if ( ! field ) {
+			return;
+		}
+
+		var input = field.querySelector( '.pivot-image-url' );
+		var preview = field.querySelector( '.pivot-image-preview' );
+		var pick = field.querySelector( '.pivot-image-pick' );
+		var clear = field.querySelector( '.pivot-image-clear' );
+		var frame = null;
+
+		function refresh() {
+			var url = input.value.trim();
+
+			preview.hidden = '' === url;
+			clear.hidden = '' === url;
+
+			if ( url ) {
+				preview.src = url;
+			} else {
+				preview.removeAttribute( 'src' );
+			}
+		}
+
+		input.addEventListener( 'change', refresh );
+
+		clear.addEventListener( 'click', function () {
+			input.value = '';
+			refresh();
+		} );
+
+		if ( ! window.wp || ! window.wp.media ) {
+			pick.hidden = true;
+			refresh();
+			return;
+		}
+
+		pick.addEventListener( 'click', function () {
+			if ( ! frame ) {
+				frame = window.wp.media( {
+					title: text( 'imageTitle' ),
+					button: { text: text( 'imageChoose' ) },
+					library: { type: 'image' },
+					multiple: false
+				} );
+
+				frame.on( 'select', function () {
+					input.value = frame.state().get( 'selection' ).first().get( 'url' );
+					refresh();
+				} );
+			}
+
+			frame.open();
+		} );
+
+		refresh();
+	}
+
 	/* ------------------------------------------------------------ suppression */
 
 	function initConfirm() {
@@ -877,11 +999,281 @@
 		} );
 	}
 
+	/* ------------------------------------------ sections de l'écran d'édition */
+
+	var SECTIONS_KEY = 'pivotListingSections';
+
+	function readSectionState() {
+		try {
+			return JSON.parse( window.localStorage.getItem( SECTIONS_KEY ) ) || {};
+		} catch ( e ) {
+			return {};
+		}
+	}
+
+	function writeSectionState( state ) {
+		try {
+			window.localStorage.setItem( SECTIONS_KEY, JSON.stringify( state ) );
+		} catch ( e ) {
+			// Stockage indisponible : l'état ne survit pas au rechargement.
+		}
+	}
+
+	function initSections() {
+		var sections = Array.prototype.slice.call( document.querySelectorAll( '.pivot-section' ) );
+		var nav = document.querySelector( '.pivot-section-nav' );
+
+		if ( ! sections.length ) {
+			return;
+		}
+
+		var state = readSectionState();
+		var toggleAll = nav ? nav.querySelector( '.pivot-sections-toggle' ) : null;
+
+		function isCollapsed( section ) {
+			return section.classList.contains( 'is-collapsed' );
+		}
+
+		function syncToggleAll() {
+			if ( ! toggleAll ) {
+				return;
+			}
+
+			var allCollapsed = sections.every( isCollapsed );
+
+			toggleAll.textContent = toggleAll.getAttribute( allCollapsed ? 'data-expand' : 'data-collapse' );
+		}
+
+		function setCollapsed( section, collapsed, save ) {
+			section.classList.toggle( 'is-collapsed', collapsed );
+			section.querySelector( '.pivot-section-toggle' ).setAttribute( 'aria-expanded', collapsed ? 'false' : 'true' );
+
+			if ( save ) {
+				state[ section.getAttribute( 'data-section' ) ] = collapsed ? 1 : 0;
+				writeSectionState( state );
+			}
+
+			syncToggleAll();
+		}
+
+		function reveal( node ) {
+			var section = node && node.closest ? node.closest( '.pivot-section' ) : null;
+
+			if ( section && isCollapsed( section ) ) {
+				setCollapsed( section, false, true );
+			}
+		}
+
+		sections.forEach( function ( section ) {
+			var id = section.getAttribute( 'data-section' );
+			var collapsed = id in state ? !! state[ id ] : 'collapsed' === section.getAttribute( 'data-default' );
+
+			setCollapsed( section, collapsed, false );
+
+			section.querySelector( '.pivot-section-toggle' ).addEventListener( 'click', function () {
+				setCollapsed( section, ! isCollapsed( section ), true );
+			} );
+		} );
+
+		if ( toggleAll ) {
+			toggleAll.addEventListener( 'click', function () {
+				var collapse = ! sections.every( isCollapsed );
+
+				sections.forEach( function ( section ) {
+					setCollapsed( section, collapse, true );
+				} );
+			} );
+		}
+
+		// La visite guidée et la validation du formulaire doivent pouvoir
+		// atteindre un champ d'une section repliée.
+		document.addEventListener( 'pivot:reveal', function ( event ) {
+			reveal( event.target );
+		} );
+
+		var form = document.getElementById( 'pivot-listing-form' );
+
+		if ( form ) {
+			form.addEventListener( 'invalid', function ( event ) {
+				reveal( event.target );
+			}, true );
+		}
+
+		if ( window.location.hash ) {
+			reveal( document.querySelector( window.location.hash.replace( /[^#\w-]/g, '' ) ) );
+		}
+
+		if ( ! nav ) {
+			return;
+		}
+
+		var links = Array.prototype.slice.call( nav.querySelectorAll( 'a[href^="#pivot-section-"]' ) );
+		var list = nav.querySelector( 'ul' );
+
+		links.forEach( function ( link ) {
+			link.addEventListener( 'click', function () {
+				reveal( document.querySelector( link.getAttribute( 'href' ) ) );
+			} );
+		} );
+
+		// Section courante : la dernière dont le haut a passé l'endroit où
+		// une ancre la pose. WordPress y compte la barre d'administration
+		// (scroll-padding-top), même sur mobile où elle ne reste pas en haut :
+		// le seuil se lit donc dans les styles plutôt que sur le bandeau.
+		var ticking = false;
+
+		function anchorOffset() {
+			var padding = parseFloat( window.getComputedStyle( document.documentElement ).scrollPaddingTop ) || 0;
+			var margin = parseFloat( window.getComputedStyle( sections[ 0 ] ).scrollMarginTop ) || 0;
+
+			return Math.max( padding + margin, nav.getBoundingClientRect().bottom );
+		}
+
+		function spy() {
+			ticking = false;
+
+			var limit = anchorOffset() + 24;
+			var currentId = sections[ 0 ].id;
+			var atBottom = window.innerHeight + window.pageYOffset >= document.documentElement.scrollHeight - 2;
+
+			sections.forEach( function ( section ) {
+				if ( section.getBoundingClientRect().top <= limit ) {
+					currentId = section.id;
+				}
+			} );
+
+			if ( atBottom ) {
+				currentId = sections[ sections.length - 1 ].id;
+			}
+
+			links.forEach( function ( link ) {
+				var active = link.getAttribute( 'href' ) === '#' + currentId;
+
+				link.classList.toggle( 'is-current', active );
+
+				if ( active ) {
+					link.setAttribute( 'aria-current', 'true' );
+
+					// Sur un écran étroit, l'onglet actif reste visible dans le bandeau.
+					if ( list.scrollWidth > list.clientWidth ) {
+						var left = link.offsetLeft - list.offsetLeft;
+
+						if ( left < list.scrollLeft || left + link.offsetWidth > list.scrollLeft + list.clientWidth ) {
+							list.scrollLeft = left - 12;
+						}
+					}
+				} else {
+					link.removeAttribute( 'aria-current' );
+				}
+			} );
+		}
+
+		function requestSpy() {
+			if ( ! ticking ) {
+				ticking = true;
+				window.requestAnimationFrame( spy );
+			}
+		}
+
+		window.addEventListener( 'scroll', requestSpy, { passive: true } );
+		window.addEventListener( 'resize', requestSpy );
+		// Replier une section déplace celles qui suivent sans faire défiler.
+		document.addEventListener( 'click', requestSpy );
+
+		spy();
+	}
+
+	/* ---------------------------------------- recherche des pages de listing */
+
+	/**
+	 * Minuscules sans accents, comme Pivot_Admin::normalize_search().
+	 */
+	function normalizeSearch( text ) {
+		return String( text ).normalize( 'NFD' ).replace( /[̀-ͯ]/g, '' ).toLowerCase();
+	}
+
+	function initListingsSearch() {
+		var form = document.querySelector( '.pivot-listings-search' );
+		var table = document.querySelector( '.pivot-listings-table' );
+
+		if ( ! form || ! table ) {
+			return;
+		}
+
+		var input = form.querySelector( 'input[type="search"]' );
+		var count = document.querySelector( '.pivot-listings-count' );
+		var tbody = table.tBodies[ 0 ];
+		var none = tbody.querySelector( '.pivot-listings-none' );
+
+		// Ordre d'origine : le serveur a rendu les pages trouvées en premier.
+		var rows = Array.prototype.slice.call( tbody.querySelectorAll( '.pivot-listing-row' ) );
+		var order = rows.slice().sort( function ( a, b ) {
+			return a.getAttribute( 'data-order' ) - b.getAttribute( 'data-order' );
+		} );
+
+		function apply() {
+			var value = input.value.trim();
+			var terms = normalizeSearch( value ).split( /\s+/ ).filter( Boolean );
+			var shown = [];
+			var hidden = [];
+
+			order.forEach( function ( row ) {
+				var haystack = row.getAttribute( 'data-search' ) || '';
+				var match = terms.every( function ( term ) {
+					return -1 !== haystack.indexOf( term );
+				} );
+
+				row.hidden = ! match;
+				( match ? shown : hidden ).push( row );
+			} );
+
+			// Pages masquées en fin de tableau : les bandes alternées restent
+			// régulières sur les lignes visibles.
+			shown.concat( hidden ).forEach( function ( row ) {
+				tbody.appendChild( row );
+			} );
+
+			if ( none ) {
+				none.hidden = shown.length > 0;
+			}
+
+			if ( count ) {
+				count.textContent = terms.length
+					? count.getAttribute( 'data-filtered' ).replace( '%1$d', shown.length ).replace( '%2$d', rows.length )
+					: count.getAttribute( 'data-total' );
+			}
+
+			// L'adresse garde la recherche : un rechargement ou un retour
+			// depuis l'écran d'édition la retrouve.
+			if ( window.history && window.history.replaceState ) {
+				var url = new URL( window.location.href );
+
+				if ( value ) {
+					url.searchParams.set( 's', value );
+				} else {
+					url.searchParams.delete( 's' );
+				}
+
+				window.history.replaceState( null, '', url.toString() );
+			}
+		}
+
+		input.addEventListener( 'input', apply );
+
+		form.addEventListener( 'submit', function ( event ) {
+			event.preventDefault();
+			apply();
+		} );
+	}
+
 	document.addEventListener( 'DOMContentLoaded', function () {
+		initListingsSearch();
+		initSections();
 		initFilters();
 		initSuggestions();
 		initShortcodeBuilder();
 		initRebuild();
+		initImagePicker();
 		initConfirm();
 		initFieldRules();
 	} );

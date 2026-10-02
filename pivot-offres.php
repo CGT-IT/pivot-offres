@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       PIVOT Offres Installed
  * Description:       Publie les offres touristiques de PIVOT/Web (CGT Wallonie) : pages de listing paramétrables, recherche et pagination 100 % côté client, cartographie, pages détail optimisées SEO, multilingue fr/nl/en/de à partir des traductions renvoyées par PIVOT. Aucune offre n'est stockée en base de données.
- * Version:           2.7.0
+ * Version:           2.9.3
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * License:           GPL-2.0-or-later
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PIVOT_VERSION', '2.7.0' );
+define( 'PIVOT_VERSION', '2.9.3' );
 define( 'PIVOT_FILE', __FILE__ );
 define( 'PIVOT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PIVOT_URL', plugin_dir_url( __FILE__ ) );
@@ -47,13 +47,18 @@ require_once PIVOT_DIR . 'includes/class-pivot-repository.php';
 require_once PIVOT_DIR . 'includes/class-pivot-index-builder.php';
 require_once PIVOT_DIR . 'includes/class-pivot-suggestions.php';
 require_once PIVOT_DIR . 'includes/class-pivot-fields.php';
+require_once PIVOT_DIR . 'includes/class-pivot-closures.php';
 require_once PIVOT_DIR . 'includes/class-pivot-types.php';
 require_once PIVOT_DIR . 'includes/class-pivot-rewrites.php';
 require_once PIVOT_DIR . 'includes/class-pivot-rest.php';
 require_once PIVOT_DIR . 'includes/class-pivot-seo.php';
+require_once PIVOT_DIR . 'includes/class-pivot-sitemap.php';
 require_once PIVOT_DIR . 'includes/class-pivot-templates.php';
 require_once PIVOT_DIR . 'includes/class-pivot-shortcodes.php';
 require_once PIVOT_DIR . 'includes/class-pivot-cron.php';
+// La reprise de l'ancien plugin tourne à l'activation, y compris depuis
+// WP-CLI, qui n'est pas is_admin() : elle est déclarée hors du bloc ci-dessous.
+require_once PIVOT_DIR . 'includes/class-pivot-legacy-import.php';
 // La visite guidée est pilotée depuis l'administration, mais son avancement est
 // enregistré par une route REST, qui n'est pas is_admin() : la classe doit donc
 // être déclarée en dehors du bloc ci-dessous.
@@ -129,6 +134,20 @@ final class Pivot_Offres {
 			self::drop_old_detail_urls();
 		}
 
+		// Pages de l'ancien plugin PIVOT, si l'activation ne les a pas reprises :
+		// activé pendant que l'ancien l'était encore, ce plugin s'arrête au
+		// contrôle de collisions, et son hook d'activation n'est jamais
+		// enregistré. Sans effet une fois la reprise faite. Une erreur ici
+		// bloquerait toute l'administration : elle est consignée, pas propagée.
+		try {
+			Pivot_Legacy_Import::maybe_run();
+		} catch ( Throwable $e ) {
+			Pivot_Logger::error(
+				'Reprise de l\'ancien plugin interrompue : ' . $e->getMessage(),
+				array( 'service' => 'import' )
+			);
+		}
+
 		update_option( 'pivot_version', PIVOT_VERSION, false );
 	}
 
@@ -165,7 +184,15 @@ final class Pivot_Offres {
 			update_option( Pivot_Listings::OPTION, $listings, false );
 		}
 
-		foreach ( array_keys( Pivot_Listings::active() ) as $listing_id ) {
+		foreach ( Pivot_Listings::active() as $listing_id => $listing ) {
+			// Un index jamais construit ne porte aucune ancienne adresse. Sur
+			// une installation neuve — version installée vide —, ce sont les
+			// pages que la reprise de l'ancien plugin vient de créer : elle a
+			// déjà échelonné leur construction.
+			if ( empty( $listing['index_built'] ) ) {
+				continue;
+			}
+
 			Pivot_Index_Builder::invalidate( $listing_id );
 			wp_schedule_single_event( time() + 5, 'pivot_continue_index', array( $listing_id ) );
 		}
@@ -202,7 +229,8 @@ final class Pivot_Offres {
 Pivot_Offres::instance();
 
 /**
- * Activation : crée la table de logs, le dossier de cache et rafraîchit les permaliens.
+ * Activation : crée la table de logs et le dossier de cache, reprend les pages
+ * de l'ancien plugin PIVOT et rafraîchit les permaliens.
  */
 function pivot_activate() {
 	// Le plugin est déjà chargé à ce stade : inutile de tester les collisions,
@@ -231,11 +259,15 @@ function pivot_activate() {
 	// détectés par rapport à elle.
 	update_option( 'pivot_lang_fingerprint', Pivot_I18n::fingerprint(), false );
 
+	// La reprise de l'ancien plugin vient en dernier : elle écrit dans le cache
+	// et le journal, et ses pages doivent exister avant le rafraîchissement
+	// des permaliens qui suit.
 	$steps = array(
-		'table de journal'   => array( 'Pivot_Logger', 'create_table' ),
-		'dossier de cache'   => array( 'Pivot_Cache', 'ensure_directory' ),
-		'ancien cache'       => array( 'Pivot_Cache', 'purge_legacy_store' ),
-		'tâches planifiées'  => array( 'Pivot_Cron', 'schedule_events' ),
+		'table de journal'            => array( 'Pivot_Logger', 'create_table' ),
+		'dossier de cache'            => array( 'Pivot_Cache', 'ensure_directory' ),
+		'ancien cache'                => array( 'Pivot_Cache', 'purge_legacy_store' ),
+		'tâches planifiées'           => array( 'Pivot_Cron', 'schedule_events' ),
+		'reprise de l\'ancien plugin' => array( 'Pivot_Legacy_Import', 'maybe_run' ),
 	);
 
 	$failures = array();

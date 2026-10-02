@@ -43,15 +43,14 @@ $name   = pivot_get( $item, 'n', '' );
 $image  = pivot_get( $item, 'i', '' );
 $place  = pivot_get( $item, 'x.lieuevt.value', pivot_get( $item, 'l', '' ) );
 $dates  = (array) pivot_get( $item, 'x.date.values', array() );
-$schema = Pivot_Seo::schema_type( (int) pivot_get( $item, 't', 0 ) );
 ?>
-<article class="pivot-card pivot-card-evenement" itemscope itemtype="https://schema.org/<?php echo esc_attr( $schema ); ?>">
+<article class="pivot-card pivot-card-evenement">
 
 	<?php if ( $image ) : ?>
 		<div class="pivot-card-media">
 			<a href="<?php echo esc_url( $url ); ?>" tabindex="-1" aria-hidden="true">
 				<img src="<?php echo esc_url( $image ); ?>" alt="<?php echo esc_attr( $name ); ?>"
-					loading="lazy" decoding="async" itemprop="image" />
+					loading="lazy" decoding="async" />
 			</a>
 		</div>
 	<?php endif; ?>
@@ -81,16 +80,16 @@ $schema = Pivot_Seo::schema_type( (int) pivot_get( $item, 't', 0 ) );
 			</p>
 		<?php endif; ?>
 
-		<h2 class="pivot-card-title" itemprop="name">
-			<a href="<?php echo esc_url( $url ); ?>" itemprop="url"><?php echo esc_html( $name ); ?></a>
+		<h2 class="pivot-card-title">
+			<a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $name ); ?></a>
 		</h2>
 
 		<?php if ( $place ) : ?>
-			<p class="pivot-card-place" itemprop="location"><?php echo esc_html( $place ); ?></p>
+			<p class="pivot-card-place"><?php echo esc_html( $place ); ?></p>
 		<?php endif; ?>
 
 		<?php if ( pivot_get( $item, 'd' ) ) : ?>
-			<p class="pivot-card-excerpt" itemprop="description"><?php echo esc_html( $item['d'] ); ?></p>
+			<p class="pivot-card-excerpt"><?php echo esc_html( $item['d'] ); ?></p>
 		<?php endif; ?>
 
 		<p class="pivot-card-action">

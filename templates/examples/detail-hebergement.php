@@ -46,10 +46,10 @@ $highlights = array(
 get_header();
 ?>
 
-<article class="pivot-detail pivot-detail-hebergement" itemscope itemtype="https://schema.org/LodgingBusiness">
+<article class="pivot-detail pivot-detail-hebergement">
 
 	<header class="pivot-detail-header">
-		<h1 class="pivot-detail-title" itemprop="name"><?php echo esc_html( $name ); ?></h1>
+		<h1 class="pivot-detail-title"><?php echo esc_html( $name ); ?></h1>
 		<p class="pivot-detail-address"><?php echo esc_html( $templates->offer_address_line( $offer, $lang ) ); ?></p>
 	</header>
 
@@ -98,8 +98,9 @@ get_header();
 	<?php $description = Pivot_Templates::offer_description( $offer, 0, $lang ); ?>
 
 	<?php if ( $description ) : ?>
-		<section class="pivot-detail-description" itemprop="description">
-			<?php echo wp_kses_post( wpautop( $description ) ); ?>
+		<section class="pivot-detail-description">
+			<h2 class="screen-reader-text"><?php esc_html_e( 'Description', 'pivot-offres' ); ?></h2>
+			<?php echo wpautop( esc_html( $description ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- texte échappé. ?>
 		</section>
 	<?php endif; ?>
 

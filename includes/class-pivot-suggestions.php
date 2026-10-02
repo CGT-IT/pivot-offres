@@ -55,8 +55,9 @@ class Pivot_Suggestions {
 	public static function analyse( $listing, $force = false ) {
 		$listing_id = pivot_get( $listing, 'id', '' );
 		// Le suffixe suit le format des suggestions : une analyse mise en
-		// cache avant les critères numériques n'en proposerait aucun.
-		$key        = 'suggestions|' . $listing_id . '|' . pivot_get( $listing, 'query_code', '' ) . '|2';
+		// cache avant les critères numériques, ou de date, n'en proposerait
+		// aucun.
+		$key        = 'suggestions|' . $listing_id . '|' . pivot_get( $listing, 'query_code', '' ) . '|3';
 
 		if ( ! $force ) {
 			$cached = Pivot_Cache::get( self::GROUP, $key );
@@ -181,6 +182,13 @@ class Pivot_Suggestions {
 			}
 
 			$field_type = (string) pivot_get( $spec, 'type', '' );
+
+			// Une date isolée — début de publication, échéance — est une
+			// donnée de gestion, et une liste de dates ne filtre rien. Les
+			// périodes sont relevées à part, ci-dessous.
+			if ( 'Date' === $field_type ) {
+				continue;
+			}
 			$value      = pivot_get( $spec, 'value' );
 			$label      = Pivot_I18n::pick( pivot_get( $spec, 'value_labels', array() ), 'fr', '' );
 
@@ -220,6 +228,19 @@ class Pivot_Suggestions {
 				'label'      => $name,
 				'field_type' => $field_type,
 			), $value );
+		}
+
+		// Les dates d'un événement vivent dans des objets, un par période :
+		// relevées une fois par offre, de la première date à la dernière.
+		$periods = Pivot_Fields::date_periods( $offer, 'urn:obj:date' );
+
+		if ( $periods ) {
+			self::add( $stats, 'spec:urn:obj:date', array(
+				'source'     => 'spec',
+				'urn'        => 'urn:obj:date',
+				'label'      => __( 'Dates', 'pivot-offres' ),
+				'field_type' => 'Period',
+			), pivot_date_iso( $periods[0][0] ) . '..' . pivot_date_iso( max( array_column( $periods, 1 ) ) ) );
 		}
 	}
 
@@ -263,27 +284,29 @@ class Pivot_Suggestions {
 			$coverage = $sample > 0 ? min( 100, (int) round( ( $hits / $sample ) * 100 ) ) : 0;
 
 			$boolean = 'Boolean' === $entry['field_type'];
+			$period  = 'Period' === $entry['field_type'];
 			$numeric = in_array( $entry['field_type'], Pivot_Thesaurus::NUMERIC_TYPES, true );
 			$bounds  = $numeric ? self::bounds( array_keys( $values ) ) : null;
+			$bounds  = $period ? self::date_bounds( array_keys( $values ) ) : $bounds;
 
 			// Un nombre qui ne se lit pas comme tel, ou toujours le même, ne
-			// se compare à rien.
-			if ( $numeric && ( ! $bounds || $bounds[0] === $bounds[1] ) ) {
+			// se compare à rien. Une date non plus.
+			if ( ( $numeric || $period ) && ( ! $bounds || $bounds[0] === $bounds[1] ) ) {
 				continue;
 			}
 
 			// Une seule valeur pour tout le monde ne filtre rien ; trop de
 			// valeurs distinctes non plus. Un nombre y échappe : il se compare,
 			// il ne se choisit pas dans une liste, et cent prix différents font
-			// une très bonne jauge.
-			if ( ! $boolean && ! $numeric && ( $distinct < 2 || $distinct > self::MAX_VALUES ) ) {
+			// une très bonne jauge. Une période de même.
+			if ( ! $boolean && ! $numeric && ! $period && ( $distinct < 2 || $distinct > self::MAX_VALUES ) ) {
 				continue;
 			}
 
 			// Presque autant de valeurs distinctes que d'offres concernées :
 			// c'est une référence ou un texte libre, pas un critère. Un filtre
 			// dont chaque choix ne renvoie qu'une offre ne sert à rien.
-			if ( ! $boolean && ! $numeric && $distinct >= 5 && $distinct > $hits * 0.8 ) {
+			if ( ! $boolean && ! $numeric && ! $period && $distinct >= 5 && $distinct > $hits * 0.8 ) {
 				continue;
 			}
 
@@ -308,7 +331,7 @@ class Pivot_Suggestions {
 				'control'    => self::control_for( $entry, $distinct ),
 				'values'     => $distinct,
 				'coverage'   => $coverage,
-				'examples'   => $numeric ? array() : array_slice( array_keys( $values ), 0, 3 ),
+				'examples'   => $numeric || $period ? array() : array_slice( array_keys( $values ), 0, 3 ),
 				'score'      => self::score( $entry, $distinct, $coverage ),
 			);
 
@@ -316,6 +339,13 @@ class Pivot_Suggestions {
 				$suggestion['operator'] = Pivot_Thesaurus::suggested_operator( $entry['field_type'] );
 				$suggestion['min']      = $bounds[0];
 				$suggestion['max']      = $bounds[1];
+			}
+
+			// Dates au format ISO : l'écran les met en forme dans sa langue.
+			if ( $period ) {
+				$suggestion['operator'] = 'between';
+				$suggestion['min']      = pivot_date_iso( $bounds[0] );
+				$suggestion['max']      = pivot_date_iso( $bounds[1] );
 			}
 
 			$out[] = $suggestion;
@@ -342,6 +372,12 @@ class Pivot_Suggestions {
 	 */
 	private static function score( $entry, $distinct, $coverage ) {
 		$score = $coverage;
+
+		// Sur une page d'événements, « quand ? » est la première question du
+		// visiteur : les dates passent devant tout le reste.
+		if ( 'Period' === $entry['field_type'] ) {
+			return (int) $score + 90;
+		}
 
 		// Le nombre de valeurs n'a pas de sens pour une jauge : un critère
 		// numérique vaut par sa couverture, et passe derrière les bons choix.
@@ -388,6 +424,10 @@ class Pivot_Suggestions {
 			return 'range';
 		}
 
+		if ( 'Period' === $entry['field_type'] ) {
+			return 'date';
+		}
+
 		// Peu de valeurs : les cases à cocher se lisent d'un coup d'œil et
 		// permettent de cumuler. Au-delà, la liste déroulante reste plus sobre.
 		if ( $distinct <= 6 ) {
@@ -415,6 +455,30 @@ class Pivot_Suggestions {
 	}
 
 	/**
+	 * Première et dernière date des périodes observées.
+	 *
+	 * @param array $values Périodes observées, « AAAA-MM-JJ..AAAA-MM-JJ ».
+	 * @return array|null array( début, fin ) en AAAAMMJJ, ou null si aucune date n'est lisible.
+	 */
+	private static function date_bounds( $values ) {
+		$min = null;
+		$max = null;
+
+		foreach ( $values as $value ) {
+			$parts = array_map( 'pivot_parse_date', explode( '..', (string) $value, 2 ) );
+
+			if ( 2 !== count( $parts ) || ! $parts[0] || ! $parts[1] ) {
+				continue;
+			}
+
+			$min = null === $min ? $parts[0] : min( $min, $parts[0] );
+			$max = null === $max ? $parts[1] : max( $max, $parts[1] );
+		}
+
+		return null === $min ? null : array( $min, $max );
+	}
+
+	/**
 	 * Clé d'URL proposée.
 	 *
 	 * @param array $entry Champ.
@@ -425,7 +489,7 @@ class Pivot_Suggestions {
 			return $entry['source'];
 		}
 
-		$tail = str_replace( 'urn:fld:', '', $entry['urn'] );
+		$tail = str_replace( array( 'urn:fld:', 'urn:obj:' ), '', $entry['urn'] );
 
 		return sanitize_key( str_replace( ':', '_', $tail ) );
 	}

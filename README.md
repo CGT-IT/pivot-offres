@@ -15,9 +15,46 @@ Extension WordPress qui publie les offres touristiques de **PIVOT/Web 3.1** (Com
 3. Ouvrez **PIVOT → Réglages**, choisissez l'environnement (stage ou production), collez la clé `ws_key` correspondante, puis cliquez sur **Tester la connexion**.
 4. Créez votre première page dans **PIVOT → Ajouter une page**.
 
-L'activation crée la table de journal et les deux dossiers de cache — `wp-content/uploads/pivot-cache/` pour les index servis au navigateur, `wp-content/pivot-cache-private/` pour tout le reste —, planifie les tâches de reconstruction et rafraîchit les permaliens.
+L'activation crée la table de journal et les deux dossiers de cache — `wp-content/uploads/pivot-cache/` pour les index servis au navigateur, `wp-content/pivot-cache-private/` pour tout le reste —, planifie les tâches de reconstruction, reprend les pages de l'ancien plugin PIVOT s'il en trouve (voir ci-dessous) et rafraîchit les permaliens.
 
 **Prérequis** : WordPress 6.0, PHP 7.4, permaliens autres que « simple », et les dossiers `wp-content` et `uploads` accessibles en écriture.
+
+---
+
+## Reprise depuis l'ancien plugin PIVOT
+
+Un site qui utilisait l'ancien plugin **Pivot** (versions 2.x, tables `{prefix}pivot_pages` et `{prefix}pivot_filter`) retrouve à l'activation ses pages de listing et leurs filtres, aux mêmes adresses.
+
+1. **Désactivez** l'ancien plugin, sans le **supprimer** : sa désinstallation efface ses tables, et avec elles ce qu'il y a à reprendre. Les deux plugins ne peuvent pas être actifs ensemble, car ils déclarent tous deux `pivot_settings()`.
+2. Activez PIVOT Offres. Un encadré dresse le bilan : pages et filtres repris, points à revoir.
+3. Les index se construisent en arrière-plan, une page par minute. Une page visitée avant son tour affiche un message d'attente le temps de sa construction.
+
+La reprise ne tourne qu'une fois, et seulement si aucune page de listing n'existe encore : des pages recréées à la main ne se retrouvent pas en double. Activé pendant que l'ancien plugin l'était encore, PIVOT Offres ne démarre pas (collision de noms) : la reprise a lieu au premier écran d'administration qui suit la désactivation de l'ancien. Pour la relancer — une page supprimée par erreur, un registre qui n'était pas vide —, utilisez **PIVOT → Cache et outils → Ancien plugin PIVOT** : les pages déjà reprises et les adresses déjà prises sont écartées. Les tables de l'ancien plugin ne sont jamais modifiées.
+
+| Ancien plugin | PIVOT Offres |
+|---|---|
+| Titre, chemin, requête, carte, tri | repris tels quels ; titres traduits depuis WPML (contexte `pivot`) |
+| Nombre de colonnes | **Colonnes** de la page ; offres par page : 12, 15 pour 5 colonnes, 18 pour 6 |
+| Image de bandeau | **Image d'en-tête** de la page |
+| Description | texte d'introduction |
+| Tri aléatoire | non repris : les offres suivent l'ordre de PIVOT |
+| Type de page, shortcode | non repris : l'affichage suit le type de chaque offre |
+| Filtre « Nom » (`urn:fld:nomofr`) | aucun critère : la recherche libre, active par défaut, cherche déjà dans le nom |
+| Commune, Localité | critères **Commune** et **Localité**, en liste déroulante |
+| Cases « Type » (`urn:typ:…`) | un critère **Type d'offre** à cases à cocher |
+| Cases « Valeur » (`urn:val:class:3star`…) | un critère à cases à cocher sur le champ (`urn:fld:class`), au nom du groupe |
+| Cases oui/non | une bascule par case |
+| Groupe d'un filtre | **Groupe** du critère, traductions WPML comprises. Un critère qui réunit plusieurs lignes, comme « Classement », prend plutôt le nom du groupe pour libellé |
+| Date de début et date de fin | un critère **Dates** « du … au … » sur la période de l'événement |
+| Nombres | critère numérique ; un minimum et un maximum sur le même champ deviennent « entre deux valeurs » |
+
+Trois différences de comportement à connaître :
+
+- Un critère à cases à cocher propose toutes les valeurs présentes dans les offres de la page, et non plus seulement celles que l'ancien plugin avait retenues.
+- Plusieurs cases cochées d'un même critère se combinent en « ou ».
+- Les pages d'agenda de l'ancien plugin excluaient elles-mêmes les événements terminés. Ici, c'est la requête PIVOT qui décide des offres affichées.
+
+La clé `ws_key` de l'ancien plugin est reprise si aucune n'est encore saisie. L'environnement est alors réglé sur la production, ou sur stage si l'ancienne adresse du service pointait vers stage.
 
 ---
 
@@ -93,7 +130,9 @@ Chaque page associe une URL de votre site à un code de requête PIVOT. Aucune p
 | Paramètres | pour une requête paramétrable : `radius=10`, une par ligne |
 | Richesse des données | **Résumé** (rapide), **Complet** — indispensable dès qu'un filtre porte sur un champ PIVOT —, ou **Complet avec offres liées**, qui met aussi en cache les fiches détail des offres de la page (voir [Renouvellement du cache](#renouvellement-du-cache)) |
 | Offres par page | pagination navigateur |
+| Colonnes | vignettes par ligne à partir de 1200 px de large ; en dessous, trois au plus dès 992 px, deux sur tablette (dès 576 px), une sur mobile — les paliers de la grille Bootstrap |
 | Carte | pointe les offres géolocalisées de la page |
+| Image d'en-tête | bandeau au-dessus du titre, repris comme image de partage (`og:image`) |
 | Critères de recherche | voir ci-dessous |
 
 ### Ajouter un filtre : les critères suggérés
@@ -110,6 +149,10 @@ Un champ numérique échappe à la règle des valeurs trop nombreuses : cent pri
 
 > **Nombre de personnes** — de 12 à 80 · 100 % des offres &nbsp; **[Ajouter]**
 
+Les dates d'un événement sont proposées de la même façon, en tête de liste, comme **date ou période** :
+
+> **Dates** — du 01/02/2025 au 21/01/2027 · 100 % des offres &nbsp; **[Ajouter]**
+
 L'analyse est mise en cache pour la durée des listes d'offres ; le lien **Réanalyser les offres** la refait immédiatement.
 
 ### Régler un critère à la main
@@ -117,10 +160,19 @@ L'analyse est mise en cache pour la durée des listes d'offres ; le lien **Réan
 **Ajouter un critère sur mesure** ouvre un critère vierge :
 
 - **Libellé** : ce que verra le visiteur.
+- **Groupe** : facultatif, voir ci-dessous.
 - **Source** : type d'offre, localité, commune, code postal, province, ou **champ PIVOT**.
-- **Contrôle** : liste déroulante, cases à cocher, saisie libre, interrupteur, nombre à comparer.
+- **Contrôle** : liste déroulante, cases à cocher, saisie libre, interrupteur, nombre à comparer, date ou période.
 
 Les valeurs proposées au visiteur sont toujours déduites des offres de la page, avec leur nombre d'occurrences : elles suivent vos données sans que vous ayez à les tenir à jour.
+
+### Grouper des critères
+
+Un groupe réunit plusieurs critères sous un même intertitre : typiquement une série d'interrupteurs, « Équipements » au-dessus de *Terrasse*, *Parking* et *Wifi*. Donnez le même nom de groupe à chacun ; le champ propose ceux déjà utilisés dans la page.
+
+- Le groupe s'affiche à la place du premier de ses critères, et ses critères y restent dans leur ordre.
+- Le nom du groupe se traduit une seule fois pour tous ses critères, dans le tableau **Groupes de critères** sous la liste. Un groupe ajouté y apparaît après enregistrement ; sans traduction, son nom s'affiche tel quel.
+- Le groupe ne sert qu'à l'affichage : le changer ne reconstruit pas l'index.
 
 ### Critères numériques
 
@@ -142,6 +194,33 @@ C'est vous qui fixez la comparaison ; le visiteur ne saisit qu'un nombre, et lit
 
 Le type du champ décide des nombres reconnus : `UInt`, `UFloat`, `SFloat` et `Currency`. Durées et heures (« 3:30 ») n'en font pas partie.
 
+### Critères de date
+
+Pour un agenda : « du 1er au 31 octobre », « jusqu'au 31 décembre ». Le contrôle **Date ou période** affiche le calendrier du navigateur, dans la langue du visiteur, borné par la première et la dernière date des offres de la page.
+
+| Réglage | Valeurs |
+|---|---|
+| Comparaison | **Entre deux dates (du … au …)**, **À partir d'une date**, **Jusqu'à une date**, **À une date précise** |
+
+Ce qui est comparé dépend de l'urn choisie :
+
+| Urn | Le critère retient une offre dont… |
+|---|---|
+| `urn:obj:date` | l'une des périodes **touche** les dates demandées : l'événement a lieu pendant, même s'il a commencé avant ou finit après |
+| `urn:fld:date:datedeb` | l'une des périodes **commence** dans les dates demandées |
+| `urn:fld:date:datefin` | l'une des périodes **se termine** dans les dates demandées |
+| tout autre champ `Date` | la date elle-même tombe dans les dates demandées |
+
+`urn:obj:date` est le bon choix dans la plupart des cas. Le catalogue des champs le propose sous le nom **Période (date de début et date de fin)**, juste à côté de la date de début.
+
+- **Plusieurs périodes** : un événement peut en avoir plusieurs (un objet `urn:obj:date` par période). Il suffit que l'une d'elles réponde.
+- **Sans première date, une période terminée ne compte pas** : « jusqu'au 31 octobre » se lit « d'aujourd'hui au 31 octobre ». Sinon, un spectacle joué en mars et en décembre sortirait pour octobre au titre de mars. Des dates passées demandées explicitement (« du 1er au 31 mars ») restent respectées. Cette règle ne vaut pas pour une date isolée (« tout autre champ `Date` » ci-dessus).
+- **Une période est continue** : « Du 19/12/2025 au 31/12/2026, tous les dimanches » répond à n'importe quel jour entre ces deux dates. Le détail de l'ouverture est un texte libre, que le filtre ne lit pas.
+- **Adresse** : même règle que pour un nombre, au format ISO : `?date_min=2026-10-01&date_max=2026-10-31`, `?date_max=2026-12-31`, `?date=2026-10-10` pour une date précise. `10/10/2026` est aussi accepté.
+- **Dates inversées** : remises dans l'ordre.
+- **Offres sans date** : écartées dès que le critère est utilisé.
+- **Recherche plein texte** : les dates n'y entrent pas.
+
 ### Trouver le bon champ PIVOT
 
 Aucune urn à retenir : le lien **Parcourir les champs disponibles**, sous la case Urn, ouvre le catalogue des champs lu dans le thesaurus.
@@ -159,7 +238,8 @@ Aucune urn à retenir : le lien **Parcourir les champs disponibles**, sous la ca
 | `UInt` | nombre à comparer, **au moins** |
 | `Currency` | nombre à comparer, **au plus** |
 | `UFloat`, `SFloat` | nombre à comparer, **entre deux valeurs** |
-| `String`, `StringML`, `TextML`, `URL`, `EMail`, `Date`… | saisie libre |
+| `Date`, et la **Période** `urn:obj:date` | date ou période, **entre deux dates** |
+| `String`, `StringML`, `TextML`, `URL`, `EMail`… | saisie libre |
 | autres | liste déroulante |
 
 La case Urn accepte toujours la saisie directe, avec l'autocomplétion du navigateur sur les champs déjà chargés.
@@ -280,6 +360,8 @@ La colonne de gauche attend la clé stable de la valeur, listée sous **Valeurs 
 
 Ces surcharges priment sur ce que renvoie PIVOT. Elles ne servent qu'à corriger une traduction absente ou inadaptée — dans le cas courant, laissez PIVOT faire.
 
+Sans libellé saisi dans une langue, un critère sur un champ PIVOT prend le nom que PIVOT donne à ce champ dans cette langue, comme le faisait l'ancien plugin : « Balade et randonnée » s'affiche « Walk and hike » en anglais. Le libellé de la langue par défaut reste toujours celui que vous avez saisi. Ce libellé est écrit dans l'index : il s'applique à sa prochaine construction.
+
 ### Vérifier
 
 **PIVOT → Cache et outils → Diagnostic** indique l'extension détectée, les langues publiées, et l'URL d'exemple générée pour chacune. Deux adresses identiques y sont signalées : cela veut dire que votre extension ne distingue pas les URL fabriquées par le plugin, et le message vous indique quoi faire. Dans ce cas une seule balise `hreflang` est publiée, plutôt que plusieurs identiques.
@@ -308,12 +390,21 @@ WordPress ajoute d'habitude une barre oblique finale aux adresses par une redire
 
 ## Référencement
 
-- Titre, méta description et canonique sur les listes et les fiches ; `rel="prev"`/`rel="next"` sur les pages paginées.
-- Open Graph et Twitter Card.
-- JSON-LD : `ItemList` sur les listes, type dérivé du type d'offre PIVOT (`Hotel`, `Campground`, `Restaurant`, `TouristAttraction`…) sur les fiches, plus un `BreadcrumbList`.
-- Micro-données `itemprop` dans le HTML des vignettes et des fiches.
+- Titre, méta description et canonique sur les listes et les fiches ; `rel="prev"`/`rel="next"` sur les pages paginées. Une page de listing sans description SEO saisie prend le début de son introduction ; toute méta description est coupée à 160 caractères, sur un espace.
+- Open Graph et Twitter Card. L'image de partage d'une page de listing est son **image d'en-tête**, à défaut celle de la première offre affichée ; le filtre `pivot_listing_image` peut la remplacer.
+- JSON-LD, seule source de données structurées (les gabarits ne portent plus de micro-données `itemprop`, qui décrivaient une seconde entité pour la même offre) :
+  - sur les listes, un `CollectionPage` et l'`ItemList` des offres affichées ;
+  - sur les fiches, un `WebPage` (langue, date de modification de l'offre), l'offre elle-même et un `BreadcrumbList`.
+- Le type schema.org de l'offre suit le type PIVOT (`Hotel`, `BedAndBreakfast`, `Campground`, `Event`, `Restaurant`, `TouristTrip`…), à défaut sa famille. Les propriétés suivent le type :
+  - un événement porte ses dates (la prochaine période, heures comprises) et son lieu. Sans date lisible, il est décrit comme `TouristAttraction`, Google rejetant un `Event` sans date de début ;
+  - un itinéraire porte son point de départ (`itinerary`) ;
+  - un lieu ou un établissement porte adresse, coordonnées GPS, téléphone, équipements (`amenityFeature`) ; un établissement, en plus, son courriel, et un hébergement son classement (`starRating`) et son nombre de chambres ;
+  - `sameAs` rassemble le site officiel et les réseaux sociaux, sans les sites de réservation.
+- Plan du site : les pages de listing et les fiches de toutes les langues sont ajoutées au plan du site XML de WordPress (`wp-sitemap-pivot-listings-1.xml`, `wp-sitemap-pivot-offers-1.xml`). Les adresses viennent des index déjà construits : aucun appel à PIVOT.
+- `/llms.txt` : le sommaire du site à l'usage des agents conversationnels (format [llmstxt.org](https://llmstxt.org)), avec les pages de listing de chaque langue et leur description, puis le plan du site et les index JSON. Un fichier `llms.txt` déposé à la racine du site l'emporte.
+- Plan du site et `llms.txt` se désactivent dans **PIVOT → Réglages**, section Affichage.
 - Une offre introuvable renvoie un vrai 404, jamais une page vide indexable.
-- Si Yoast SEO est actif, la canonique est alignée automatiquement.
+- Si Yoast SEO est actif, la canonique est alignée automatiquement. Sur les pages du plugin, ses balises Open Graph et Twitter sont retirées : celles du plugin, avec l'image de la page ou de l'offre, restent seules, au lieu de passer après le logo du site. Avec une autre extension SEO, vérifiez qu'Open Graph et la méta description ne sortent pas en double sur les pages du plugin.
 
 ---
 
@@ -340,7 +431,7 @@ Le shortcode `[pivot_offres]` pose une liste de vignettes dans un contenu WordPr
 | `nombre` | 6 | nombre de vignettes |
 | `colonnes` | 3 | de 1 à 6 ; repasse à 2 puis 1 sur petit écran |
 | `tri` | `defaut` | `defaut`, `nom`, `aleatoire` |
-| `filtre` | — | `province:namur\|type:hotel` — restreint sur les critères de la page ; un critère numérique prend une étendue : `chambres:3..` (au moins 3), `prix:..50` (au plus 50), `distance:5..10` |
+| `filtre` | — | `province:namur\|type:hotel` — restreint sur les critères de la page ; un critère numérique prend une étendue : `chambres:3..` (au moins 3), `prix:..50` (au plus 50), `distance:5..10` ; un critère de date aussi : `date:2026-10-01..2026-10-31`, `date:..31/12/2026`, `date:2026-10-10`, et en relatif `date:aujourdhui..+30` (les 30 prochains jours) |
 | `titre` | — | titre affiché au-dessus |
 | `lien` | `non` | `oui` ajoute un lien vers la page de listing |
 | `lien_texte` | *Voir toutes les offres* | libellé de ce lien |
@@ -358,7 +449,7 @@ L'écran d'édition d'une page de listing affiche par ailleurs le shortcode corr
 
 ### Détails qui comptent
 
-Les vignettes passent par le **même gabarit** que les pages de listing : si votre thème a surchargé `pivot-offres/parts/card.php`, sa version est reprise ici aussi, avec les mêmes micro-données.
+Les vignettes passent par le **même gabarit** que les pages de listing : si votre thème a surchargé `pivot-offres/parts/card.php`, sa version est reprise ici aussi.
 
 Une erreur de configuration — page inexistante, source manquante — n'affiche un message qu'aux personnes qui peuvent administrer l'extension. Un visiteur ne voit rien.
 
@@ -381,13 +472,32 @@ Une offre incomplète produit une fiche plus courte, jamais une erreur.
 
 ### Gabarits
 
-Copiez-les dans votre thème, dans un dossier `pivot-offres/`, pour les surcharger : `listing.php`, `detail.php`, `parts/card.php`, `parts/filter-range.php`.
+Copiez-les dans votre thème, dans un dossier `pivot-offres/`, pour les surcharger : `listing.php`, `detail.php`, `parts/card.php`, `parts/filter-range.php`, `parts/filter-date.php`, `parts/closures-alert.php`, `parts/closures.php`.
 
-Un thème qui réécrit `listing.php` et ses critères doit prévoir le contrôle `range` : sans cela, un critère numérique retombe sur une liste déroulante vide. Le plus simple est de déléguer au gabarit de l'extension, qui porte les attributs `data-*` lus par le script :
+Un thème qui réécrit `listing.php` affiche lui-même l'image d'en-tête : `$pivot_listing['image']` en donne l'adresse, et `$pivot_listing['image_id']` son identifiant dans la médiathèque (0 si elle n'en vient pas), pour `wp_get_attachment_image()`.
+
+Il applique aussi le nombre de colonnes, `$pivot_listing['columns']` (de 1 à 6). Le gabarit de l'extension pose la classe `pivot-cols-N` sur la grille, et `pivot.css` en tire les paliers. Un thème bâti sur Bootstrap pose plutôt chaque vignette dans une colonne. Comme le script réécrit la grille dès que l'index arrive, il lui donne les classes de cette colonne dans `data-column-class`, et il enveloppe chaque vignette de la même façon côté serveur :
+
+```php
+<?php $col = 'col-12 col-sm-6 col-lg-4'; // trois colonnes ?>
+<div id="pivot-grid" class="row" data-column-class="<?php echo esc_attr( $col ); ?>">
+	<?php foreach ( $pivot_slice as $pivot_item ) : ?>
+		<div class="<?php echo esc_attr( $col ); ?>">
+			<?php Pivot_Templates::instance()->part( 'card', array( 'item' => $pivot_item ) ); ?>
+		</div>
+	<?php endforeach; ?>
+</div>
+```
+
+Pour afficher les groupes de critères, un thème qui réécrit ses critères les parcourt par `Pivot_Templates::filter_groups( $filters, $pivot_listing, $lang )`. La fonction renvoie des blocs `key`, `label` et `filters`. Un bloc a un `label` quand il réunit un groupe ; il en est dépourvu pour un critère seul.
+
+Un thème qui réécrit `listing.php` et ses critères doit prévoir les contrôles `range` et `date` : sans cela, un critère numérique ou de date retombe sur une liste déroulante vide. Le plus simple est de déléguer aux gabarits de l'extension, qui portent les attributs `data-*` lus par le script :
 
 ```php
 <?php if ( 'range' === $filter['type'] ) : ?>
 	<?php Pivot_Templates::instance()->part( 'filter-range', array( 'filter' => $filter ) ); ?>
+<?php elseif ( 'date' === $filter['type'] ) : ?>
+	<?php Pivot_Templates::instance()->part( 'filter-date', array( 'filter' => $filter ) ); ?>
 <?php endif; ?>
 ```
 
@@ -415,6 +525,8 @@ Dès qu'un gabarit de vignette est présent dans votre thème, **le plugin l'ex�
 Ce pré-rendu ne se déclenche que pour les types dont le gabarit sort du gabarit commun. Un site qui n'a rien surchargé garde exactement l'index d'avant. À l'inverse, une vignette surchargée pour tous les types **multiplie l'index par trois environ** (× 2 après compression) : c'est le prix d'un rendu fidèle, et il ne se paie que là où vous l'avez demandé.
 
 Le rendu JavaScript de `assets/js/pivot-listing.js` ne sert plus que pour le gabarit commun, dont il reproduit la structure. Dès que votre thème fournit une vignette, c'est elle qui est rendue, des deux côtés.
+
+Après chaque rendu de la grille, le script émet l'événement `pivot:rendered` sur `#pivot-grid` : un script de thème qui décore les vignettes s'y raccroche, comme `pivot-closures.js` pour les fermetures.
 
 Conséquence pratique : **un gabarit de vignette modifié ne se voit qu'après reconstruction de l'index**, alors qu'un gabarit de fiche s'applique immédiatement. Videz l'index depuis **Cache et outils** pendant que vous travaillez dessus.
 
@@ -472,6 +584,54 @@ Du 12/12/2026 au 20/12/2026          (reconstruit depuis l'intervalle consolidé
 ```
 
 Chaque période est une entrée de `values` ; `value` en donne la concaténation.
+
+### Tracé GPX sur la carte d'un listing
+
+Sur la carte d'une page de listing, la bulle d'un itinéraire propose **Afficher le tracé** : le fichier GPX de l'offre est chargé et dessiné sur la carte, qui se recadre dessus. Un seul tracé à la fois ; le bouton devient **Masquer le tracé**. Rien à configurer, et aucun gabarit à écrire : le comportement vit dans `assets/js/pivot-listing.js` et sert tous les thèmes qui gardent `#pivot-map`.
+
+Le GPX est un média lié de type `urn:val:typmed:gpx`, lu par `Pivot_Templates::offer_gpx( $offer )` — la même fonction sert au téléchargement et à la carte d'une fiche. Le service media de PIVOT autorise la lecture depuis un autre domaine : le navigateur charge le fichier directement, sans relais par le site.
+
+**Selon la richesse des données de la page :**
+
+- **Complet avec offres liées** : l'index connaît l'adresse du GPX (`$item['g']`). Le bouton n'apparaît que pour les offres qui en ont un.
+- **En deçà**, PIVOT ne dit pas quel média est un GPX. Le bouton est proposé sur la foi du type — les itinéraires, réglables par `pivot_track_offer_types` — et l'adresse est demandée au clic à la route `GET /wp-json/pivot/v1/gpx/CODE`. Elle lit l'offre au niveau de la fiche détail, dans le même cache : le premier clic coûte un appel à PIVOT, les suivants rien. Une offre sans GPX répond 404 et le bouton affiche **Tracé indisponible**.
+
+Le trait se règle par `pivot_track_style` (options d'un `L.Polyline` : `color`, `weight`, `opacity`) ou en CSS : il porte la classe `pivot-map-track-line`, sur un liseré blanc `pivot-map-track-casing`, et `stroke` y prend le pas sur `color`. La bulle est enveloppée dans `.pivot-map-popup`, le bouton est `.pivot-map-track-button` (`aria-pressed` quand le tracé est affiché). À chaque tracé affiché ou masqué, l'événement `pivot:track` est émis sur la carte, avec `detail.code` et `detail.shown`.
+
+### Zones de fermeture : chasse, travaux, inondation
+
+PIVOT décrit les fermetures d'un itinéraire par des offres à part, de type **Zone de fermeture** (33), liées à l'itinéraire. Chaque zone porte son type de fermeture (`urn:fld:typeferm` : période de chasse, travaux, inondation, sanitaire) et ses jours de fermeture, en objets `urn:obj:date`. Un itinéraire peut traverser plusieurs zones : leurs dates s'additionnent.
+
+Le plugin les lit tout seul, sans configuration :
+
+- **Vignette** : « L'itinéraire est fermé ce jeudi 1 octobre » en rouge le jour d'une fermeture, et « Impact chasse + » en orange tant qu'il reste une fermeture à venir. Le « + » mène au bloc des dates de la fiche. Les périodes voyagent dans l'index, sous `$item['cl']` : `[début, fin, type]`, en AAAAMMJJ, les jours qui se touchent réunis.
+- **Fiche** : une alerte sous l'en-tête, fermée aujourd'hui ou prochaine fermeture (`parts/closures-alert.php`), et la liste de toutes les dates à venir, mois par mois, avec les zones concernées (`parts/closures.php`, ancre `#pivot-closures`).
+
+**Le jour est celui du visiteur.** Une vignette est rendue dans l'index pour plusieurs jours, une fiche peut sortir d'un cache de page : le serveur écrit les périodes dans `data-pivot-closures` avec l'état du jour où il rend la page, et `assets/js/pivot-closures.js` le recalcule dans le navigateur. Le balisage est libre ; le script reconnaît, dans l'élément qui porte `data-pivot-closures` :
+
+| Attribut | Effet |
+|---|---|
+| `data-pivot-closure="today"` | affiché si l'offre est fermée aujourd'hui |
+| `data-pivot-closure="upcoming"` | affiché s'il reste une fermeture, aujourd'hui compris |
+| `data-pivot-closure="open"` / `"next"` / `"none"` | ouverte aujourd'hui / fermée un jour prochain / plus aucune fermeture ; plusieurs conditions séparées par une espace doivent toutes être remplies |
+| `data-pivot-closure-kind="pchasse"` | restreint la condition à un type de fermeture |
+| `data-pivot-closure-date="today"` / `"next"` | reçoit la date du jour / de la prochaine fermeture, en toutes lettres |
+| `data-pivot-closure-end="AAAAMMJJ"` | ligne masquée une fois la date passée, signalée `is-today` le jour même |
+
+`Pivot_Closures` fournit de quoi l'écrire dans un gabarit de thème : `periods()`, `schedule()`, `status()`, `when()`, `date_tag()`, et `badges()` pour les pastilles d'une vignette.
+
+```php
+<?php echo Pivot_Closures::badges( pivot_get( $item, 'cl', array() ), array( 'url' => $pivot_url, 'type' => 8 ) ); ?>
+```
+
+**Deux conditions côté données :**
+
+- La page de listing doit être réglée sur **Complet avec offres liées**. En deçà, PIVOT ne donne d'une offre liée que son code — pas même son type : impossible de savoir que c'est une zone de fermeture. La fiche détail, elle, est toujours demandée à ce niveau.
+- Les dates d'une zone peuvent changer sans que l'itinéraire soit modifié : le différentiel de nuit ne le voit pas. La reconstruction complète régulière (`Listes d'offres`, 7 jours conseillés) les rattrape.
+
+La version 2.9.0 ajoute ces données, et l'adresse du GPX, aux fiches gardées pour le différentiel : la première mise à jour de nuit qui suit fait une reconstruction complète. Pour les voir tout de suite, reconstruisez depuis **Cache et outils**.
+
+Par le code : `pivot_closure_offer_types`, `pivot_closure_impact_label`, `pivot_closure_closed_text`, `pivot_closure_open_text`.
 
 ### Gabarits d'exemple
 
@@ -542,9 +702,11 @@ Deux conséquences pratiques :
 .pivot-listing, .pivot-detail {
 	--pivot-accent: #0b5d3b;
 	--pivot-radius: 0;
-	--pivot-card-min: 300px;
+	--pivot-gap: 1rem;
 }
 ```
+
+Le nombre de colonnes d'une page de listing se règle dans son écran d'édition. `--pivot-card-min`, la largeur minimale d'une vignette, ne vaut plus que pour une grille sans nombre de colonnes, comme celle d'un `listing.php` de thème antérieur à ce réglage.
 
 ### Crochets PHP
 
@@ -566,12 +728,23 @@ Deux conséquences pratiques :
 | `pivot_grouped_specs` | réorganiser les blocs de la fiche |
 | `pivot_index_item` | enrichir une entrée d'index, avant le rendu de la vignette |
 | `pivot_card_fields` | champs supplémentaires embarqués dans les vignettes d'un type |
+| `pivot_track_offer_types` | types d'offre dont la carte propose le tracé GPX sans le connaître d'avance (8 par défaut) |
+| `pivot_track_style` | style du tracé GPX sur la carte d'un listing |
+| `pivot_offer_gpx` | adresse du fichier GPX d'une offre (proxy, CDN) |
+| `pivot_closure_offer_types` | types d'offre lus comme des zones de fermeture (33 par défaut) |
+| `pivot_closure_impact_label` | libellé court d'un type de fermeture : « Impact chasse » |
+| `pivot_closure_closed_text` | phrase « fermé ce … » d'une vignette ou d'une fiche |
+| `pivot_closure_open_text` | phrase « prochaine fermeture » d'une fiche |
 | `pivot_type_families` | ajouter ou renommer des familles |
 | `pivot_type_family` | forcer la famille d'un type d'offre |
 | `pivot_template_hierarchy` | ajouter ou réordonner les gabarits candidats |
 | `pivot_listing_index` | modifier l'index complet avant écriture |
 | `pivot_offer_schema` | ajuster le JSON-LD d'une offre |
 | `pivot_schema_type_map` | correspondance type PIVOT → type schema.org |
+| `pivot_timezone` | fuseau des heures d'événement publiées en JSON-LD (`Europe/Brussels` par défaut) |
+| `pivot_listing_image` | image de partage (`og:image`) d'une page de listing |
+| `pivot_sitemap_urls` | adresses publiées dans le plan du site XML |
+| `pivot_llms_txt` | contenu de `/llms.txt` |
 | `pivot_field_control_map` | contrôle de filtre proposé pour chaque type de champ |
 | `pivot_onboarding_tours` | étapes des visites guidées |
 | `pivot_suggestion_ignored_urns` | champs à ne jamais proposer en critère |
@@ -620,14 +793,17 @@ pivot-offres/
 │   ├── class-pivot-parser.php    XML PIVOT → tableaux normalisés
 │   ├── class-pivot-thesaurus.php thesaurus en cache long
 │   ├── class-pivot-listings.php  registre des pages de listing
+│   ├── class-pivot-legacy-import.php reprise des pages de l'ancien plugin PIVOT
 │   ├── class-pivot-repository.php lecture des offres et des requêtes
 │   ├── class-pivot-index-builder.php construction de l'index client
 │   ├── class-pivot-suggestions.php  critères déduits d'un échantillon d'offres
 │   ├── class-pivot-fields.php    lecture des champs, exclusions, objets date
+│   ├── class-pivot-closures.php  zones de fermeture liées : vignettes, alerte et dates de la fiche
 │   ├── class-pivot-types.php     familles de types lues dans le thesaurus
 │   ├── class-pivot-rewrites.php  URL de listing et fiches /details/
-│   ├── class-pivot-rest.php      livraison de l'index, progression
-│   ├── class-pivot-seo.php       titres, canoniques, JSON-LD
+│   ├── class-pivot-rest.php      livraison de l'index, progression, GPX d'une offre
+│   ├── class-pivot-seo.php       titres, canoniques, JSON-LD, llms.txt
+│   ├── class-pivot-sitemap.php   pages de listing et fiches dans le plan du site XML
 │   ├── class-pivot-templates.php rendu et aides d'affichage
 │   ├── class-pivot-shortcodes.php shortcode d'insertion éditoriale
 │   ├── class-pivot-onboarding.php visites guidées

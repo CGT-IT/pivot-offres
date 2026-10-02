@@ -15,6 +15,13 @@ class Pivot_Listings {
 
 	const OPTION = 'pivot_listings';
 
+	/**
+	 * Critères convertis par le dernier enregistrement, voir value_filters().
+	 *
+	 * @var array
+	 */
+	private static $converted = array();
+
 	/** @var array|null Liste normalisée, mémoïsée pour la requête en cours. */
 	private static $all_memo = null;
 
@@ -34,6 +41,7 @@ class Pivot_Listings {
 			'query_params'     => array(),
 			'content'          => 2,
 			'per_page'         => 12,
+			'columns'          => 4,
 			'show_map'         => 0,
 			'map_zoom'         => 9,
 			'map_center'       => '',
@@ -43,9 +51,12 @@ class Pivot_Listings {
 			'search_label'     => '',
 			'search_labels'    => array(),
 			'filters'          => array(),
+			'filter_groups'    => array(),
 			'cache_ttl'        => 0,
 			'intro'            => '',
 			'intros'           => array(),
+			'image'            => '',
+			'image_id'         => 0,
 			'seo_title'        => '',
 			'seo_titles'       => array(),
 			'seo_description'  => '',
@@ -172,6 +183,27 @@ class Pivot_Listings {
 	}
 
 	/**
+	 * Texte d'introduction prêt à afficher : paragraphes et shortcodes.
+	 *
+	 * L'éditeur enregistre le texte sans balises <p>, comme le contenu d'un
+	 * article. Le filtrage passe avant les shortcodes : leur sortie (un
+	 * formulaire, un script) n'a pas à le subir.
+	 *
+	 * @param array       $listing Configuration.
+	 * @param string|null $lang    Langue.
+	 * @return string
+	 */
+	public static function intro_html( $listing, $lang = null ) {
+		$intro = self::intro( $listing, $lang );
+
+		if ( '' === trim( (string) $intro ) ) {
+			return '';
+		}
+
+		return do_shortcode( shortcode_unautop( wpautop( wp_kses_post( $intro ) ) ) );
+	}
+
+	/**
 	 * Titre SEO dans une langue.
 	 *
 	 * @param array       $listing Configuration.
@@ -212,17 +244,55 @@ class Pivot_Listings {
 	/**
 	 * Libellé d'un filtre dans une langue.
 	 *
+	 * Sans traduction saisie, un critère sur un champ PIVOT prend le nom que
+	 * PIVOT donne au champ dans cette langue, comme le faisait l'ancien plugin :
+	 * « Balade et randonnée » devient « Walk and hike ». Dans la langue par
+	 * défaut, le libellé saisi fait toujours foi.
+	 *
+	 * Appelée à la construction de l'index, en arrière-plan : le thesaurus
+	 * peut y être lu sans ralentir l'affichage.
+	 *
 	 * @param array       $filter Définition du filtre.
 	 * @param string|null $lang   Langue.
 	 * @return string
 	 */
 	public static function filter_label( $filter, $lang = null ) {
+		$lang   = $lang ? $lang : Pivot_I18n::current();
+		$custom = Pivot_I18n::custom( pivot_get( $filter, 'labels', array() ), $lang, '' );
+
+		if ( '' !== $custom ) {
+			return $custom;
+		}
+
+		$urn = (string) pivot_get( $filter, 'urn', '' );
+
+		// PIVOT ne traduit que dans ses quatre langues : ailleurs, il
+		// renverrait le libellé de la langue par défaut, pas une traduction.
+		if ( '' !== $urn
+			&& 'spec' === pivot_get( $filter, 'source', 'spec' )
+			&& Pivot_I18n::default_lang() !== $lang
+			&& Pivot_I18n::content_lang( $lang ) === $lang ) {
+			$pivot = (string) pivot_get( Pivot_Thesaurus::label_set( Pivot_Fields::base_urn( $urn ) ), $lang, '' );
+
+			if ( '' !== $pivot ) {
+				return $pivot;
+			}
+		}
+
+		return pivot_get( $filter, 'label', pivot_get( $filter, 'key', '' ) );
+	}
+
+	/**
+	 * Nom d'un groupe de critères dans une langue.
+	 *
+	 * @param array       $listing Configuration.
+	 * @param string      $group   Nom du groupe, dans la langue par défaut.
+	 * @param string|null $lang    Langue.
+	 * @return string
+	 */
+	public static function filter_group_label( $listing, $group, $lang = null ) {
 		$lang = $lang ? $lang : Pivot_I18n::current();
-		return Pivot_I18n::custom(
-			pivot_get( $filter, 'labels', array() ),
-			$lang,
-			pivot_get( $filter, 'label', pivot_get( $filter, 'key', '' ) )
-		);
+		return Pivot_I18n::custom( pivot_get( $listing, array( 'filter_groups', $group ), array() ), $lang, $group );
 	}
 
 	/**
@@ -318,6 +388,14 @@ class Pivot_Listings {
 
 		$existing = self::get( $id );
 
+		// Image d'en-tête : l'adresse fait foi. Quand elle désigne un fichier de
+		// la médiathèque, son identifiant est retenu une fois pour toutes, afin
+		// que le gabarit publie ses tailles intermédiaires sans le rechercher à
+		// chaque affichage.
+		$image = esc_url_raw( trim( (string) $config['image'] ) );
+
+		$filters = self::sanitize_filters( self::value_filters( $config['filters'], $config['filter_groups'] ) );
+
 		$clean = array(
 			'id'               => $id,
 			'title'            => $title,
@@ -328,6 +406,7 @@ class Pivot_Listings {
 			'query_params'     => self::sanitize_params( $config['query_params'] ),
 			'content'          => in_array( (int) $config['content'], array( 1, 2, 3 ), true ) ? (int) $config['content'] : 2,
 			'per_page'         => max( 1, min( 100, (int) $config['per_page'] ) ),
+			'columns'          => max( 1, min( 6, (int) $config['columns'] ) ),
 			'show_map'         => empty( $config['show_map'] ) ? 0 : 1,
 			'map_zoom'         => max( 1, min( 18, (int) $config['map_zoom'] ) ),
 			'map_center'       => self::sanitize_latlng( $config['map_center'] ),
@@ -336,10 +415,13 @@ class Pivot_Listings {
 			'search_enabled'   => empty( $config['search_enabled'] ) ? 0 : 1,
 			'search_label'     => sanitize_text_field( $config['search_label'] ),
 			'search_labels'    => self::sanitize_translations( $config['search_labels'], 'sanitize_text_field' ),
-			'filters'          => self::sanitize_filters( $config['filters'] ),
+			'filters'          => $filters,
+			'filter_groups'    => self::sanitize_filter_groups( $config['filter_groups'], $filters ),
 			'cache_ttl'        => max( 0, (int) $config['cache_ttl'] ),
 			'intro'            => wp_kses_post( $config['intro'] ),
 			'intros'           => self::sanitize_translations( $config['intros'], 'wp_kses_post' ),
+			'image'            => $image,
+			'image_id'         => $image ? (int) attachment_url_to_postid( $image ) : 0,
 			'seo_title'        => sanitize_text_field( $config['seo_title'] ),
 			'seo_titles'       => self::sanitize_translations( $config['seo_titles'], 'sanitize_text_field' ),
 			'seo_description'  => sanitize_textarea_field( $config['seo_description'] ),
@@ -369,6 +451,9 @@ class Pivot_Listings {
 		// le fichier d'index et relus par le JavaScript : sans eux dans cette
 		// liste, modifier le titre d'une page laissait l'ancien s'afficher
 		// jusqu'à l'expiration du cache, six heures plus tard par défaut.
+		//
+		// Les groupes de critères n'en font pas partie : les gabarits les lisent
+		// dans la configuration, au moment d'afficher les critères.
 		$structure_changed = ! $existing
 			|| $existing['query_code'] !== $clean['query_code']
 			|| wp_json_encode( $existing['query_params'] ) !== wp_json_encode( $clean['query_params'] )
@@ -377,7 +462,7 @@ class Pivot_Listings {
 			|| (int) $existing['show_map'] !== (int) $clean['show_map']
 			|| $existing['title'] !== $clean['title']
 			|| wp_json_encode( $existing['titles'] ) !== wp_json_encode( $clean['titles'] )
-			|| wp_json_encode( $existing['filters'] ) !== wp_json_encode( $clean['filters'] );
+			|| self::indexed_filters( $existing['filters'] ) !== self::indexed_filters( $clean['filters'] );
 
 		if ( $structure_changed ) {
 			Pivot_Index_Builder::invalidate( $id );
@@ -564,7 +649,55 @@ class Pivot_Listings {
 			'text'        => __( 'Saisie libre', 'pivot-offres' ),
 			'toggle'      => __( 'Interrupteur oui/non', 'pivot-offres' ),
 			'range'       => __( 'Nombre à comparer', 'pivot-offres' ),
+			'date'        => __( 'Date ou période', 'pivot-offres' ),
 		);
+	}
+
+	/**
+	 * Comparaisons possibles pour un critère de date.
+	 *
+	 * Mêmes clés que pour un nombre — les paramètres d'URL s'en déduisent de
+	 * la même façon —, mais des mots de calendrier.
+	 *
+	 * @return array
+	 */
+	public static function date_operators() {
+		return array(
+			'between' => __( 'Entre deux dates (du … au …)', 'pivot-offres' ),
+			'gte'     => __( 'À partir d\'une date', 'pivot-offres' ),
+			'lte'     => __( 'Jusqu\'à une date', 'pivot-offres' ),
+			'eq'      => __( 'À une date précise', 'pivot-offres' ),
+		);
+	}
+
+	/**
+	 * Ce qu'un critère de date compare, selon le champ choisi.
+	 *
+	 * - `overlap` : l'objet date entier (urn:obj:date). Une période retenue
+	 *   dès qu'elle touche l'intervalle demandé : l'événement a lieu pendant.
+	 * - `start` : la date de début de chaque période.
+	 * - `end` : la date de fin de chaque période.
+	 * - `point` : une date isolée, comparée telle quelle.
+	 *
+	 * @param array $filter Définition du filtre.
+	 * @return string
+	 */
+	public static function date_match( $filter ) {
+		$urn = Pivot_Fields::base_urn( (string) pivot_get( $filter, 'urn', '' ) );
+
+		if ( 0 === strpos( $urn, 'urn:obj:' ) ) {
+			return 'overlap';
+		}
+
+		if ( 'urn:fld:date:datedeb' === $urn ) {
+			return 'start';
+		}
+
+		if ( 'urn:fld:date:datefin' === $urn ) {
+			return 'end';
+		}
+
+		return 'point';
 	}
 
 	/**
@@ -613,6 +746,110 @@ class Pivot_Listings {
 	}
 
 	/**
+	 * Champ d'une urn de valeur : urn:val:class:3star donne urn:fld:class.
+	 *
+	 * Même calcul que l'ancien plugin et que Pivot_Legacy_Import.
+	 *
+	 * @param string $urn Urn saisie.
+	 * @return string Urn du champ, ou chaîne vide si ce n'est pas une valeur.
+	 */
+	public static function value_field( $urn ) {
+		$urn = Pivot_Fields::base_urn( trim( (string) $urn ) );
+
+		return preg_match( '/^urn:val:(.+):[^:]+$/', $urn, $matches ) ? 'urn:fld:' . $matches[1] : '';
+	}
+
+	/**
+	 * Critères convertis par le dernier enregistrement.
+	 *
+	 * @return array Liste de array( label, from, to ).
+	 */
+	public static function converted_filters() {
+		return self::$converted;
+	}
+
+	/**
+	 * Ramène sur leur champ les critères posés sur une valeur.
+	 *
+	 * Un critère « 3 étoiles » sur urn:val:class:3star ne trouve rien : les
+	 * offres portent le champ urn:fld:class, dont c'est une valeur. L'ancien
+	 * plugin acceptait ces urn, la saisie les reproduit donc naturellement.
+	 * Le critère passe sur le champ, une liste dont les valeurs se calculent
+	 * à partir des offres ; plusieurs critères du même champ n'en font qu'un.
+	 * Il prend le nom de son groupe — « Classement », pour des cases
+	 * « 1 étoile », « 2 étoiles » — ou, sans groupe, celui du champ PIVOT.
+	 *
+	 * @param mixed $filters Critères bruts.
+	 * @param mixed $groups  Traductions des groupes, nom => langue => libellé.
+	 * @return mixed
+	 */
+	private static function value_filters( $filters, $groups ) {
+		self::$converted = array();
+
+		if ( ! is_array( $filters ) ) {
+			return $filters;
+		}
+
+		$groups  = is_array( $groups ) ? $groups : array();
+		$default = Pivot_I18n::default_lang();
+		$out     = array();
+		$merged  = array();
+
+		foreach ( $filters as $filter ) {
+			$field = is_array( $filter ) && 'spec' === pivot_get( $filter, 'source', 'spec' )
+				? self::value_field( pivot_get( $filter, 'urn', '' ) )
+				: '';
+
+			if ( '' === $field ) {
+				$out[] = $filter;
+				continue;
+			}
+
+			self::$converted[] = array(
+				'label' => sanitize_text_field( pivot_get( $filter, 'label', '' ) ),
+				'from'  => sanitize_text_field( pivot_get( $filter, 'urn', '' ) ),
+				'to'    => $field,
+			);
+
+			if ( isset( $merged[ $field ] ) ) {
+				continue;
+			}
+
+			$merged[ $field ] = true;
+
+			$group  = trim( (string) pivot_get( $filter, 'group', '' ) );
+			$labels = Pivot_Thesaurus::label_set( $field );
+
+			if ( '' !== $group ) {
+				$filter['label']  = $group;
+				$filter['labels'] = (array) pivot_get( $groups, $group, array() );
+				$filter['group']  = '';
+
+				// Groupe non traduit mais nommé comme le champ : les
+				// traductions de PIVOT conviennent.
+				if ( ! array_filter( $filter['labels'] ) && $labels && 0 === strcasecmp( $group, Pivot_I18n::pick( $labels, $default ) ) ) {
+					$filter['labels'] = array_diff_key( $labels, array( $default => true ) );
+				}
+			} elseif ( $labels ) {
+				$filter['label']  = Pivot_I18n::pick( $labels, $default );
+				$filter['labels'] = array_diff_key( $labels, array( $default => true ) );
+			}
+
+			$filter['urn']          = $field;
+			$filter['key']          = ''; // Recalculée d'après le champ.
+			$filter['value_labels'] = array();
+
+			if ( ! in_array( pivot_get( $filter, 'type', '' ), array( 'select', 'multiselect' ), true ) ) {
+				$filter['type'] = 'multiselect';
+			}
+
+			$out[] = $filter;
+		}
+
+		return $out;
+	}
+
+	/**
 	 * Nettoie la définition des filtres.
 	 *
 	 * @param mixed $filters Données brutes.
@@ -655,7 +892,7 @@ class Pivot_Listings {
 			if ( '' === $key ) {
 				$key = sanitize_key(
 					'spec' === $source
-						? str_replace( ':', '_', str_replace( 'urn:fld:', '', $urn ) )
+						? str_replace( ':', '_', str_replace( array( 'urn:fld:', 'urn:obj:' ), '', $urn ) )
 						: $source
 				);
 			}
@@ -674,6 +911,7 @@ class Pivot_Listings {
 				'key'          => $key,
 				'label'        => $label,
 				'labels'       => self::sanitize_translations( pivot_get( $filter, 'labels', array() ), 'sanitize_text_field' ),
+				'group'        => sanitize_text_field( pivot_get( $filter, 'group', '' ) ),
 				'type'         => $type,
 				'source'       => $source,
 				'urn'          => $urn,
@@ -685,10 +923,72 @@ class Pivot_Listings {
 				$entry = array_merge( $entry, self::sanitize_range( $filter ) );
 			}
 
+			if ( 'date' === $type ) {
+				// L'écran d'édition pose la comparaison d'une date dans son propre
+				// champ : celui des nombres, masqué, arrive aussi dans l'envoi.
+				$operator = pivot_get( $filter, 'date_operator', pivot_get( $filter, 'operator', 'between' ) );
+
+				$entry['operator'] = isset( self::date_operators()[ $operator ] ) ? $operator : 'between';
+			}
+
 			$clean[] = $entry;
 		}
 
 		return $clean;
+	}
+
+	/**
+	 * Traductions des groupes de critères.
+	 *
+	 * Seuls les groupes que portent encore des critères sont gardés : un groupe
+	 * renommé ou vidé ne laisse pas de traductions orphelines.
+	 *
+	 * @param mixed $groups  Nom du groupe => traductions lang => texte.
+	 * @param array $filters Critères nettoyés.
+	 * @return array
+	 */
+	private static function sanitize_filter_groups( $groups, $filters ) {
+		$named = array();
+
+		foreach ( is_array( $groups ) ? $groups : array() as $name => $labels ) {
+			$named[ sanitize_text_field( (string) $name ) ] = $labels;
+		}
+
+		$clean = array();
+
+		foreach ( $filters as $filter ) {
+			$group = $filter['group'];
+
+			if ( '' === $group || ! isset( $named[ $group ] ) || isset( $clean[ $group ] ) ) {
+				continue;
+			}
+
+			$labels = self::sanitize_translations( $named[ $group ], 'sanitize_text_field' );
+
+			if ( $labels ) {
+				$clean[ $group ] = $labels;
+			}
+		}
+
+		return $clean;
+	}
+
+	/**
+	 * Critères tels que l'index les recopie, pour savoir s'il faut le
+	 * reconstruire : sans leur groupe, qui ne sert qu'à l'affichage.
+	 *
+	 * @param array $filters Critères.
+	 * @return string
+	 */
+	private static function indexed_filters( $filters ) {
+		$out = array();
+
+		foreach ( (array) $filters as $filter ) {
+			unset( $filter['group'] );
+			$out[] = $filter;
+		}
+
+		return (string) wp_json_encode( $out );
 	}
 
 	/**
@@ -721,7 +1021,8 @@ class Pivot_Listings {
 	 * Clés d'URL d'un critère.
 	 *
 	 * Un critère numérique en porte deux, une par borne : ?prix_max=50,
-	 * ?chambres_min=3. L'égalité garde la clé nue : ?etoiles=4.
+	 * ?chambres_min=3. L'égalité garde la clé nue : ?etoiles=4. Un critère de
+	 * date suit la même règle : ?date_min=2026-10-01&date_max=2026-10-31.
 	 *
 	 * @param array $filter Définition du filtre.
 	 * @return array Borne (min, max, eq) => nom du paramètre.

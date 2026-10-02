@@ -188,7 +188,7 @@ class Pivot_Shortcodes {
 		$index = Pivot_Index_Builder::ensure( $listing, $lang );
 		$items = (array) pivot_get( $index, 'items', array() );
 
-		$items = $this->apply_filter( $items, $atts['filtre'] );
+		$items = $this->apply_filter( $items, $atts['filtre'], (array) pivot_get( $listing, 'filters', array() ) );
 		$items = $this->sort( $items, $atts['tri'] );
 
 		return array_slice( $items, 0, $atts['nombre'] );
@@ -258,25 +258,51 @@ class Pivot_Shortcodes {
 	 * évités à dessein : WordPress vide un attribut de shortcode qui contient
 	 * un « < » sans « > » correspondant.
 	 *
-	 * @param array  $items  Entrées.
-	 * @param string $filtre Expression de filtre.
+	 * Sur un critère de date, l'étendue compare des dates, au format ISO ou
+	 * JJ/MM/AAAA : « date:2026-10-01..2026-10-31 », « date:..31/12/2026 »,
+	 * « date:2026-10-10 » pour un seul jour. « aujourdhui » et « +30 » (dans
+	 * trente jours) évitent qu'un shortcode ne se périme :
+	 * « date:aujourdhui..+30 ».
+	 *
+	 * @param array  $items   Entrées.
+	 * @param string $filtre  Expression de filtre.
+	 * @param array  $filters Critères de la page de listing, pour reconnaître ceux de date.
 	 * @return array
 	 */
-	private function apply_filter( $items, $filtre ) {
+	private function apply_filter( $items, $filtre, $filters = array() ) {
 		$filtre = trim( (string) $filtre );
 
 		if ( '' === $filtre ) {
 			return $items;
 		}
 
+		// Critère de date => ce qu'il compare (voir Pivot_Listings::date_match).
+		$date_keys = array();
+
+		foreach ( $filters as $filter ) {
+			if ( 'date' === pivot_get( $filter, 'type' ) && pivot_get( $filter, 'key' ) ) {
+				$date_keys[ $filter['key'] ] = Pivot_Listings::date_match( $filter );
+			}
+		}
+
 		$criteria = array();
 		$ranges   = array();
+		$dates    = array();
 
 		foreach ( explode( '|', $filtre ) as $pair ) {
 			$parts = array_map( 'trim', explode( ':', $pair, 2 ) );
 
 			if ( 2 !== count( $parts ) || '' === $parts[0] || '' === $parts[1] ) {
 				continue;
+			}
+
+			if ( isset( $date_keys[ $parts[0] ] ) ) {
+				$period = self::parse_date_range( $parts[1] );
+
+				if ( $period ) {
+					$dates[ $parts[0] ][] = $period;
+					continue;
+				}
 			}
 
 			$range = self::parse_range( $parts[1] );
@@ -289,16 +315,20 @@ class Pivot_Shortcodes {
 			$criteria[ $parts[0] ][] = pivot_normalize( $parts[1] );
 		}
 
-		if ( ! $criteria && ! $ranges ) {
+		if ( ! $criteria && ! $ranges && ! $dates ) {
 			return $items;
 		}
+
+		$today = (int) current_time( 'Ymd' );
 
 		return array_values(
 			array_filter(
 				$items,
-				static function ( $item ) use ( $criteria, $ranges ) {
+				static function ( $item ) use ( $criteria, $ranges, $dates, $date_keys, $today ) {
 					foreach ( $criteria as $key => $wanted ) {
-						$owned = array_map( 'pivot_normalize', (array) pivot_get( $item, array( 'f', $key ), array() ) );
+						// Les périodes d'un critère de date ne sont pas du texte.
+						$owned = array_filter( (array) pivot_get( $item, array( 'f', $key ), array() ), 'is_scalar' );
+						$owned = array_map( 'pivot_normalize', $owned );
 
 						if ( ! array_intersect( $wanted, $owned ) ) {
 							return false;
@@ -311,10 +341,114 @@ class Pivot_Shortcodes {
 						}
 					}
 
+					foreach ( $dates as $key => $wanted ) {
+						if ( ! self::in_periods( (array) pivot_get( $item, array( 'f', $key ), array() ), $wanted, $date_keys[ $key ], $today ) ) {
+							return false;
+						}
+					}
+
 					return true;
 				}
 			)
 		);
+	}
+
+	/**
+	 * Lit une étendue de dates « début..fin », l'une des bornes pouvant
+	 * manquer, ou une date seule pour un jour.
+	 *
+	 * @param string $value Valeur du critère.
+	 * @return array|null array( début|null, fin|null ) en AAAAMMJJ, ou null si ce n'est pas une étendue de dates.
+	 */
+	private static function parse_date_range( $value ) {
+		if ( false === strpos( $value, '..' ) ) {
+			$day = self::parse_date_token( $value );
+
+			return $day ? array( $day, $day ) : null;
+		}
+
+		list( $low, $high ) = array_map( 'trim', explode( '..', $value, 2 ) );
+
+		$min = '' === $low ? null : self::parse_date_token( $low );
+		$max = '' === $high ? null : self::parse_date_token( $high );
+
+		if ( ( '' !== $low && null === $min ) || ( '' !== $high && null === $max ) || ( null === $min && null === $max ) ) {
+			return null;
+		}
+
+		if ( null !== $min && null !== $max && $min > $max ) {
+			list( $min, $max ) = array( $max, $min );
+		}
+
+		return array( $min, $max );
+	}
+
+	/**
+	 * Lit une borne de date : une date, « aujourdhui », ou un nombre de jours
+	 * compté depuis aujourd'hui (« +30 », « -7 »), à l'heure du site.
+	 *
+	 * @param string $token Borne.
+	 * @return int|null AAAAMMJJ.
+	 */
+	private static function parse_date_token( $token ) {
+		$token = strtolower( trim( (string) $token ) );
+
+		if ( in_array( $token, array( 'aujourdhui', 'today' ), true ) ) {
+			return (int) current_time( 'Ymd' );
+		}
+
+		if ( preg_match( '/^[+-]\d{1,4}$/', $token ) ) {
+			$day = new DateTimeImmutable( 'today', wp_timezone() );
+
+			return (int) $day->modify( $token . ' days' )->format( 'Ymd' );
+		}
+
+		return pivot_parse_date( $token );
+	}
+
+	/**
+	 * Une des périodes de l'offre répond-elle à l'une des étendues ?
+	 *
+	 * Même règle que dans le navigateur (pivot-listing.js, inPeriods) : sans
+	 * première date, une période déjà terminée ne compte pas.
+	 *
+	 * @param array  $periods Périodes de l'offre, array( début, fin ).
+	 * @param array  $ranges  Étendues voulues.
+	 * @param string $match   overlap, start, end ou point.
+	 * @param int    $today   Aujourd'hui, AAAAMMJJ.
+	 * @return bool
+	 */
+	private static function in_periods( $periods, $ranges, $match, $today ) {
+		foreach ( $ranges as $range ) {
+			list( $min, $max ) = $range;
+
+			$floor = null === $min && 'point' !== $match ? $today : null;
+
+			foreach ( $periods as $period ) {
+				if ( ! is_array( $period ) || 2 !== count( $period ) ) {
+					continue;
+				}
+
+				list( $start, $end ) = $period;
+
+				if ( null !== $floor && $end < $floor ) {
+					continue;
+				}
+
+				if ( 'overlap' === $match ) {
+					$found = ( null === $max || $start <= $max ) && ( null === $min || $end >= $min );
+				} else {
+					$value = 'end' === $match ? $end : $start;
+					$found = ( null === $min || $value >= $min ) && ( null === $max || $value <= $max );
+				}
+
+				if ( $found ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

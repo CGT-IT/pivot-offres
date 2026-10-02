@@ -328,6 +328,20 @@ class Pivot_Thesaurus {
 				'control'  => self::suggested_control( $type ),
 				'operator' => self::suggested_operator( $type ),
 			);
+
+			// Le thesaurus décrit la date de début et la date de fin, pas
+			// l'objet qui les réunit en une période. C'est pourtant lui qu'il
+			// faut pour « a lieu entre le … et le … » : on le propose à côté.
+			if ( 'urn:fld:date:datedeb' === $urn ) {
+				$fields[] = array(
+					'urn'      => 'urn:obj:date',
+					'label'    => __( 'Période (date de début et date de fin)', 'pivot-offres' ),
+					'type'     => 'Object',
+					'cat'      => $cat_label,
+					'control'  => 'date',
+					'operator' => 'between',
+				);
+			}
 		}
 
 		usort(
@@ -364,7 +378,7 @@ class Pivot_Thesaurus {
 			'TextRawML'          => 'text',
 			'URL'                => 'text',
 			'EMail'              => 'text',
-			'Date'               => 'text',
+			'Date'               => 'date',
 		);
 
 		foreach ( self::NUMERIC_TYPES as $numeric ) {
@@ -382,15 +396,21 @@ class Pivot_Thesaurus {
 	}
 
 	/**
-	 * Comparaison la plus probable pour un champ numérique.
+	 * Comparaison la plus probable pour un champ numérique ou une date.
 	 *
 	 * Un prix se borne par le haut (« au plus 50 € »), un effectif par le bas
 	 * (« au moins 3 chambres »), une mesure se cherche dans un intervalle.
 	 *
+	 * Une date se cherche d'abord entre deux bornes : « du … au … ».
+	 *
 	 * @param string $type Type déclaré dans le thesaurus.
-	 * @return string Opérateur, ou chaîne vide pour un champ non numérique.
+	 * @return string Opérateur, ou chaîne vide pour un champ ni numérique ni date.
 	 */
 	public static function suggested_operator( $type ) {
+		if ( 'Date' === $type ) {
+			return 'between';
+		}
+
 		if ( ! in_array( $type, self::NUMERIC_TYPES, true ) ) {
 			return '';
 		}

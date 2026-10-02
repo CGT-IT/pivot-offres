@@ -1592,3 +1592,154 @@ msgstr "Maakt niet uit"
 
 msgid "Saisissez un nombre, par exemple 12 ou 9,50."
 msgstr "Vul een getal in, bijvoorbeeld 12 of 9,50."
+
+msgid "Date ou période"
+msgstr "Datum of periode"
+
+msgid "Entre deux dates (du … au …)"
+msgstr "Tussen twee datums (van … tot …)"
+
+msgid "À partir d'une date"
+msgstr "Vanaf een datum"
+
+msgid "Jusqu'à une date"
+msgstr "Tot een datum"
+
+msgid "À une date précise"
+msgstr "Op een bepaalde datum"
+
+msgid "Période (date de début et date de fin)"
+msgstr "Periode (begin- en einddatum)"
+
+msgid "Dates"
+msgstr "Datums"
+
+msgid "du %1$s au %2$s · %3$d %% des offres"
+msgstr "van %1$s tot %2$s · %3$d %% van de aanbiedingen"
+
+msgid "Le visiteur choisit une ou deux dates dans un calendrier. Avec l'urn urn:obj:date, le critère porte sur la période entière : une offre est retenue si l'une de ses périodes touche les dates demandées. Avec urn:fld:date:datedeb ou urn:fld:date:datefin, il ne compare que la date de début ou la date de fin. Sans première date, une période déjà terminée ne compte pas : « jusqu'au 31 octobre » se lit « d'aujourd'hui au 31 octobre »."
+msgstr "De bezoeker kiest één of twee datums in een kalender. Met de urn urn:obj:date geldt het criterium voor de volledige periode: een aanbod wordt behouden als een van zijn periodes de gevraagde datums raakt. Met urn:fld:date:datedeb of urn:fld:date:datefin wordt alleen de begin- of einddatum vergeleken. Zonder eerste datum telt een reeds afgelopen periode niet mee: „tot 31 oktober” betekent „van vandaag tot 31 oktober”."
+
+msgctxt "critère de date"
+msgid "du"
+msgstr "van"
+
+msgctxt "critère de date"
+msgid "au"
+msgstr "tot"
+
+msgctxt "critère de date"
+msgid "à partir du"
+msgstr "vanaf"
+
+msgctxt "critère de date"
+msgid "jusqu'au"
+msgstr "tot en met"
+
+msgctxt "critère de date"
+msgid "le"
+msgstr "op"
+
+msgid "Description"
+msgstr "Beschrijving"
+
+msgid "Plan du site"
+msgstr "Sitemap"
+
+msgid "Ajouter les pages de listing et les fiches au plan du site XML de WordPress"
+msgstr "De overzichtspagina's en de fiches toevoegen aan de XML-sitemap van WordPress"
+
+msgid "Les adresses sont relevées dans les index déjà construits, sans appel à PIVOT. Sans effet si une extension SEO remplace le plan du site de WordPress par le sien."
+msgstr "De adressen worden uit de reeds opgebouwde indexen gelezen, zonder oproep naar PIVOT. Zonder effect als een SEO-extensie de sitemap van WordPress door de hare vervangt."
+
+msgid "Fichier llms.txt"
+msgstr "Bestand llms.txt"
+
+msgid "Publier /llms.txt, le sommaire du site à l'usage des agents conversationnels"
+msgstr "/llms.txt publiceren, de inhoudsopgave van de website voor conversationele agenten"
+
+msgid "Liste les pages de listing dans chaque langue, avec leur description. Un fichier llms.txt déposé à la racine du site l'emporte."
+msgstr "Somt de overzichtspagina's in elke taal op, met hun beschrijving. Een bestand llms.txt in de hoofdmap van de website heeft voorrang."
+
+msgid "Offres touristiques de Wallonie : hébergements, restaurants, activités, événements et itinéraires, issues de PIVOT, la base de données du tourisme wallon."
+msgstr "Toeristisch aanbod in Wallonië: logies, restaurants, activiteiten, evenementen en routes, afkomstig uit PIVOT, de databank van het Waalse toerisme."
+
+msgid "Chaque page ci-dessous liste des offres et mène à leurs fiches détaillées, à l'adresse /details/CODE&type=TYPE. Les fiches publient des données structurées schema.org (JSON-LD) : adresse, coordonnées GPS, contact, équipements, classement et dates des événements."
+msgstr "Elke pagina hieronder somt aanbod op en leidt naar de gedetailleerde fiches, op het adres /details/CODE&type=TYPE. De fiches publiceren gestructureerde schema.org-gegevens (JSON-LD): adres, GPS-coördinaten, contact, voorzieningen, classificatie en data van evenementen."
+
+msgid "Pages"
+msgstr "Pagina's"
+
+msgid "Plan du site XML"
+msgstr "XML-sitemap"
+
+msgid "%s — données JSON"
+msgstr "%s — JSON-gegevens"
+
+msgid "toutes les offres de la page, avec nom, localité, coordonnées et adresse de la fiche ; paramètre lang pour une autre langue."
+msgstr "al het aanbod van de pagina, met naam, plaats, coördinaten en adres van de fiche; parameter lang voor een andere taal."
+
+msgid "Fermeture"
+msgstr "Sluiting"
+
+msgid "Impact chasse"
+msgstr "Hinder door jacht"
+
+msgid "Impact travaux"
+msgstr "Hinder door werken"
+
+msgid "Impact inondation"
+msgstr "Hinder door overstroming"
+
+msgid "Impact sanitaire"
+msgstr "Sanitaire hinder"
+
+msgid "Fermetures prévues"
+msgstr "Geplande sluitingen"
+
+msgid "L'itinéraire est fermé ce %s"
+msgstr "De route is gesloten op %s"
+
+msgid "Fermé ce %s"
+msgstr "Gesloten op %s"
+
+msgid "L'itinéraire est accessible aujourd'hui. Prochaine fermeture : %s."
+msgstr "De route is vandaag toegankelijk. Volgende sluiting: %s."
+
+msgid "Aucune fermeture aujourd'hui. Prochaine fermeture : %s."
+msgstr "Vandaag geen sluiting. Volgende sluiting: %s."
+
+msgid "Voir les dates de fermeture"
+msgstr "Bekijk de sluitingsdata"
+
+msgctxt "jour de fermeture"
+msgid "l j F"
+msgstr "l j F"
+
+msgctxt "jour de fermeture"
+msgid "l j F Y"
+msgstr "l j F Y"
+
+msgid "Dates de fermeture"
+msgstr "Sluitingsdata"
+
+msgid "Motif : %s"
+msgstr "Reden: %s"
+
+msgid "Aujourd'hui"
+msgstr "Vandaag"
+
+msgid "Les fermetures d'un itinéraire (zones de fermeture : chasse, travaux…) ne s'affichent sur les vignettes qu'avec les offres liées : en deçà, PIVOT n'en donne que le code."
+msgstr "De sluitingen van een route (sluitingszones: jacht, werken…) verschijnen alleen op de kaartjes met gekoppelde aanbiedingen: op een lager niveau geeft PIVOT er alleen de code van."
+
+msgid "Afficher le tracé"
+msgstr "Route tonen"
+
+msgid "Masquer le tracé"
+msgstr "Route verbergen"
+
+msgid "Chargement du tracé…"
+msgstr "Route laden…"
+
+msgid "Tracé indisponible"
+msgstr "Route niet beschikbaar"

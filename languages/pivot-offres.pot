@@ -558,6 +558,10 @@ msgid "La pagination est gérée dans le navigateur : changer de page ne déclen
 msgstr ""
 
 #: admin/class-pivot-listing-edit.php
+msgid "Vignettes par ligne sur un grand écran, à partir de 1200 pixels de large. En dessous, la grille se resserre : trois colonnes au plus sur un écran moyen, deux sur tablette, une sur mobile. Un nombre d'offres par page multiple du nombre de colonnes remplit toutes les lignes."
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
 msgid "Afficher une carte qui pointe les offres de la page"
 msgstr ""
 
@@ -1399,6 +1403,7 @@ msgid "Offres"
 msgstr ""
 
 #: admin/class-pivot-shortcode-admin.php
+#: admin/class-pivot-listing-edit.php
 msgid "Colonnes"
 msgstr ""
 
@@ -2130,4 +2135,344 @@ msgstr ""
 
 #: templates/parts/filter-range.php
 msgid "Saisissez un nombre, par exemple 12 ou 9,50."
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Date ou période"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Entre deux dates (du … au …)"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "À partir d'une date"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "Jusqu'à une date"
+msgstr ""
+
+#: includes/class-pivot-listings.php
+msgid "À une date précise"
+msgstr ""
+
+#: includes/class-pivot-thesaurus.php
+msgid "Période (date de début et date de fin)"
+msgstr ""
+
+#: includes/class-pivot-suggestions.php
+msgid "Dates"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "du %1$s au %2$s · %3$d %% des offres"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Le visiteur choisit une ou deux dates dans un calendrier. Avec l'urn urn:obj:date, le critère porte sur la période entière : une offre est retenue si l'une de ses périodes touche les dates demandées. Avec urn:fld:date:datedeb ou urn:fld:date:datefin, il ne compare que la date de début ou la date de fin. Sans première date, une période déjà terminée ne compte pas : « jusqu'au 31 octobre » se lit « d'aujourd'hui au 31 octobre »."
+msgstr ""
+
+#: templates/parts/filter-date.php
+msgctxt "critère de date"
+msgid "du"
+msgstr ""
+
+#: templates/parts/filter-date.php
+msgctxt "critère de date"
+msgid "au"
+msgstr ""
+
+#: templates/parts/filter-date.php
+msgctxt "critère de date"
+msgid "à partir du"
+msgstr ""
+
+#: templates/parts/filter-date.php
+msgctxt "critère de date"
+msgid "jusqu'au"
+msgstr ""
+
+#: templates/parts/filter-date.php
+msgctxt "critère de date"
+msgid "le"
+msgstr ""
+
+#: templates/detail.php
+msgid "Description"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Plan du site"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Ajouter les pages de listing et les fiches au plan du site XML de WordPress"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Les adresses sont relevées dans les index déjà construits, sans appel à PIVOT. Sans effet si une extension SEO remplace le plan du site de WordPress par le sien."
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Fichier llms.txt"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Publier /llms.txt, le sommaire du site à l'usage des agents conversationnels"
+msgstr ""
+
+#: admin/class-pivot-settings.php
+msgid "Liste les pages de listing dans chaque langue, avec leur description. Un fichier llms.txt déposé à la racine du site l'emporte."
+msgstr ""
+
+#: includes/class-pivot-seo.php
+msgid "Offres touristiques de Wallonie : hébergements, restaurants, activités, événements et itinéraires, issues de PIVOT, la base de données du tourisme wallon."
+msgstr ""
+
+#: includes/class-pivot-seo.php
+msgid "Chaque page ci-dessous liste des offres et mène à leurs fiches détaillées, à l'adresse /details/CODE&type=TYPE. Les fiches publient des données structurées schema.org (JSON-LD) : adresse, coordonnées GPS, contact, équipements, classement et dates des événements."
+msgstr ""
+
+#: includes/class-pivot-seo.php
+msgid "Pages"
+msgstr ""
+
+#: includes/class-pivot-seo.php
+msgid "Plan du site XML"
+msgstr ""
+
+#. translators: %s : titre de la page de listing.
+#: includes/class-pivot-seo.php
+msgid "%s — données JSON"
+msgstr ""
+
+#: includes/class-pivot-seo.php
+msgid "toutes les offres de la page, avec nom, localité, coordonnées et adresse de la fiche ; paramètre lang pour une autre langue."
+msgstr ""
+
+#. translators: 1 : titre de la page, 2 : chemin d'URL.
+#: includes/class-pivot-legacy-import.php
+msgid "« %1$s » : une page WordPress est déjà publiée à l'adresse /%2$s/. La page de listing est reprise, mais désactivée."
+msgstr ""
+
+#. translators: %s : titre de la page.
+#: includes/class-pivot-legacy-import.php
+msgid "« %s » : l'ordre aléatoire n'existe pas ici. Les offres suivent l'ordre renvoyé par PIVOT."
+msgstr ""
+
+#. translators: %s : titre de la page.
+#: includes/class-pivot-legacy-import.php
+msgid "« %s » : le shortcode de présentation n'est pas repris."
+msgstr ""
+
+#. translators: 1 : titre de la page, 2 : libellé du filtre.
+#: includes/class-pivot-legacy-import.php
+msgid "« %1$s » : le filtre « %2$s » n'a pas d'équivalent et n'est pas repris."
+msgstr ""
+
+#. translators: 1 : titre de la page, 2 : urn du champ.
+#: includes/class-pivot-legacy-import.php
+msgid "« %1$s » : le filtre sur %2$s n'avait pas de nom de groupe. Donnez-lui un libellé."
+msgstr ""
+
+#. translators: 1 : titre de la page, 2 : motif.
+#: includes/class-pivot-legacy-import.php
+msgid "« %1$s » n'a pas été reprise : %2$s"
+msgstr ""
+
+#. translators: %d : nombre de filtres.
+#: includes/class-pivot-legacy-import.php
+msgid "%d filtre rattaché à une page supprimée a été ignoré."
+msgid_plural "%d filtres rattachés à des pages supprimées ont été ignorés."
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-pivot-admin.php
+msgid "Les pages de l'ancien plugin PIVOT n'ont pas été reprises."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Des pages de listing existaient déjà : la reprise automatique n'y a pas touché, pour ne pas créer de doublons. Vous pouvez la lancer depuis Cache et outils ; elle écarte les adresses déjà prises."
+msgstr ""
+
+#. translators: 1 : nombre de pages, 2 : nombre de filtres.
+#: admin/class-pivot-admin.php
+msgid "Pages de l'ancien plugin PIVOT reprises : %1$d page(s) et %2$d filtre(s)."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Elles gardent leurs adresses. Leurs index se construisent en arrière-plan, une page par minute. Les tables de l'ancien plugin restent intactes."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "La clé ws_key de l'ancien plugin a été reprise, pour l'environnement stage."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "La clé ws_key de l'ancien plugin a été reprise, pour l'environnement de production."
+msgstr ""
+
+#: admin/class-pivot-admin.php
+#: admin/class-pivot-listing-edit.php
+msgid "Image d'en-tête"
+msgstr ""
+
+#: admin/class-pivot-admin.php
+msgid "Utiliser cette image"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Choisir dans la médiathèque"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Retirer l'image"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Bandeau pleine largeur affiché au-dessus du titre, repris comme image de partage sur les réseaux sociaux. Format conseillé : 1920 × 400 pixels."
+msgstr ""
+
+#. translators: 1 : pages ajoutées, 2 : filtres ajoutés, 3 : pages déjà reprises.
+#: admin/class-pivot-tools.php
+msgid "Reprise terminée : %1$d page(s) et %2$d filtre(s) ajoutés, %3$d page(s) déjà reprise(s)."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Ancien plugin PIVOT"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Les pages et les filtres de l'ancien plugin sont encore en base. La reprise recrée ici ceux qui manquent : une page déjà reprise, ou dont l'adresse est prise, est laissée de côté. Les tables de l'ancien plugin ne sont pas modifiées."
+msgstr ""
+
+#. translators: 1 : durée, 2 : nombre de pages.
+#: admin/class-pivot-tools.php
+msgid "Dernière reprise il y a %1$s. Pages reprises depuis l'ancien plugin : %2$d."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Reprendre les pages de l'ancien plugin"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Groupe"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Équipements"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Groupes de critères"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Les critères qui portent le même groupe s'affichent ensemble, sous son nom, à la place du premier d'entre eux. Pratique pour réunir des cases à cocher : équipements, services, accessibilité…"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Traduisez ici le nom de chaque groupe. Un groupe ajouté dans un critère apparaît dans ce tableau après enregistrement."
+msgstr ""
+
+#: includes/class-pivot-onboarding.php
+msgid "Groupe, facultatif"
+msgstr ""
+
+#: includes/class-pivot-onboarding.php
+msgid "Les critères qui portent le même groupe s'affichent ensemble, sous son nom : « Équipements » au-dessus de Terrasse, Parking et Wifi. Son nom se traduit une seule fois, dans le tableau « Groupes de critères » sous la liste."
+msgstr ""
+
+#: includes/class-pivot-closures.php
+msgid "Fermeture"
+msgstr ""
+
+#: includes/class-pivot-closures.php
+msgid "Impact chasse"
+msgstr ""
+
+#: includes/class-pivot-closures.php
+msgid "Impact travaux"
+msgstr ""
+
+#: includes/class-pivot-closures.php
+msgid "Impact inondation"
+msgstr ""
+
+#: includes/class-pivot-closures.php
+msgid "Impact sanitaire"
+msgstr ""
+
+#: includes/class-pivot-closures.php
+msgid "Fermetures prévues"
+msgstr ""
+
+#. translators: %s : date du jour, « jeudi 1 octobre ».
+#: includes/class-pivot-closures.php
+msgid "L'itinéraire est fermé ce %s"
+msgstr ""
+
+#. translators: %s : date du jour, « jeudi 1 octobre ».
+#: includes/class-pivot-closures.php
+msgid "Fermé ce %s"
+msgstr ""
+
+#. translators: %s : date de la prochaine fermeture, « samedi 17 octobre ».
+#: includes/class-pivot-closures.php
+msgid "L'itinéraire est accessible aujourd'hui. Prochaine fermeture : %s."
+msgstr ""
+
+#. translators: %s : date de la prochaine fermeture, « samedi 17 octobre ».
+#: includes/class-pivot-closures.php
+msgid "Aucune fermeture aujourd'hui. Prochaine fermeture : %s."
+msgstr ""
+
+#: includes/class-pivot-closures.php
+msgid "Voir les dates de fermeture"
+msgstr ""
+
+#. translators: format de date PHP d'un jour de fermeture, « jeudi 1 octobre ».
+#: includes/class-pivot-closures.php
+msgctxt "jour de fermeture"
+msgid "l j F"
+msgstr ""
+
+#. translators: format de date PHP d'un jour de fermeture, avec l'année : « jeudi 1 octobre 2026 ».
+#: includes/class-pivot-closures.php
+msgctxt "jour de fermeture"
+msgid "l j F Y"
+msgstr ""
+
+#: templates/parts/closures.php
+msgid "Dates de fermeture"
+msgstr ""
+
+#. translators: %s : type de fermeture, « Période de chasse ».
+#: templates/parts/closures.php
+msgid "Motif : %s"
+msgstr ""
+
+#: templates/parts/closures.php
+msgid "Aujourd'hui"
+msgstr ""
+
+#: admin/class-pivot-listing-edit.php
+msgid "Les fermetures d'un itinéraire (zones de fermeture : chasse, travaux…) ne s'affichent sur les vignettes qu'avec les offres liées : en deçà, PIVOT n'en donne que le code."
+msgstr ""
+
+#: includes/class-pivot-templates.php
+msgid "Afficher le tracé"
+msgstr ""
+
+#: includes/class-pivot-templates.php
+msgid "Masquer le tracé"
+msgstr ""
+
+#: includes/class-pivot-templates.php
+msgid "Chargement du tracé…"
+msgstr ""
+
+#: includes/class-pivot-templates.php
+msgid "Tracé indisponible"
 msgstr ""

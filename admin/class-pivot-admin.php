@@ -26,6 +26,7 @@ class Pivot_Admin {
 		add_action( 'admin_menu', array( $this, 'menu' ) );
 		add_action( 'admin_notices', array( $this, 'activation_notice' ) );
 		add_action( 'admin_notices', array( $this, 'language_change_notice' ) );
+		add_action( 'admin_notices', array( $this, 'legacy_import_notice' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 		add_filter( 'plugin_action_links_' . PIVOT_BASENAME, array( $this, 'action_links' ) );
 
@@ -100,6 +101,72 @@ class Pivot_Admin {
 		echo '</p></div>';
 
 		delete_option( 'pivot_lang_changed' );
+	}
+
+	/**
+	 * Bilan de la reprise des pages de l'ancien plugin PIVOT, affiché une fois.
+	 */
+	public function legacy_import_notice() {
+		$state = Pivot_Legacy_Import::state();
+
+		if ( empty( $state['notice'] ) || ! current_user_can( pivot_capability() ) ) {
+			return;
+		}
+
+		$report  = (array) $state['report'];
+		$lines   = Pivot_Legacy_Import::messages( $report );
+		$skipped = 'skipped' === $state['status'];
+
+		printf( '<div class="notice %s is-dismissible"><p><strong>', esc_attr( ( $skipped || $lines ) ? 'notice-warning' : 'notice-success' ) );
+
+		if ( $skipped ) {
+			esc_html_e( 'Les pages de l\'ancien plugin PIVOT n\'ont pas été reprises.', 'pivot-offres' );
+			echo '</strong></p><p>';
+			esc_html_e( 'Des pages de listing existaient déjà : la reprise automatique n\'y a pas touché, pour ne pas créer de doublons. Vous pouvez la lancer depuis Cache et outils ; elle écarte les adresses déjà prises.', 'pivot-offres' );
+			echo '</p>';
+		} else {
+			printf(
+				/* translators: 1 : nombre de pages, 2 : nombre de filtres. */
+				esc_html__( 'Pages de l\'ancien plugin PIVOT reprises : %1$d page(s) et %2$d filtre(s).', 'pivot-offres' ),
+				(int) pivot_get( $report, 'pages', 0 ),
+				(int) pivot_get( $report, 'filters', 0 )
+			);
+			echo '</strong></p><p>';
+			esc_html_e( 'Elles gardent leurs adresses. Leurs index se construisent en arrière-plan, une page par minute. Les tables de l\'ancien plugin restent intactes.', 'pivot-offres' );
+			echo '</p>';
+
+			$key = (string) pivot_get( $report, 'key', '' );
+
+			if ( $key ) {
+				echo '<p>' . esc_html(
+					'stage' === $key
+						? __( 'La clé ws_key de l\'ancien plugin a été reprise, pour l\'environnement stage.', 'pivot-offres' )
+						: __( 'La clé ws_key de l\'ancien plugin a été reprise, pour l\'environnement de production.', 'pivot-offres' )
+				) . '</p>';
+			}
+
+			if ( $lines ) {
+				echo '<ul style="list-style:disc;margin-left:2em">';
+
+				foreach ( $lines as $line ) {
+					echo '<li>' . esc_html( $line ) . '</li>';
+				}
+
+				echo '</ul>';
+			}
+		}
+
+		printf(
+			'<p><a href="%s" class="button">%s</a> <a href="%s" class="button">%s</a></p>',
+			esc_url( admin_url( 'admin.php?page=pivot-listings' ) ),
+			esc_html__( 'Voir les pages de listing', 'pivot-offres' ),
+			esc_url( admin_url( 'admin.php?page=pivot-tools' ) ),
+			esc_html__( 'Cache et outils', 'pivot-offres' )
+		);
+
+		echo '</div>';
+
+		Pivot_Legacy_Import::notice_seen();
 	}
 
 	/**
@@ -219,6 +286,11 @@ class Pivot_Admin {
 		wp_enqueue_style( 'pivot-admin', PIVOT_URL . 'assets/css/pivot-admin.css', array(), PIVOT_VERSION );
 		wp_enqueue_script( 'pivot-admin', PIVOT_URL . 'assets/js/pivot-admin.js', array( 'wp-api-fetch' ), PIVOT_VERSION, true );
 
+		// La médiathèque, pour l'image d'en-tête : sur l'écran d'édition seulement.
+		if ( false !== strpos( $hook, 'pivot-listing-edit' ) ) {
+			wp_enqueue_media();
+		}
+
 		wp_localize_script(
 			'pivot-admin',
 			'pivotAdmin',
@@ -245,10 +317,14 @@ class Pivot_Admin {
 					'sugBoolean'  => __( 'oui / non · %d %% des offres', 'pivot-offres' ),
 					/* translators: 1 : plus petite valeur, 2 : plus grande valeur, 3 : pourcentage d'offres. */
 					'sugRange'    => __( 'de %1$s à %2$s · %3$d %% des offres', 'pivot-offres' ),
+					/* translators: 1 : première date, 2 : dernière date, 3 : pourcentage d'offres. */
+					'sugDates'    => __( 'du %1$s au %2$s · %3$d %% des offres', 'pivot-offres' ),
 					'sugBasis'    => __( 'Déduit de %1$d offres analysées sur %2$d.', 'pivot-offres' ),
 					'sugNone'     => __( 'Aucun critère ne se dégage de ces offres. Ajoutez-en un sur mesure.', 'pivot-offres' ),
 					'sugFailed'   => __( 'L\'analyse a échoué : %s', 'pivot-offres' ),
 					'sugNeedFull' => __( 'Richesse des données passée sur « Complet » : ce critère porte sur un champ PIVOT.', 'pivot-offres' ),
+					'imageTitle'  => __( 'Image d\'en-tête', 'pivot-offres' ),
+					'imageChoose' => __( 'Utiliser cette image', 'pivot-offres' ),
 				),
 			)
 		);
@@ -291,6 +367,50 @@ class Pivot_Admin {
 			return;
 		}
 
+		$search = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		$terms  = self::search_terms( $search );
+
+		// Les pages qui ne correspondent pas sont rendues masquées, en fin de
+		// tableau : le script les fait réapparaître quand la recherche change,
+		// et les bandes alternées (nth-child) restent régulières.
+		$matching = array();
+		$others   = array();
+		$rank     = array(); // Ordre d'origine, que le script rétablit.
+
+		foreach ( $listings as $listing ) {
+			$rank[ $listing['id'] ] = count( $rank );
+
+			if ( self::listing_matches( $listing, $terms ) ) {
+				$matching[] = $listing;
+			} else {
+				$others[] = $listing;
+			}
+		}
+
+		echo '<div class="pivot-listings-toolbar">';
+		/* translators: %d : nombre de pages. */
+		$total = sprintf( _n( '%d page', '%d pages', count( $listings ), 'pivot-offres' ), count( $listings ) );
+		/* translators: 1 : pages trouvées, 2 : nombre total de pages. */
+		$filtered = __( '%1$d sur %2$d pages', 'pivot-offres' );
+
+		printf(
+			'<p class="pivot-listings-count" role="status" data-total="%1$s" data-filtered="%2$s">%3$s</p>',
+			esc_attr( $total ),
+			esc_attr( $filtered ),
+			esc_html( $terms ? sprintf( $filtered, count( $matching ), count( $listings ) ) : $total )
+		);
+		echo '<form method="get" class="search-box pivot-listings-search" role="search">';
+		echo '<input type="hidden" name="page" value="pivot-listings" />';
+		echo '<label class="screen-reader-text" for="pivot-listings-search">' . esc_html__( 'Rechercher une page de listing', 'pivot-offres' ) . '</label>';
+		printf(
+			'<input type="search" id="pivot-listings-search" name="s" value="%1$s" placeholder="%2$s" autocomplete="off" />',
+			esc_attr( $search ),
+			esc_attr__( 'Titre, URL, code de requête…', 'pivot-offres' )
+		);
+		echo ' <input type="submit" class="button" value="' . esc_attr__( 'Rechercher', 'pivot-offres' ) . '" />';
+		echo '</form>';
+		echo '</div>';
+
 		echo '<table class="wp-list-table widefat fixed striped pivot-listings-table">';
 		echo '<thead><tr>';
 		echo '<th>' . esc_html__( 'Titre', 'pivot-offres' ) . '</th>';
@@ -303,7 +423,13 @@ class Pivot_Admin {
 		echo '<th>' . esc_html__( 'Index', 'pivot-offres' ) . '</th>';
 		echo '</tr></thead><tbody>';
 
-		foreach ( $listings as $listing ) {
+		printf(
+			'<tr class="pivot-listings-none"%1$s><td colspan="8">%2$s</td></tr>',
+			$matching ? ' hidden' : '',
+			esc_html__( 'Aucune page ne correspond à cette recherche.', 'pivot-offres' )
+		);
+
+		foreach ( array_merge( $matching, $others ) as $position => $listing ) {
 			$edit_url = add_query_arg(
 				array(
 					'page' => 'pivot-listing-edit',
@@ -336,7 +462,12 @@ class Pivot_Admin {
 				'pivot_rebuild_listing_' . $listing['id']
 			);
 
-			echo '<tr>';
+			printf(
+				'<tr class="pivot-listing-row" data-search="%1$s" data-order="%2$d"%3$s>',
+				esc_attr( self::search_haystack( $listing ) ),
+				(int) $rank[ $listing['id'] ],
+				$position >= count( $matching ) ? ' hidden' : ''
+			);
 
 			echo '<td><strong><a href="' . esc_url( $edit_url ) . '">' . esc_html( $listing['title'] ) . '</a></strong>';
 			if ( empty( $listing['active'] ) ) {
@@ -394,6 +525,64 @@ class Pivot_Admin {
 
 		echo '</tbody></table>';
 		echo '</div>';
+	}
+
+	/**
+	 * Texte dans lequel la recherche d'une page de listing se fait : titres
+	 * et chemins dans toutes les langues, code de requête, identifiant.
+	 *
+	 * @param array $listing Configuration.
+	 * @return string Texte normalisé, voir normalize_search().
+	 */
+	private static function search_haystack( $listing ) {
+		$parts = array_merge(
+			array( $listing['title'], $listing['slug'], $listing['query_code'], $listing['id'] ),
+			array_values( (array) pivot_get( $listing, 'titles', array() ) ),
+			array_values( (array) pivot_get( $listing, 'slugs', array() ) )
+		);
+
+		return self::normalize_search( implode( ' ', array_filter( array_map( 'strval', $parts ) ) ) );
+	}
+
+	/**
+	 * Minuscules sans accents : « hotes » trouve « Chambres d'hôtes ».
+	 *
+	 * Le script de la liste applique la même règle pendant la saisie.
+	 *
+	 * @param string $text Texte.
+	 * @return string
+	 */
+	private static function normalize_search( $text ) {
+		return mb_strtolower( remove_accents( (string) $text ), 'UTF-8' );
+	}
+
+	/**
+	 * Mots recherchés, normalisés.
+	 *
+	 * @param string $search Saisie.
+	 * @return string[]
+	 */
+	private static function search_terms( $search ) {
+		return array_values( array_filter( preg_split( '/\s+/', self::normalize_search( $search ) ), 'strlen' ) );
+	}
+
+	/**
+	 * Une page correspond quand chaque mot recherché figure dans son texte.
+	 *
+	 * @param array    $listing Configuration.
+	 * @param string[] $terms   Mots recherchés.
+	 * @return bool
+	 */
+	private static function listing_matches( $listing, $terms ) {
+		$haystack = self::search_haystack( $listing );
+
+		foreach ( $terms as $term ) {
+			if ( false === strpos( $haystack, $term ) ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**

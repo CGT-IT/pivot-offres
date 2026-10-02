@@ -1592,3 +1592,154 @@ msgstr "Any"
 
 msgid "Saisissez un nombre, par exemple 12 ou 9,50."
 msgstr "Enter a number, for example 12 or 9.50."
+
+msgid "Date ou période"
+msgstr "Date or period"
+
+msgid "Entre deux dates (du … au …)"
+msgstr "Between two dates (from … to …)"
+
+msgid "À partir d'une date"
+msgstr "From a date"
+
+msgid "Jusqu'à une date"
+msgstr "Up to a date"
+
+msgid "À une date précise"
+msgstr "On a specific date"
+
+msgid "Période (date de début et date de fin)"
+msgstr "Period (start date and end date)"
+
+msgid "Dates"
+msgstr "Dates"
+
+msgid "du %1$s au %2$s · %3$d %% des offres"
+msgstr "from %1$s to %2$s · %3$d %% of the offers"
+
+msgid "Le visiteur choisit une ou deux dates dans un calendrier. Avec l'urn urn:obj:date, le critère porte sur la période entière : une offre est retenue si l'une de ses périodes touche les dates demandées. Avec urn:fld:date:datedeb ou urn:fld:date:datefin, il ne compare que la date de début ou la date de fin. Sans première date, une période déjà terminée ne compte pas : « jusqu'au 31 octobre » se lit « d'aujourd'hui au 31 octobre »."
+msgstr "The visitor picks one or two dates in a calendar. With the urn urn:obj:date, the criterion applies to the whole period: an offer is kept if one of its periods overlaps the requested dates. With urn:fld:date:datedeb or urn:fld:date:datefin, only the start date or the end date is compared. Without a first date, a period that has already ended does not count: “until 31 October” means “from today to 31 October”."
+
+msgctxt "critère de date"
+msgid "du"
+msgstr "from"
+
+msgctxt "critère de date"
+msgid "au"
+msgstr "to"
+
+msgctxt "critère de date"
+msgid "à partir du"
+msgstr "from"
+
+msgctxt "critère de date"
+msgid "jusqu'au"
+msgstr "until"
+
+msgctxt "critère de date"
+msgid "le"
+msgstr "on"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Plan du site"
+msgstr "Sitemap"
+
+msgid "Ajouter les pages de listing et les fiches au plan du site XML de WordPress"
+msgstr "Add listing pages and detail pages to the WordPress XML sitemap"
+
+msgid "Les adresses sont relevées dans les index déjà construits, sans appel à PIVOT. Sans effet si une extension SEO remplace le plan du site de WordPress par le sien."
+msgstr "Addresses are read from the indexes already built, without calling PIVOT. No effect if an SEO plugin replaces the WordPress sitemap with its own."
+
+msgid "Fichier llms.txt"
+msgstr "llms.txt file"
+
+msgid "Publier /llms.txt, le sommaire du site à l'usage des agents conversationnels"
+msgstr "Publish /llms.txt, the site summary for conversational agents"
+
+msgid "Liste les pages de listing dans chaque langue, avec leur description. Un fichier llms.txt déposé à la racine du site l'emporte."
+msgstr "Lists the listing pages in each language, with their description. An llms.txt file placed at the site root takes precedence."
+
+msgid "Offres touristiques de Wallonie : hébergements, restaurants, activités, événements et itinéraires, issues de PIVOT, la base de données du tourisme wallon."
+msgstr "Tourist offers in Wallonia: accommodation, restaurants, activities, events and routes, from PIVOT, the Walloon tourism database."
+
+msgid "Chaque page ci-dessous liste des offres et mène à leurs fiches détaillées, à l'adresse /details/CODE&type=TYPE. Les fiches publient des données structurées schema.org (JSON-LD) : adresse, coordonnées GPS, contact, équipements, classement et dates des événements."
+msgstr "Each page below lists offers and links to their detail pages, at /details/CODE&type=TYPE. Detail pages publish schema.org structured data (JSON-LD): address, GPS coordinates, contact, amenities, rating and event dates."
+
+msgid "Pages"
+msgstr "Pages"
+
+msgid "Plan du site XML"
+msgstr "XML sitemap"
+
+msgid "%s — données JSON"
+msgstr "%s — JSON data"
+
+msgid "toutes les offres de la page, avec nom, localité, coordonnées et adresse de la fiche ; paramètre lang pour une autre langue."
+msgstr "every offer on the page, with name, locality, coordinates and detail page address; lang parameter for another language."
+
+msgid "Fermeture"
+msgstr "Closure"
+
+msgid "Impact chasse"
+msgstr "Hunting impact"
+
+msgid "Impact travaux"
+msgstr "Works impact"
+
+msgid "Impact inondation"
+msgstr "Flood impact"
+
+msgid "Impact sanitaire"
+msgstr "Health impact"
+
+msgid "Fermetures prévues"
+msgstr "Planned closures"
+
+msgid "L'itinéraire est fermé ce %s"
+msgstr "This route is closed on %s"
+
+msgid "Fermé ce %s"
+msgstr "Closed on %s"
+
+msgid "L'itinéraire est accessible aujourd'hui. Prochaine fermeture : %s."
+msgstr "This route is open today. Next closure: %s."
+
+msgid "Aucune fermeture aujourd'hui. Prochaine fermeture : %s."
+msgstr "No closure today. Next closure: %s."
+
+msgid "Voir les dates de fermeture"
+msgstr "See closure dates"
+
+msgctxt "jour de fermeture"
+msgid "l j F"
+msgstr "l, F j"
+
+msgctxt "jour de fermeture"
+msgid "l j F Y"
+msgstr "l, F j, Y"
+
+msgid "Dates de fermeture"
+msgstr "Closure dates"
+
+msgid "Motif : %s"
+msgstr "Reason: %s"
+
+msgid "Aujourd'hui"
+msgstr "Today"
+
+msgid "Les fermetures d'un itinéraire (zones de fermeture : chasse, travaux…) ne s'affichent sur les vignettes qu'avec les offres liées : en deçà, PIVOT n'en donne que le code."
+msgstr "A route's closures (closure areas: hunting, works…) only appear on the cards with linked offers: below that level, PIVOT only returns their code."
+
+msgid "Afficher le tracé"
+msgstr "Show route"
+
+msgid "Masquer le tracé"
+msgstr "Hide route"
+
+msgid "Chargement du tracé…"
+msgstr "Loading route…"
+
+msgid "Tracé indisponible"
+msgstr "Route unavailable"

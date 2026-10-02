@@ -51,6 +51,7 @@ class Pivot_Listing_Edit {
 			'query_code'       => pivot_get( $raw, 'query_code', '' ),
 			'content'          => (int) pivot_get( $raw, 'content', 2 ),
 			'per_page'         => (int) pivot_get( $raw, 'per_page', 12 ),
+			'columns'          => (int) pivot_get( $raw, 'columns', 4 ),
 			'show_map'         => ! empty( $raw['show_map'] ),
 			'map_zoom'         => (int) pivot_get( $raw, 'map_zoom', 9 ),
 			'map_center'       => pivot_get( $raw, 'map_center', '' ),
@@ -62,12 +63,14 @@ class Pivot_Listing_Edit {
 			'cache_ttl'        => (int) pivot_get( $raw, 'cache_ttl', 0 ) * MINUTE_IN_SECONDS,
 			'intro'            => pivot_get( $raw, 'intro', '' ),
 			'intros'           => (array) pivot_get( $raw, 'intros', array() ),
+			'image'            => pivot_get( $raw, 'image', '' ),
 			'seo_title'        => pivot_get( $raw, 'seo_title', '' ),
 			'seo_titles'       => (array) pivot_get( $raw, 'seo_titles', array() ),
 			'seo_description'  => pivot_get( $raw, 'seo_description', '' ),
 			'seo_descriptions' => (array) pivot_get( $raw, 'seo_descriptions', array() ),
 			'active'           => ! empty( $raw['active'] ),
 			'filters'          => isset( $raw['filters'] ) && is_array( $raw['filters'] ) ? array_values( $raw['filters'] ) : array(),
+			'filter_groups'    => self::group_labels( pivot_get( $raw, 'filter_groups', array() ) ),
 			'query_params'     => $this->parse_params( pivot_get( $raw, 'query_params', '' ) ),
 		);
 
@@ -76,6 +79,13 @@ class Pivot_Listing_Edit {
 		if ( is_wp_error( $saved ) ) {
 			add_settings_error( 'pivot_listing', 'save_failed', $saved->get_error_message(), 'error' );
 			return;
+		}
+
+		// Critères ramenés sur leur champ : expliqué après la redirection.
+		$converted = Pivot_Listings::converted_filters();
+
+		if ( $converted ) {
+			set_transient( 'pivot_listing_converted_' . get_current_user_id(), $converted, 5 * MINUTE_IN_SECONDS );
 		}
 
 		wp_safe_redirect(
@@ -140,9 +150,12 @@ class Pivot_Listing_Edit {
 
 		if ( isset( $_GET['message'] ) && 'saved' === $_GET['message'] ) {
 			echo '<div class="notice notice-success"><p>' . esc_html__( 'Page enregistrée.', 'pivot-offres' ) . '</p></div>';
+			self::converted_notice();
 		}
 
-		echo '<form method="post" action="' . esc_url( admin_url( 'admin.php?page=pivot-listing-edit' ) ) . '">';
+		self::section_nav( $is_new );
+
+		echo '<form method="post" id="pivot-listing-form" action="' . esc_url( admin_url( 'admin.php?page=pivot-listing-edit' ) ) . '">';
 		wp_nonce_field( 'pivot_save_listing', 'pivot_listing_nonce' );
 		printf( '<input type="hidden" name="pivot_listing[id]" value="%s" />', esc_attr( $listing['id'] ) );
 
@@ -159,9 +172,137 @@ class Pivot_Listing_Edit {
 
 		if ( ! $is_new ) {
 			self::section_index_status( $listing );
+			self::section_shortcode( $listing );
 		}
 
 		echo '</div>';
+	}
+
+	/**
+	 * Explique les critères posés sur une valeur et ramenés sur leur champ.
+	 */
+	private static function converted_notice() {
+		$key       = 'pivot_listing_converted_' . get_current_user_id();
+		$converted = get_transient( $key );
+
+		if ( ! $converted || ! is_array( $converted ) ) {
+			return;
+		}
+
+		delete_transient( $key );
+
+		echo '<div class="notice notice-warning"><p>';
+		esc_html_e( 'Certains critères visaient une valeur PIVOT plutôt qu\'un champ : ils ne pouvaient rien trouver, les offres portant le champ et non la valeur. Ils ont été ramenés sur leur champ, dont les valeurs se calculent à partir des offres :', 'pivot-offres' );
+		echo '</p><ul class="ul-disc">';
+
+		foreach ( $converted as $entry ) {
+			printf(
+				'<li>%1$s <code>%2$s</code> → <code>%3$s</code></li>',
+				esc_html( pivot_get( $entry, 'label', '' ) ),
+				esc_html( pivot_get( $entry, 'from', '' ) ),
+				esc_html( pivot_get( $entry, 'to', '' ) )
+			);
+		}
+
+		echo '</ul><p>' . esc_html__( 'Les critères d\'un même champ n\'en forment plus qu\'un : choisir « 3 étoiles » se fait désormais dans sa liste.', 'pivot-offres' ) . '</p></div>';
+	}
+
+	/* ---------------------------------------------------------- navigation */
+
+	/**
+	 * Sections de l'écran, dans l'ordre d'affichage.
+	 *
+	 * @param bool $is_new Création ?
+	 * @return array Identifiant => intitulé.
+	 */
+	private static function sections( $is_new ) {
+		$sections = array(
+			'general'      => __( 'Identité', 'pivot-offres' ),
+			'source'       => __( 'Offres affichées', 'pivot-offres' ),
+			'display'      => __( 'Mise en page', 'pivot-offres' ),
+			'filters'      => __( 'Critères de recherche', 'pivot-offres' ),
+			'seo'          => __( 'Référencement', 'pivot-offres' ),
+			'translations' => __( 'Traductions', 'pivot-offres' ),
+			'index'        => __( 'Index', 'pivot-offres' ),
+			'shortcode'    => __( 'Shortcode', 'pivot-offres' ),
+		);
+
+		if ( count( Pivot_I18n::enabled() ) < 2 ) {
+			unset( $sections['translations'] );
+		}
+
+		if ( $is_new ) {
+			unset( $sections['index'], $sections['shortcode'] );
+		}
+
+		return $sections;
+	}
+
+	/**
+	 * Bandeau de navigation qui suit le défilement.
+	 *
+	 * Le bouton d'enregistrement y reste à portée de main ; il vise le
+	 * formulaire par son identifiant, le bandeau étant hors de celui-ci pour
+	 * rester visible jusqu'en bas de l'écran.
+	 *
+	 * @param bool $is_new Création ?
+	 */
+	private static function section_nav( $is_new ) {
+		echo '<nav class="pivot-section-nav" aria-label="' . esc_attr__( 'Sections de la page', 'pivot-offres' ) . '"><ul>';
+
+		foreach ( self::sections( $is_new ) as $id => $label ) {
+			printf(
+				'<li><a href="#pivot-section-%1$s">%2$s</a></li>',
+				esc_attr( $id ),
+				esc_html( $label )
+			);
+		}
+
+		echo '</ul><div class="pivot-section-nav-actions">';
+		printf(
+			'<button type="button" class="button-link pivot-sections-toggle" data-collapse="%1$s" data-expand="%2$s">%1$s</button>',
+			esc_attr__( 'Tout replier', 'pivot-offres' ),
+			esc_attr__( 'Tout déplier', 'pivot-offres' )
+		);
+		printf(
+			'<button type="submit" form="pivot-listing-form" class="button button-primary">%s</button>',
+			esc_html( $is_new ? __( 'Créer la page', 'pivot-offres' ) : __( 'Enregistrer', 'pivot-offres' ) )
+		);
+		echo '</div></nav>';
+	}
+
+	/**
+	 * Ouvre une section repliable.
+	 *
+	 * Repliée, la section garde sa mise en page (hauteur nulle, contenu
+	 * invisible) plutôt que display: none : l'éditeur visuel, initialisé
+	 * dans une iframe, ne supporte pas d'être construit hors de la page.
+	 *
+	 * @param string $id        Identifiant, tel que dans sections().
+	 * @param string $title     Intitulé.
+	 * @param string $meta      Résumé affiché à côté de l'intitulé.
+	 * @param bool   $collapsed Repliée par défaut, tant que l'utilisateur n'a rien choisi.
+	 */
+	private static function section_open( $id, $title, $meta = '', $collapsed = false ) {
+		printf(
+			'<section class="pivot-section" id="pivot-section-%1$s" data-section="%1$s"%2$s>',
+			esc_attr( $id ),
+			$collapsed ? ' data-default="collapsed"' : ''
+		);
+		printf(
+			'<h2 class="pivot-section-title"><button type="button" class="pivot-section-toggle" aria-expanded="true" aria-controls="pivot-section-body-%1$s"><span class="pivot-section-label">%2$s</span>%3$s<span class="dashicons dashicons-arrow-up-alt2" aria-hidden="true"></span></button></h2>',
+			esc_attr( $id ),
+			esc_html( $title ),
+			'' !== $meta ? '<span class="pivot-section-meta">' . esc_html( $meta ) . '</span>' : ''
+		);
+		printf( '<div class="pivot-section-body" id="pivot-section-body-%s">', esc_attr( $id ) );
+	}
+
+	/**
+	 * Ferme une section ouverte par section_open().
+	 */
+	private static function section_close() {
+		echo '</div></section>';
 	}
 
 	/* ------------------------------------------------------------ sections */
@@ -175,7 +316,7 @@ class Pivot_Listing_Edit {
 	private static function section_general( $listing, $is_new ) {
 		$default = Pivot_I18n::default_lang();
 
-		echo '<h2 class="title">' . esc_html__( 'Identité de la page', 'pivot-offres' ) . '</h2>';
+		self::section_open( 'general', __( 'Identité de la page', 'pivot-offres' ) );
 
 		if ( Pivot_I18n::is_multilingual() ) {
 			printf(
@@ -241,6 +382,8 @@ class Pivot_Listing_Edit {
 		}
 
 		echo '</tbody></table>';
+
+		self::section_close();
 	}
 
 	/**
@@ -249,7 +392,7 @@ class Pivot_Listing_Edit {
 	 * @param array $listing Configuration.
 	 */
 	private static function section_source( $listing ) {
-		echo '<h2 class="title">' . esc_html__( 'Offres affichées', 'pivot-offres' ) . '</h2>';
+		self::section_open( 'source', __( 'Offres affichées', 'pivot-offres' ), (string) $listing['query_code'] );
 		echo '<table class="form-table" role="presentation"><tbody>';
 
 		self::row(
@@ -299,6 +442,7 @@ class Pivot_Listing_Edit {
 			__( 'Richesse des données', 'pivot-offres' ),
 			$select,
 			__( 'Le mode résumé construit l\'index plus vite ; le mode complet est indispensable dès qu\'un filtre porte sur un champ PIVOT. Avec les offres liées, la construction est environ trois fois plus longue, mais chaque fiche détail est déjà en cache à la première visite.', 'pivot-offres' )
+			. ' ' . __( 'Les fermetures d\'un itinéraire (zones de fermeture : chasse, travaux…) ne s\'affichent sur les vignettes qu\'avec les offres liées : en deçà, PIVOT n\'en donne que le code.', 'pivot-offres' )
 		);
 
 		self::row(
@@ -327,6 +471,8 @@ class Pivot_Listing_Edit {
 		);
 
 		echo '</tbody></table>';
+
+		self::section_close();
 	}
 
 	/**
@@ -335,7 +481,7 @@ class Pivot_Listing_Edit {
 	 * @param array $listing Configuration.
 	 */
 	private static function section_display( $listing ) {
-		echo '<h2 class="title">' . esc_html__( 'Mise en page', 'pivot-offres' ) . '</h2>';
+		self::section_open( 'display', __( 'Mise en page', 'pivot-offres' ) );
 		echo '<table class="form-table" role="presentation"><tbody>';
 
 		self::row(
@@ -345,6 +491,24 @@ class Pivot_Listing_Edit {
 				(int) $listing['per_page']
 			),
 			__( 'La pagination est gérée dans le navigateur : changer de page ne déclenche aucun appel à PIVOT.', 'pivot-offres' )
+		);
+
+		$select = '<select name="pivot_listing[columns]">';
+
+		for ( $count = 1; $count <= 6; $count++ ) {
+			$select .= sprintf(
+				'<option value="%1$d"%2$s>%1$d</option>',
+				$count,
+				selected( (int) $listing['columns'], $count, false )
+			);
+		}
+
+		$select .= '</select>';
+
+		self::row(
+			__( 'Colonnes', 'pivot-offres' ),
+			$select,
+			__( 'Vignettes par ligne sur un grand écran, à partir de 1200 pixels de large. En dessous, la grille se resserre : trois colonnes au plus sur un écran moyen, deux sur tablette, une sur mobile. Un nombre d\'offres par page multiple du nombre de colonnes remplit toutes les lignes.', 'pivot-offres' )
 		);
 
 		self::row(
@@ -378,16 +542,37 @@ class Pivot_Listing_Edit {
 			)
 		);
 
+		$image = (string) pivot_get( $listing, 'image', '' );
+
+		// Aperçu sans adresse quand il n'y a pas d'image : un src vide ne doit
+		// rien charger.
+		$preview = $image
+			? sprintf( '<img class="pivot-image-preview" src="%s" alt="" />', esc_url( $image ) )
+			: '<img class="pivot-image-preview" alt="" hidden />';
+
 		self::row(
-			__( 'Texte d\'introduction', 'pivot-offres' ),
+			__( 'Image d\'en-tête', 'pivot-offres' ),
 			sprintf(
-				'<textarea name="pivot_listing[intro]" rows="4" class="large-text">%s</textarea>',
-				esc_textarea( $listing['intro'] )
+				'<div class="pivot-image-field"><input type="url" name="pivot_listing[image]" value="%1$s" class="large-text code pivot-image-url" placeholder="https://" /><span class="pivot-image-actions"><button type="button" class="button pivot-image-pick">%2$s</button> <button type="button" class="button-link pivot-image-clear">%3$s</button></span>%4$s</div>',
+				esc_attr( $image ),
+				esc_html__( 'Choisir dans la médiathèque', 'pivot-offres' ),
+				esc_html__( 'Retirer l\'image', 'pivot-offres' ),
+				$preview
 			),
-			__( 'Affiché sous le titre, avant les critères de recherche.', 'pivot-offres' )
+			__( 'Bandeau pleine largeur affiché au-dessus du titre, repris comme image de partage sur les réseaux sociaux. Format conseillé : 1920 × 400 pixels.', 'pivot-offres' )
+		);
+
+		self::editor_row(
+			__( 'Texte d\'introduction', 'pivot-offres' ),
+			'pivot_listing[intro]',
+			$listing['intro'],
+			8,
+			__( 'Affiché sous le titre, avant les critères de recherche. Les shortcodes, par exemple <code>[wpforms id="12"]</code>, y sont interprétés.', 'pivot-offres' )
 		);
 
 		echo '</tbody></table>';
+
+		self::section_close();
 	}
 
 	/**
@@ -401,7 +586,12 @@ class Pivot_Listing_Edit {
 		$filters = (array) $listing['filters'];
 		$facets  = (array) $listing['facet_values'];
 
-		echo '<h2 class="title">' . esc_html__( 'Critères de recherche', 'pivot-offres' ) . '</h2>';
+		self::section_open(
+			'filters',
+			__( 'Critères de recherche', 'pivot-offres' ),
+			/* translators: %d : nombre de critères. */
+			sprintf( _n( '%d critère', '%d critères', count( $filters ), 'pivot-offres' ), count( $filters ) )
+		);
 		echo '<p class="description">' . esc_html__( 'Chaque critère devient un contrôle affiché au-dessus des résultats. Les valeurs proposées sont calculées à partir des offres de la page, avec les libellés traduits que PIVOT renvoie.', 'pivot-offres' ) . '</p>';
 
 		self::section_suggestions( $listing );
@@ -417,15 +607,119 @@ class Pivot_Listing_Edit {
 		// Datalist commune : l'autocomplétion du navigateur sur le champ urn.
 		echo '<datalist id="pivot-urn-suggestions"></datalist>';
 
+		// Groupes déjà utilisés, proposés dans chaque critère ; le script tient
+		// la liste à jour pendant la saisie.
+		$groups = array();
+
+		foreach ( $filters as $filter ) {
+			$group = (string) pivot_get( $filter, 'group', '' );
+
+			if ( '' !== $group && ! in_array( $group, $groups, true ) ) {
+				$groups[] = $group;
+			}
+		}
+
+		echo '<datalist id="pivot-group-suggestions">';
+
+		foreach ( $groups as $group ) {
+			printf( '<option value="%s"></option>', esc_attr( $group ) );
+		}
+
+		echo '</datalist>';
+
 		echo '<p class="pivot-filter-buttons">';
 		echo '<button type="button" class="button pivot-add-filter">' . esc_html__( 'Ajouter un critère sur mesure', 'pivot-offres' ) . '</button> ';
 		echo '<button type="button" class="button-link pivot-tour-start-filters">' . esc_html__( 'Comment régler un critère ?', 'pivot-offres' ) . '</button>';
 		echo '</p>';
 
+		self::section_groups( $listing, $groups );
+
 		// Gabarit repris par le JavaScript pour les nouvelles lignes.
 		echo '<script type="text/template" id="pivot-filter-template">';
 		self::filter_row( '__index__', array(), $types, $sources, array() );
 		echo '</script>';
+
+		self::section_close();
+	}
+
+	/**
+	 * Groupes de critères et leurs traductions.
+	 *
+	 * Le nom d'un groupe se saisit dans chacun de ses critères ; sa traduction
+	 * une seule fois ici, pour tous.
+	 *
+	 * @param array $listing Configuration.
+	 * @param array $groups  Groupes utilisés, dans l'ordre des critères.
+	 */
+	private static function section_groups( $listing, $groups ) {
+		$langs   = Pivot_I18n::enabled();
+		$default = Pivot_I18n::default_lang();
+		$others  = array_values( array_diff( $langs, array( $default ) ) );
+
+		echo '<div class="pivot-groups">';
+		echo '<h3>' . esc_html__( 'Groupes de critères', 'pivot-offres' ) . '</h3>';
+		echo '<p class="description">' . esc_html__( 'Les critères qui portent le même groupe s\'affichent ensemble, sous son nom, à la place du premier d\'entre eux. Pratique pour réunir des cases à cocher : équipements, services, accessibilité…', 'pivot-offres' ) . '</p>';
+
+		if ( ! $groups || ! $others ) {
+			echo '</div>';
+			return;
+		}
+
+		echo '<p class="description">' . esc_html__( 'Traduisez ici le nom de chaque groupe. Un groupe ajouté dans un critère apparaît dans ce tableau après enregistrement.', 'pivot-offres' ) . '</p>';
+		echo '<table class="widefat striped pivot-groups-table"><thead><tr>';
+		echo '<th scope="col">' . esc_html__( 'Groupe', 'pivot-offres' ) . '</th>';
+
+		foreach ( $others as $lang ) {
+			printf( '<th scope="col">%s</th>', esc_html( strtoupper( $lang ) ) );
+		}
+
+		echo '</tr></thead><tbody>';
+
+		foreach ( $groups as $index => $group ) {
+			$name = 'pivot_listing[filter_groups][' . $index . ']';
+
+			printf(
+				'<tr><th scope="row">%1$s<input type="hidden" name="%2$s[name]" value="%3$s" /></th>',
+				esc_html( $group ),
+				esc_attr( $name ),
+				esc_attr( $group )
+			);
+
+			foreach ( $others as $lang ) {
+				printf(
+					'<td><input type="text" name="%1$s[labels][%2$s]" value="%3$s" placeholder="%4$s" aria-label="%5$s" /></td>',
+					esc_attr( $name ),
+					esc_attr( $lang ),
+					esc_attr( pivot_get( $listing, array( 'filter_groups', $group, $lang ), '' ) ),
+					esc_attr( $group ),
+					esc_attr( $group . ' (' . strtoupper( $lang ) . ')' )
+				);
+			}
+
+			echo '</tr>';
+		}
+
+		echo '</tbody></table></div>';
+	}
+
+	/**
+	 * Traductions des groupes, du formulaire vers la configuration.
+	 *
+	 * @param mixed $rows Lignes envoyées : name, labels.
+	 * @return array Nom du groupe => traductions.
+	 */
+	private static function group_labels( $rows ) {
+		$out = array();
+
+		foreach ( is_array( $rows ) ? $rows : array() as $row ) {
+			$group = trim( (string) pivot_get( $row, 'name', '' ) );
+
+			if ( '' !== $group ) {
+				$out[ $group ] = (array) pivot_get( $row, 'labels', array() );
+			}
+		}
+
+		return $out;
 	}
 
 	/**
@@ -490,6 +784,14 @@ class Pivot_Listing_Edit {
 			esc_attr__( 'Localité', 'pivot-offres' )
 		);
 
+		printf(
+			'<label>%s<input type="text" name="%s[group]" value="%s" class="pivot-group-input" placeholder="%s" list="pivot-group-suggestions" /></label>',
+			esc_html__( 'Groupe', 'pivot-offres' ),
+			esc_attr( $name ),
+			esc_attr( pivot_get( $filter, 'group', '' ) ),
+			esc_attr__( 'Équipements', 'pivot-offres' )
+		);
+
 		echo '<label>' . esc_html__( 'Source', 'pivot-offres' );
 		printf( '<select name="%s[source]" class="pivot-filter-source">', esc_attr( $name ) );
 
@@ -504,13 +806,15 @@ class Pivot_Listing_Edit {
 
 		echo '</select></label>';
 
+		// Masqué d'emblée hors « champ PIVOT », comme le fait ensuite le script.
 		printf(
-			'<label class="pivot-filter-urn">%1$s<input type="text" name="%2$s[urn]" class="pivot-urn-input" value="%3$s" placeholder="urn:fld:catdec" list="pivot-urn-suggestions" />'
+			'<label class="pivot-filter-urn"%5$s>%1$s<input type="text" name="%2$s[urn]" class="pivot-urn-input" value="%3$s" placeholder="urn:fld:catdec" list="pivot-urn-suggestions" />'
 			. '<button type="button" class="button-link pivot-pick-field">%4$s</button></label>',
 			esc_html__( 'Urn du champ', 'pivot-offres' ),
 			esc_attr( $name ),
 			esc_attr( pivot_get( $filter, 'urn', '' ) ),
-			esc_html__( 'Parcourir les champs disponibles', 'pivot-offres' )
+			esc_html__( 'Parcourir les champs disponibles', 'pivot-offres' ),
+			'spec' === pivot_get( $filter, 'source', 'spec' ) ? '' : ' hidden'
 		);
 
 		echo '<label>' . esc_html__( 'Contrôle', 'pivot-offres' );
@@ -538,6 +842,7 @@ class Pivot_Listing_Edit {
 		echo '</div>';
 
 		self::range_options( $name, $filter );
+		self::date_options( $name, $filter );
 
 		// Traductions du libellé et des valeurs.
 		$langs = Pivot_I18n::enabled();
@@ -684,12 +989,44 @@ class Pivot_Listing_Edit {
 	}
 
 	/**
+	 * Réglages d'un critère de date, affichés quand le contrôle l'est.
+	 *
+	 * La comparaison porte son propre nom de champ : celle des nombres,
+	 * masquée, part aussi avec le formulaire, et les deux se mélangeraient.
+	 *
+	 * @param string $name   Préfixe des champs.
+	 * @param array  $filter Données.
+	 */
+	private static function date_options( $name, $filter ) {
+		$is_date = 'date' === pivot_get( $filter, 'type', 'select' );
+
+		echo '<div class="pivot-filter-grid pivot-filter-date"' . ( $is_date ? '' : ' hidden' ) . '>'; // phpcs:ignore WordPress.Security.EscapeOutput
+
+		printf( '<label>%s<select name="%s[date_operator]">', esc_html__( 'Comparaison', 'pivot-offres' ), esc_attr( $name ) );
+
+		foreach ( Pivot_Listings::date_operators() as $value => $text ) {
+			printf(
+				'<option value="%s"%s>%s</option>',
+				esc_attr( $value ),
+				selected( $is_date ? pivot_get( $filter, 'operator', 'between' ) : 'between', $value, false ),
+				esc_html( $text )
+			);
+		}
+
+		echo '</select></label>';
+
+		echo '<p class="description">' . esc_html__( 'Le visiteur choisit une ou deux dates dans un calendrier. Avec l\'urn urn:obj:date, le critère porte sur la période entière : une offre est retenue si l\'une de ses périodes touche les dates demandées. Avec urn:fld:date:datedeb ou urn:fld:date:datefin, il ne compare que la date de début ou la date de fin. Sans première date, une période déjà terminée ne compte pas : « jusqu\'au 31 octobre » se lit « d\'aujourd\'hui au 31 octobre ».', 'pivot-offres' ) . '</p>';
+
+		echo '</div>';
+	}
+
+	/**
 	 * Référencement.
 	 *
 	 * @param array $listing Configuration.
 	 */
 	private static function section_seo( $listing ) {
-		echo '<h2 class="title">' . esc_html__( 'Référencement', 'pivot-offres' ) . '</h2>';
+		self::section_open( 'seo', __( 'Référencement', 'pivot-offres' ) );
 		echo '<table class="form-table" role="presentation"><tbody>';
 
 		self::row(
@@ -711,6 +1048,8 @@ class Pivot_Listing_Edit {
 		);
 
 		echo '</tbody></table>';
+
+		self::section_close();
 	}
 
 	/**
@@ -726,7 +1065,9 @@ class Pivot_Listing_Edit {
 			return;
 		}
 
-		echo '<h2 class="title">' . esc_html__( 'Traductions', 'pivot-offres' ) . '</h2>';
+		$others = array_diff( $langs, array( $default ) );
+
+		self::section_open( 'translations', __( 'Traductions', 'pivot-offres' ), strtoupper( implode( ' · ', $others ) ), true );
 		echo '<p class="description">' . esc_html__( 'Un champ laissé vide reprend la langue par défaut. Les offres elles-mêmes sont traduites par PIVOT : seuls les textes de la page sont à saisir ici.', 'pivot-offres' ) . '</p>';
 
 		foreach ( $langs as $lang ) {
@@ -773,13 +1114,11 @@ class Pivot_Listing_Edit {
 				)
 			);
 
-			self::row(
+			self::editor_row(
 				__( 'Texte d\'introduction', 'pivot-offres' ),
-				sprintf(
-					'<textarea name="pivot_listing[intros][%s]" rows="3" class="large-text">%s</textarea>',
-					esc_attr( $lang ),
-					esc_textarea( pivot_get( $listing, array( 'intros', $lang ), '' ) )
-				)
+				'pivot_listing[intros][' . $lang . ']',
+				pivot_get( $listing, array( 'intros', $lang ), '' ),
+				6
 			);
 
 			self::row(
@@ -802,6 +1141,8 @@ class Pivot_Listing_Edit {
 
 			echo '</tbody></table>';
 		}
+
+		self::section_close();
 	}
 
 	/**
@@ -810,8 +1151,14 @@ class Pivot_Listing_Edit {
 	 * @param array $listing Configuration.
 	 */
 	private static function section_index_status( $listing ) {
-		echo '<hr />';
-		echo '<h2>' . esc_html__( 'Index de la page', 'pivot-offres' ) . '</h2>';
+		self::section_open(
+			'index',
+			__( 'Index de la page', 'pivot-offres' ),
+			! empty( $listing['index_built'] )
+				/* translators: %d : nombre d'offres. */
+				? sprintf( _n( '%d offre', '%d offres', (int) $listing['index_count'], 'pivot-offres' ), (int) $listing['index_count'] )
+				: ''
+		);
 
 		if ( ! empty( $listing['index_built'] ) ) {
 			printf(
@@ -840,7 +1187,7 @@ class Pivot_Listing_Edit {
 
 		echo '<div class="pivot-progress" hidden><div class="pivot-progress-bar"></div></div>';
 
-		self::section_shortcode( $listing );
+		self::section_close();
 	}
 
 	/**
@@ -895,8 +1242,7 @@ class Pivot_Listing_Edit {
 	 * @param array $listing Configuration.
 	 */
 	private static function section_shortcode( $listing ) {
-		echo '<hr />';
-		echo '<h2>' . esc_html__( 'Insérer ces offres ailleurs', 'pivot-offres' ) . '</h2>';
+		self::section_open( 'shortcode', __( 'Insérer ces offres ailleurs', 'pivot-offres' ) );
 		echo '<p>' . esc_html__( 'Collez ce shortcode dans une page ou un article pour y afficher quelques vignettes de cette sélection, sans carte ni critères. Il réutilise l\'index déjà construit : aucun appel supplémentaire à PIVOT.', 'pivot-offres' ) . '</p>';
 
 		printf(
@@ -921,6 +1267,8 @@ class Pivot_Listing_Edit {
 		}
 
 		echo '<p class="description">' . esc_html__( 'Attributs : nombre, colonnes, tri (defaut, nom, aleatoire), titre, filtre, lien="oui" pour ajouter un lien vers cette page.', 'pivot-offres' ) . '</p>';
+
+		self::section_close();
 	}
 
 	/**
@@ -933,6 +1281,41 @@ class Pivot_Listing_Edit {
 	private static function row( $label, $field, $help = '' ) {
 		echo '<tr><th scope="row">' . esc_html( $label ) . '</th><td>';
 		echo wp_kses( $field, self::allowed_html() );
+
+		if ( $help ) {
+			echo '<p class="description">' . wp_kses_post( $help ) . '</p>';
+		}
+
+		echo '</td></tr>';
+	}
+
+	/**
+	 * Ligne de formulaire avec l'éditeur visuel de WordPress.
+	 *
+	 * L'éditeur produit ses propres scripts et boutons : sa sortie ne passe
+	 * pas par le filtrage de row(), qui les retirerait.
+	 *
+	 * @param string $label   Libellé.
+	 * @param string $name    Nom du champ.
+	 * @param string $content Contenu.
+	 * @param int    $rows    Hauteur en lignes.
+	 * @param string $help    Aide.
+	 */
+	private static function editor_row( $label, $name, $content, $rows = 8, $help = '' ) {
+		// Identifiant d'éditeur : minuscules et soulignés seulement.
+		$id = trim( preg_replace( '/[^a-z0-9_]+/', '_', strtolower( $name ) ), '_' );
+
+		echo '<tr><th scope="row"><label for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label></th><td>';
+
+		wp_editor(
+			(string) $content,
+			$id,
+			array(
+				'textarea_name' => $name,
+				'textarea_rows' => $rows,
+				'media_buttons' => true,
+			)
+		);
 
 		if ( $help ) {
 			echo '<p class="description">' . wp_kses_post( $help ) . '</p>';
@@ -972,6 +1355,7 @@ class Pivot_Listing_Edit {
 			'button'   => array( 'type' => true, 'class' => true, 'data-listing' => true ),
 			'span'     => array( 'class' => true, 'role' => true ),
 			'div'      => array( 'class' => true, 'hidden' => true ),
+			'img'      => array( 'class' => true, 'src' => true, 'alt' => true, 'hidden' => true ),
 		);
 	}
 }

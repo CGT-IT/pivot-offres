@@ -155,6 +155,16 @@ class Pivot_Settings {
 			'label' => __( 'Publier le balisage schema.org (JSON-LD) sur les listes et les fiches', 'pivot-offres' ),
 		) );
 
+		$this->field( 'sitemap', __( 'Plan du site', 'pivot-offres' ), 'pivot_display', 'checkbox', array(
+			'label' => __( 'Ajouter les pages de listing et les fiches au plan du site XML de WordPress', 'pivot-offres' ),
+			'help'  => __( 'Les adresses sont relevées dans les index déjà construits, sans appel à PIVOT. Sans effet si une extension SEO remplace le plan du site de WordPress par le sien.', 'pivot-offres' ),
+		) );
+
+		$this->field( 'llms_txt', __( 'Fichier llms.txt', 'pivot-offres' ), 'pivot_display', 'checkbox', array(
+			'label' => __( 'Publier /llms.txt, le sommaire du site à l\'usage des agents conversationnels', 'pivot-offres' ),
+			'help'  => __( 'Liste les pages de listing dans chaque langue, avec leur description. Un fichier llms.txt déposé à la racine du site l\'emporte.', 'pivot-offres' ),
+		) );
+
 		add_settings_section(
 			'pivot_map',
 			__( 'Cartographie', 'pivot-offres' ),
@@ -447,7 +457,7 @@ class Pivot_Settings {
 		$clean['batch_size']     = isset( $input['batch_size'] ) ? max( 10, min( 500, (int) $input['batch_size'] ) ) : 100;
 		$clean['logs_retention'] = isset( $input['logs_retention'] ) ? max( 1, min( 90, (int) $input['logs_retention'] ) ) : 7;
 
-		foreach ( array( 'logs_enabled', 'map_cluster', 'schema_org', 'hreflang', 'diff_enabled' ) as $key ) {
+		foreach ( array( 'logs_enabled', 'map_cluster', 'schema_org', 'sitemap', 'llms_txt', 'hreflang', 'diff_enabled' ) as $key ) {
 			$clean[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
 		}
 

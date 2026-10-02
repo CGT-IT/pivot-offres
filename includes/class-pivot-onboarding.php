@@ -119,12 +119,12 @@ class Pivot_Onboarding {
 						'text'   => __( 'Une page de listing associe une adresse de votre site à une requête pré-programmée PIVOT. C\'est le point de départ : tout part d\'ici.', 'pivot-offres' ),
 					),
 					array(
-						'target' => '.pivot-listings-table tbody tr:first-child',
+						'target' => '.pivot-listings-table .pivot-listing-row:not([hidden])',
 						'title'  => __( 'Vos pages', 'pivot-offres' ),
 						'text'   => __( 'Chaque ligne résume une page : son adresse, sa requête, le nombre d\'offres par page, les langues publiées et la date du dernier index.', 'pivot-offres' ),
 					),
 					array(
-						'target' => '.pivot-listings-table tbody tr:first-child .row-actions',
+						'target' => '.pivot-listings-table .pivot-listing-row:not([hidden]) .row-actions',
 						'title'  => __( 'L\'index', 'pivot-offres' ),
 						'text'   => __( 'L\'index est le fichier qui alimente la recherche du visiteur. Il se reconstruit tout seul, mais ce lien le force immédiatement — pratique après avoir modifié une requête dans PIVOT.', 'pivot-offres' ),
 					),
@@ -249,6 +249,11 @@ class Pivot_Onboarding {
 						'target' => '.pivot-filter-row:first-child input[name*="[label]"]',
 						'title'  => __( '1. Libellé', 'pivot-offres' ),
 						'text'   => __( 'Le texte affiché au-dessus du contrôle, dans la langue par défaut. Les autres langues se saisissent plus bas, dans le repli « Traductions de ce critère ».', 'pivot-offres' ),
+					),
+					array(
+						'target' => '.pivot-filter-row:first-child .pivot-group-input',
+						'title'  => __( 'Groupe, facultatif', 'pivot-offres' ),
+						'text'   => __( 'Les critères qui portent le même groupe s\'affichent ensemble, sous son nom : « Équipements » au-dessus de Terrasse, Parking et Wifi. Son nom se traduit une seule fois, dans le tableau « Groupes de critères » sous la liste.', 'pivot-offres' ),
 					),
 					array(
 						'target' => '.pivot-filter-row:first-child .pivot-filter-source',

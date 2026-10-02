@@ -1592,3 +1592,154 @@ msgstr "Beliebig"
 
 msgid "Saisissez un nombre, par exemple 12 ou 9,50."
 msgstr "Geben Sie eine Zahl ein, zum Beispiel 12 oder 9,50."
+
+msgid "Date ou période"
+msgstr "Datum oder Zeitraum"
+
+msgid "Entre deux dates (du … au …)"
+msgstr "Zwischen zwei Daten (vom … bis …)"
+
+msgid "À partir d'une date"
+msgstr "Ab einem Datum"
+
+msgid "Jusqu'à une date"
+msgstr "Bis zu einem Datum"
+
+msgid "À une date précise"
+msgstr "An einem bestimmten Datum"
+
+msgid "Période (date de début et date de fin)"
+msgstr "Zeitraum (Beginn- und Enddatum)"
+
+msgid "Dates"
+msgstr "Termine"
+
+msgid "du %1$s au %2$s · %3$d %% des offres"
+msgstr "vom %1$s bis %2$s · %3$d %% der Angebote"
+
+msgid "Le visiteur choisit une ou deux dates dans un calendrier. Avec l'urn urn:obj:date, le critère porte sur la période entière : une offre est retenue si l'une de ses périodes touche les dates demandées. Avec urn:fld:date:datedeb ou urn:fld:date:datefin, il ne compare que la date de début ou la date de fin. Sans première date, une période déjà terminée ne compte pas : « jusqu'au 31 octobre » se lit « d'aujourd'hui au 31 octobre »."
+msgstr "Der Besucher wählt ein oder zwei Daten in einem Kalender. Mit der Urn urn:obj:date gilt das Kriterium für den gesamten Zeitraum: Ein Angebot wird berücksichtigt, wenn einer seiner Zeiträume die gewünschten Daten berührt. Mit urn:fld:date:datedeb oder urn:fld:date:datefin wird nur das Beginn- oder Enddatum verglichen. Ohne erstes Datum zählt ein bereits beendeter Zeitraum nicht: „bis 31. Oktober“ bedeutet „von heute bis 31. Oktober“."
+
+msgctxt "critère de date"
+msgid "du"
+msgstr "vom"
+
+msgctxt "critère de date"
+msgid "au"
+msgstr "bis"
+
+msgctxt "critère de date"
+msgid "à partir du"
+msgstr "ab"
+
+msgctxt "critère de date"
+msgid "jusqu'au"
+msgstr "bis"
+
+msgctxt "critère de date"
+msgid "le"
+msgstr "am"
+
+msgid "Description"
+msgstr "Beschreibung"
+
+msgid "Plan du site"
+msgstr "Sitemap"
+
+msgid "Ajouter les pages de listing et les fiches au plan du site XML de WordPress"
+msgstr "Listenseiten und Detailseiten zur XML-Sitemap von WordPress hinzufügen"
+
+msgid "Les adresses sont relevées dans les index déjà construits, sans appel à PIVOT. Sans effet si une extension SEO remplace le plan du site de WordPress par le sien."
+msgstr "Die Adressen werden aus den bereits erstellten Indizes gelesen, ohne Aufruf von PIVOT. Ohne Wirkung, wenn eine SEO-Erweiterung die WordPress-Sitemap durch ihre eigene ersetzt."
+
+msgid "Fichier llms.txt"
+msgstr "Datei llms.txt"
+
+msgid "Publier /llms.txt, le sommaire du site à l'usage des agents conversationnels"
+msgstr "/llms.txt veröffentlichen, das Inhaltsverzeichnis der Website für Konversationsagenten"
+
+msgid "Liste les pages de listing dans chaque langue, avec leur description. Un fichier llms.txt déposé à la racine du site l'emporte."
+msgstr "Listet die Listenseiten in jeder Sprache mit ihrer Beschreibung auf. Eine im Stammverzeichnis der Website abgelegte Datei llms.txt hat Vorrang."
+
+msgid "Offres touristiques de Wallonie : hébergements, restaurants, activités, événements et itinéraires, issues de PIVOT, la base de données du tourisme wallon."
+msgstr "Touristische Angebote in der Wallonie: Unterkünfte, Restaurants, Aktivitäten, Veranstaltungen und Routen aus PIVOT, der Datenbank des wallonischen Tourismus."
+
+msgid "Chaque page ci-dessous liste des offres et mène à leurs fiches détaillées, à l'adresse /details/CODE&type=TYPE. Les fiches publient des données structurées schema.org (JSON-LD) : adresse, coordonnées GPS, contact, équipements, classement et dates des événements."
+msgstr "Jede Seite unten listet Angebote auf und führt zu deren Detailseiten unter /details/CODE&type=TYPE. Die Detailseiten veröffentlichen strukturierte Daten nach schema.org (JSON-LD): Adresse, GPS-Koordinaten, Kontakt, Ausstattung, Klassifizierung und Veranstaltungsdaten."
+
+msgid "Pages"
+msgstr "Seiten"
+
+msgid "Plan du site XML"
+msgstr "XML-Sitemap"
+
+msgid "%s — données JSON"
+msgstr "%s — JSON-Daten"
+
+msgid "toutes les offres de la page, avec nom, localité, coordonnées et adresse de la fiche ; paramètre lang pour une autre langue."
+msgstr "alle Angebote der Seite, mit Name, Ort, Koordinaten und Adresse der Detailseite; Parameter lang für eine andere Sprache."
+
+msgid "Fermeture"
+msgstr "Sperrung"
+
+msgid "Impact chasse"
+msgstr "Jagdsperrungen"
+
+msgid "Impact travaux"
+msgstr "Baustellensperrungen"
+
+msgid "Impact inondation"
+msgstr "Hochwassersperrungen"
+
+msgid "Impact sanitaire"
+msgstr "Sanitäre Sperrungen"
+
+msgid "Fermetures prévues"
+msgstr "Geplante Sperrungen"
+
+msgid "L'itinéraire est fermé ce %s"
+msgstr "Die Route ist am %s gesperrt"
+
+msgid "Fermé ce %s"
+msgstr "Geschlossen am %s"
+
+msgid "L'itinéraire est accessible aujourd'hui. Prochaine fermeture : %s."
+msgstr "Die Route ist heute geöffnet. Nächste Sperrung: %s."
+
+msgid "Aucune fermeture aujourd'hui. Prochaine fermeture : %s."
+msgstr "Heute keine Sperrung. Nächste Sperrung: %s."
+
+msgid "Voir les dates de fermeture"
+msgstr "Sperrtermine ansehen"
+
+msgctxt "jour de fermeture"
+msgid "l j F"
+msgstr "l, j. F"
+
+msgctxt "jour de fermeture"
+msgid "l j F Y"
+msgstr "l, j. F Y"
+
+msgid "Dates de fermeture"
+msgstr "Sperrtermine"
+
+msgid "Motif : %s"
+msgstr "Grund: %s"
+
+msgid "Aujourd'hui"
+msgstr "Heute"
+
+msgid "Les fermetures d'un itinéraire (zones de fermeture : chasse, travaux…) ne s'affichent sur les vignettes qu'avec les offres liées : en deçà, PIVOT n'en donne que le code."
+msgstr "Die Sperrungen einer Route (Sperrgebiete: Jagd, Bauarbeiten…) erscheinen auf den Kacheln nur mit verknüpften Angeboten: darunter liefert PIVOT nur ihren Code."
+
+msgid "Afficher le tracé"
+msgstr "Route anzeigen"
+
+msgid "Masquer le tracé"
+msgstr "Route ausblenden"
+
+msgid "Chargement du tracé…"
+msgstr "Route wird geladen…"
+
+msgid "Tracé indisponible"
+msgstr "Route nicht verfügbar"

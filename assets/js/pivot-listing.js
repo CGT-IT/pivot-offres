@@ -16,6 +16,10 @@
 	}
 
 	var grid = document.getElementById( 'pivot-grid' );
+	// Un thème à grille Bootstrap pose chaque vignette dans une colonne
+	// (« col-12 col-sm-6 col-lg-4 ») : il en donne les classes ici, et fait de
+	// même dans son rendu serveur.
+	var columnClass = grid ? ( grid.getAttribute( 'data-column-class' ) || '' ).trim() : '';
 	var countNode = document.getElementById( 'pivot-count' );
 	var paginationNode = document.getElementById( 'pivot-pagination' );
 	var form = document.getElementById( 'pivot-criteria' );
@@ -32,11 +36,20 @@
 		filters: {},
 		// Critères numériques : clé => { min, max }, l'une des bornes pouvant
 		// valoir null. Une égalité pose les deux à la même valeur.
-		ranges: {}
+		ranges: {},
+		// Critères de date : même forme, en entiers AAAAMMJJ.
+		dates: {}
 	};
 
 	var map = null;
 	var markerLayer = null;
+
+	// Tracé GPX affiché sur la carte : un seul à la fois. Les tracés lus sont
+	// gardés, par code d'offre, le temps de la page.
+	var track = { layer: null, code: '', loaded: {} };
+
+	// Critère de date => ce qu'il compare : overlap, start, end ou point.
+	var dateMatches = {};
 
 	/* ---------------------------------------------------------------- outils */
 
@@ -260,6 +273,146 @@
 		return false;
 	}
 
+	/* ------------------------------------------------------ critères de date */
+
+	function dateFields() {
+		return form ? form.querySelectorAll( '[data-dates]' ) : [];
+	}
+
+	/**
+	 * Lit une date : « 2026-10-10 » comme l'envoie un champ de date, ou
+	 * « 10/10/2026 » tapé dans un navigateur qui n'en propose pas. Rend un
+	 * entier AAAAMMJJ, comme ceux de l'index, ou null.
+	 */
+	function parseDate( value ) {
+		var clean = String( value === null || value === undefined ? '' : value ).trim();
+		var match = clean.match( /^(\d{4})-(\d{1,2})-(\d{1,2})$/ );
+		var year, month, day;
+
+		if ( match ) {
+			year = Number( match[ 1 ] );
+			month = Number( match[ 2 ] );
+			day = Number( match[ 3 ] );
+		} else {
+			match = clean.match( /^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/ );
+
+			if ( ! match ) {
+				return null;
+			}
+
+			day = Number( match[ 1 ] );
+			month = Number( match[ 2 ] );
+			year = Number( match[ 3 ] );
+		}
+
+		// Le 31/02 n'existe pas : Date le reporterait au 3 mars.
+		var date = new Date( year, month - 1, day );
+
+		if ( date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day ) {
+			return null;
+		}
+
+		return year * 10000 + month * 100 + day;
+	}
+
+	function isoDate( value ) {
+		var text = String( value );
+
+		return text.slice( 0, 4 ) + '-' + text.slice( 4, 6 ) + '-' + text.slice( 6, 8 );
+	}
+
+	/**
+	 * Aujourd'hui, à l'heure du visiteur.
+	 */
+	function today() {
+		var now = new Date();
+
+		return now.getFullYear() * 10000 + ( now.getMonth() + 1 ) * 100 + now.getDate();
+	}
+
+	/**
+	 * Dates demandées par un critère, ou null s'il n'est pas utilisé.
+	 */
+	function readDates( field ) {
+		var bounds = { min: null, max: null };
+
+		Array.prototype.forEach.call( field.querySelectorAll( '[data-bound]' ), function ( input ) {
+			var bound = input.getAttribute( 'data-bound' );
+			var value = parseDate( input.value );
+
+			if ( value === null ) {
+				return;
+			}
+
+			if ( bound === 'eq' ) {
+				bounds.min = value;
+				bounds.max = value;
+			} else {
+				bounds[ bound ] = value;
+			}
+		} );
+
+		if ( bounds.min === null && bounds.max === null ) {
+			return null;
+		}
+
+		// « du 31 au 10 » : les dates ont été saisies à l'envers.
+		if ( bounds.min !== null && bounds.max !== null && bounds.min > bounds.max ) {
+			bounds = { min: bounds.max, max: bounds.min };
+		}
+
+		return bounds;
+	}
+
+	/**
+	 * Une période de l'offre répond-elle aux dates demandées ?
+	 *
+	 * L'index donne les périodes en [début, fin]. Selon le champ choisi par
+	 * l'administrateur, on compare la période entière (elle touche
+	 * l'intervalle : l'offre a lieu pendant), sa date de début, sa date de
+	 * fin, ou une date isolée.
+	 *
+	 * Sans première date, une période déjà terminée ne compte pas :
+	 * « jusqu'au 31 octobre » se lit « d'aujourd'hui au 31 octobre ». Sans
+	 * cela, un spectacle joué en mars et en décembre répondrait présent pour
+	 * octobre, au titre de mars.
+	 */
+	function inPeriods( periods, bounds, match ) {
+		var floor = bounds.min === null && match !== 'point' ? today() : null;
+
+		function within( value ) {
+			return ( bounds.min === null || value >= bounds.min ) && ( bounds.max === null || value <= bounds.max );
+		}
+
+		for ( var i = 0; i < periods.length; i++ ) {
+			var period = periods[ i ];
+
+			if ( ! Array.isArray( period ) || period.length !== 2 ) {
+				continue;
+			}
+
+			if ( floor !== null && period[ 1 ] < floor ) {
+				continue;
+			}
+
+			var found;
+
+			if ( match === 'start' || match === 'point' ) {
+				found = within( period[ 0 ] );
+			} else if ( match === 'end' ) {
+				found = within( period[ 1 ] );
+			} else {
+				found = ( bounds.max === null || period[ 0 ] <= bounds.max ) && ( bounds.min === null || period[ 1 ] >= bounds.min );
+			}
+
+			if ( found ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/* ------------------------------------------------------------ chargement */
 
 	function loadIndex() {
@@ -300,6 +453,7 @@
 		state.query = params.get( 'q' ) || '';
 		state.filters = {};
 		state.ranges = {};
+		state.dates = {};
 
 		if ( searchInput ) {
 			searchInput.value = state.query;
@@ -360,12 +514,26 @@
 
 			updateOutput( field );
 		} );
+
+		Array.prototype.forEach.call( dateFields(), function ( field ) {
+			Array.prototype.forEach.call( field.querySelectorAll( '[data-bound]' ), function ( input ) {
+				var value = parseDate( params.get( input.name ) );
+				input.value = value === null ? '' : isoDate( value );
+			} );
+
+			var bounds = readDates( field );
+
+			if ( bounds ) {
+				state.dates[ field.getAttribute( 'data-dates' ) ] = bounds;
+			}
+		} );
 	}
 
 	function readStateFromForm() {
 		state.query = searchInput ? searchInput.value : '';
 		state.filters = {};
 		state.ranges = {};
+		state.dates = {};
 
 		if ( ! form ) {
 			return;
@@ -403,6 +571,14 @@
 
 			updateOutput( field );
 		} );
+
+		Array.prototype.forEach.call( dateFields(), function ( field ) {
+			var bounds = readDates( field );
+
+			if ( bounds ) {
+				state.dates[ field.getAttribute( 'data-dates' ) ] = bounds;
+			}
+		} );
 	}
 
 	/**
@@ -423,7 +599,7 @@
 				}
 			} );
 
-			Array.prototype.forEach.call( form.querySelectorAll( '[data-range] [data-bound]' ), function ( input ) {
+			Array.prototype.forEach.call( form.querySelectorAll( '[data-range] [data-bound], [data-dates] [data-bound]' ), function ( input ) {
 				keys.push( input.name );
 			} );
 		}
@@ -466,6 +642,23 @@
 
 				if ( value !== null ) {
 					params.set( input.name, String( value ) );
+				}
+			} );
+		} );
+
+		// Une date par paramètre, au format ISO : ?date_min=2026-10-01.
+		Array.prototype.forEach.call( dateFields(), function ( field ) {
+			var bounds = state.dates[ field.getAttribute( 'data-dates' ) ];
+
+			if ( ! bounds ) {
+				return;
+			}
+
+			Array.prototype.forEach.call( field.querySelectorAll( '[data-bound]' ), function ( input ) {
+				var value = input.getAttribute( 'data-bound' ) === 'max' ? bounds.max : bounds.min;
+
+				if ( value !== null ) {
+					params.set( input.name, isoDate( value ) );
 				}
 			} );
 		} );
@@ -547,10 +740,24 @@
 			}
 		}
 
+		var dateKeys = Object.keys( state.dates );
+
+		for ( var d = 0; d < dateKeys.length; d++ ) {
+			if ( ! inPeriods( ( item.f && item.f[ dateKeys[ d ] ] ) || [], state.dates[ dateKeys[ d ] ], dateMatches[ dateKeys[ d ] ] ) ) {
+				return false;
+			}
+		}
+
 		return true;
 	}
 
 	function apply( pushUrl ) {
+		dateMatches = {};
+
+		Array.prototype.forEach.call( dateFields(), function ( field ) {
+			dateMatches[ field.getAttribute( 'data-dates' ) ] = field.getAttribute( 'data-match' ) || 'overlap';
+		} );
+
 		state.filtered = state.items.filter( matches );
 
 		var pages = Math.max( 1, Math.ceil( state.filtered.length / state.perPage ) );
@@ -562,6 +769,12 @@
 		renderGrid();
 		renderPagination( pages );
 		renderMap();
+
+		// La grille vient d'être réécrite : un script qui décore les vignettes
+		// (pivot-closures.js, celui du thème) s'y raccroche ici.
+		if ( grid && typeof window.CustomEvent === 'function' ) {
+			grid.dispatchEvent( new window.CustomEvent( 'pivot:rendered', { bubbles: true } ) );
+		}
 
 		writeStateToUrl( ! pushUrl );
 	}
@@ -594,7 +807,15 @@
 			return;
 		}
 
-		grid.innerHTML = slice.map( card ).join( '' );
+		grid.innerHTML = slice.map( column ).join( '' );
+	}
+
+	function column( item ) {
+		if ( ! columnClass ) {
+			return card( item );
+		}
+
+		return '<div class="' + escapeHtml( columnClass ) + '">' + card( item ) + '</div>';
 	}
 
 	function card( item ) {
@@ -613,10 +834,14 @@
 			html += '<div class="pivot-card-media">';
 			html += '<a href="' + url + '" tabindex="-1" aria-hidden="true">';
 			html += '<img src="' + escapeHtml( item.i ) + '" alt="' + name + '" loading="lazy" decoding="async" />';
-			html += '</a></div>';
+			html += '</a>' + closures( item ) + '</div>';
 		}
 
 		html += '<div class="pivot-card-body">';
+
+		if ( ! item.i ) {
+			html += closures( item );
+		}
 
 		if ( item.tl ) {
 			html += '<p class="pivot-card-type">' + escapeHtml( item.tl ) + '</p>';
@@ -636,6 +861,45 @@
 		html += '</div></article>';
 
 		return html;
+	}
+
+	/**
+	 * Pastilles de fermeture d'une vignette commune, comme
+	 * Pivot_Closures::badges() les écrit. Elles sortent masquées :
+	 * pivot-closures.js les révèle selon la date du visiteur, dès l'événement
+	 * pivot:rendered.
+	 */
+	function closures( item ) {
+		if ( ! Array.isArray( item.cl ) || ! item.cl.length ) {
+			return '';
+		}
+
+		var i18n = config.closures || {};
+		var closedOn = i18n.closedOn || {};
+		var impacts = i18n.impacts || {};
+		var kinds = [];
+
+		item.cl.forEach( function ( period ) {
+			var kind = period[ 2 ] || 'autre';
+
+			if ( kinds.indexOf( kind ) === -1 ) {
+				kinds.push( kind );
+			}
+		} );
+
+		var html = '<div class="pivot-closures" data-pivot-closures="' + escapeHtml( JSON.stringify( item.cl ) ) + '">';
+
+		html += '<p class="pivot-closure-today" data-pivot-closure="today" hidden>' +
+			escapeHtml( closedOn[ item.t ] || closedOn[ '' ] || '%s' ).replace( '%s', '<span data-pivot-closure-date="today"></span>' ) +
+			'</p>';
+
+		kinds.forEach( function ( kind ) {
+			html += '<a class="pivot-closure-impact" href="' + escapeHtml( ( item.u || '' ) + '#' + ( i18n.anchor || '' ) ) + '"' +
+				' title="' + escapeHtml( i18n.more || '' ) + '" data-pivot-closure="upcoming" data-pivot-closure-kind="' + escapeHtml( kind ) + '" hidden>' +
+				escapeHtml( impacts[ kind ] || impacts.autre || '' ) + ' <span class="pivot-closure-more" aria-hidden="true">+</span></a>';
+		} );
+
+		return html + '</div>';
 	}
 
 	function renderPagination( pages ) {
@@ -719,7 +983,7 @@
 			}
 
 			var marker = window.L.marker( [ item.lat, item.lng ] );
-			var popup = '<strong>' + escapeHtml( item.n || '' ) + '</strong>';
+			var popup = '<div class="pivot-map-popup"><strong>' + escapeHtml( item.n || '' ) + '</strong>';
 
 			if ( item.z || item.l ) {
 				popup += '<br />' + escapeHtml( [ item.z, item.l ].filter( Boolean ).join( ' ' ) );
@@ -729,7 +993,18 @@
 				popup += '<br /><a href="' + escapeHtml( item.u ) + '">' + escapeHtml( text( 'seeOffer' ) ) + '</a>';
 			}
 
-			marker.bindPopup( popup );
+			if ( hasTrack( item ) ) {
+				popup += '<p class="pivot-map-track"><button type="button" class="pivot-button pivot-map-track-button" data-pivot-track aria-pressed="false">' +
+					escapeHtml( text( 'showTrack' ) ) + '</button></p>';
+			}
+
+			marker.bindPopup( popup + '</div>' );
+
+			// La bulle est recréée à chaque ouverture : son bouton aussi.
+			marker.on( 'popupopen', function ( event ) {
+				bindTrackButton( event.popup.getElement(), item );
+			} );
+
 			markerLayer.addLayer( marker );
 			bounds.push( [ item.lat, item.lng ] );
 		} );
@@ -739,6 +1014,200 @@
 		if ( bounds.length && ! config.mapCenter ) {
 			map.fitBounds( bounds, { padding: [ 24, 24 ], maxZoom: 14 } );
 		}
+	}
+
+	/* ------------------------------------------------------- tracé GPX */
+
+	/**
+	 * La bulle d'une offre propose-t-elle son tracé ?
+	 *
+	 * Oui si l'index connaît son GPX (page en « complet avec offres
+	 * liées »). Sinon, sur la foi du type — un itinéraire —, quand la page
+	 * sait le chercher au clic (config.tracks.lookup).
+	 */
+	function hasTrack( item ) {
+		var tracks = config.tracks || {};
+
+		if ( item.g ) {
+			return true;
+		}
+
+		return !! tracks.lookup && ( tracks.types || [] ).indexOf( Number( item.t ) ) !== -1;
+	}
+
+	function trackUrl( item ) {
+		if ( item.g ) {
+			return Promise.resolve( item.g );
+		}
+
+		return fetchJson( config.tracks.lookup + encodeURIComponent( item.c ) ).then( function ( data ) {
+			if ( ! data || ! data.url ) {
+				throw new Error( 'GPX absent' );
+			}
+
+			item.g = data.url;
+
+			return data.url;
+		} );
+	}
+
+	/**
+	 * Lignes d'un fichier GPX : une par segment de trace, à défaut une par
+	 * route. Chaque ligne est une liste de [lat, lng].
+	 */
+	function parseGpx( xml ) {
+		var doc = new window.DOMParser().parseFromString( xml, 'application/xml' );
+
+		function lines( container, point ) {
+			var out = [];
+
+			Array.prototype.forEach.call( doc.getElementsByTagNameNS( '*', container ), function ( segment ) {
+				var points = [];
+
+				Array.prototype.forEach.call( segment.getElementsByTagNameNS( '*', point ), function ( node ) {
+					var lat = parseFloat( node.getAttribute( 'lat' ) );
+					var lng = parseFloat( node.getAttribute( 'lon' ) );
+
+					if ( isFinite( lat ) && isFinite( lng ) ) {
+						points.push( [ lat, lng ] );
+					}
+				} );
+
+				if ( points.length > 1 ) {
+					out.push( points );
+				}
+			} );
+
+			return out;
+		}
+
+		var tracks = lines( 'trkseg', 'trkpt' );
+
+		return tracks.length ? tracks : lines( 'rte', 'rtept' );
+	}
+
+	function loadTrack( item ) {
+		if ( ! track.loaded[ item.c ] ) {
+			track.loaded[ item.c ] = trackUrl( item )
+				.then( function ( url ) {
+					return window.fetch( url, { credentials: 'omit' } );
+				} )
+				.then( function ( response ) {
+					if ( ! response.ok ) {
+						throw new Error( 'HTTP ' + response.status );
+					}
+					return response.text();
+				} )
+				.then( function ( xml ) {
+					var found = parseGpx( xml );
+
+					if ( ! found.length ) {
+						throw new Error( 'GPX vide' );
+					}
+					return found;
+				} );
+
+			// Un échec n'est pas retenu : un nouveau clic retente.
+			track.loaded[ item.c ].catch( function () {
+				delete track.loaded[ item.c ];
+			} );
+		}
+
+		return track.loaded[ item.c ];
+	}
+
+	function hideTrack() {
+		if ( track.layer ) {
+			map.removeLayer( track.layer );
+		}
+
+		var code = track.code;
+
+		track.layer = null;
+		track.code = '';
+
+		if ( code ) {
+			announceTrack( code, false );
+		}
+	}
+
+	/**
+	 * @param {Object}      item      Offre.
+	 * @param {Array}       found     Lignes du tracé.
+	 * @param {HTMLElement} popupNode Bulle ouverte, à garder visible au-dessus du tracé.
+	 */
+	function drawTrack( item, found, popupNode ) {
+		var style = ( config.tracks && config.tracks.style ) || {};
+		var weight = Number( style.weight ) || 4;
+
+		hideTrack();
+
+		// Un liseré blanc sous le trait : lisible sur tous les fonds de carte.
+		track.layer = window.L.featureGroup( [
+			window.L.polyline( found, { color: '#fff', weight: weight + 4, opacity: 0.85, interactive: false, className: 'pivot-map-track-casing' } ),
+			window.L.polyline( found, {
+				color: style.color || '#c2185b',
+				weight: weight,
+				opacity: style.opacity || 0.9,
+				interactive: false,
+				className: 'pivot-map-track-line'
+			} )
+		] ).addTo( map );
+
+		track.code = item.c;
+		// La bulle reste ouverte au-dessus du pointeur : on lui garde sa
+		// hauteur en haut de la carte, sans quoi elle en sortirait.
+		var top = popupNode && popupNode.offsetHeight ? popupNode.offsetHeight + 48 : 32;
+
+		map.fitBounds( track.layer.getBounds(), { paddingTopLeft: [ 32, top ], paddingBottomRight: [ 32, 32 ] } );
+		announceTrack( item.c, true );
+	}
+
+	/**
+	 * Un tracé vient d'apparaître ou de disparaître : pivot:track, sur la
+	 * carte, pour un script de thème.
+	 */
+	function announceTrack( code, shown ) {
+		if ( typeof window.CustomEvent === 'function' ) {
+			mapNode.dispatchEvent( new window.CustomEvent( 'pivot:track', { bubbles: true, detail: { code: code, shown: shown } } ) );
+		}
+	}
+
+	function setTrackButton( button, key, busy ) {
+		button.textContent = text( key );
+		button.disabled = !! busy;
+		button.setAttribute( 'aria-pressed', key === 'hideTrack' ? 'true' : 'false' );
+		button.classList.toggle( 'is-error', key === 'noTrack' );
+	}
+
+	function bindTrackButton( popupNode, item ) {
+		var button = popupNode && popupNode.querySelector( '[data-pivot-track]' );
+
+		if ( ! button ) {
+			return;
+		}
+
+		setTrackButton( button, track.code === item.c ? 'hideTrack' : 'showTrack', false );
+
+		button.addEventListener( 'click', function () {
+			if ( track.code === item.c ) {
+				hideTrack();
+				setTrackButton( button, 'showTrack', false );
+				return;
+			}
+
+			setTrackButton( button, 'loadingTrack', true );
+
+			loadTrack( item ).then(
+				function ( found ) {
+					drawTrack( item, found, popupNode );
+					setTrackButton( button, 'hideTrack', false );
+				},
+				function () {
+					setTrackButton( button, 'noTrack', true );
+				}
+			);
+		} );
 	}
 
 	/* ------------------------------------------------------------ écouteurs */
@@ -768,7 +1237,7 @@
 			// Une jauge filtre quand on la lâche, pas à chaque cran : la grille
 			// ne se redessine qu'une fois.
 			form.addEventListener( 'change', function ( event ) {
-				if ( event.target.matches( 'select, input[type="checkbox"], input[type="range"]' ) ) {
+				if ( event.target.matches( 'select, input[type="checkbox"], input[type="range"], input[type="date"]' ) ) {
 					readStateFromForm();
 					state.page = 1;
 					apply( true );
@@ -823,6 +1292,7 @@
 				state.query = '';
 				state.filters = {};
 				state.ranges = {};
+				state.dates = {};
 				state.page = 1;
 				apply( true );
 			} );

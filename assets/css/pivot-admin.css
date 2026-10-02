@@ -66,22 +66,36 @@
 	margin-top: 0.75rem;
 }
 
-/* Réglages d'un critère numérique, sous la ligne principale. */
-.pivot-filter-range {
+/* Réglages d'un critère numérique ou de date, sous la ligne principale. */
+.pivot-filter-range,
+.pivot-filter-date {
 	margin-top: 0.75rem;
 	padding-top: 0.75rem;
 	border-top: 1px dashed #dcdcde;
 }
 
-.pivot-filter-range .description {
+.pivot-filter-range .description,
+.pivot-filter-date .description {
 	grid-column: 1 / -1;
 	margin: 0;
+}
+
+/* Seul réglage d'une date : la liste prend la largeur de ses libellés. */
+.pivot-filter-date label {
+	grid-column: 1 / -1;
+}
+
+.pivot-filter-grid.pivot-filter-date select {
+	display: block;
+	width: auto;
+	max-width: 100%;
 }
 
 /* « display: block » et « display: grid » l'emportent sur l'attribut
    hidden : sans cette règle, un champ masqué par le script resterait visible. */
 .pivot-filter-urn[hidden],
-.pivot-filter-range[hidden] {
+.pivot-filter-range[hidden],
+.pivot-filter-date[hidden] {
 	display: none;
 }
 
@@ -666,4 +680,276 @@
 
 .pivot-field-excluded .pivot-field-list li {
 	color: #646970;
+}
+
+/* Image d'en-tête d'une page de listing. */
+
+.pivot-image-actions {
+	display: block;
+	margin-top: 0.4rem;
+}
+
+.pivot-image-preview {
+	display: block;
+	max-width: 480px;
+	width: 100%;
+	height: auto;
+	margin-top: 0.6rem;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+}
+
+.pivot-image-preview[hidden],
+.pivot-image-clear[hidden],
+.pivot-image-pick[hidden] {
+	display: none;
+}
+
+/* Groupes de critères et leurs traductions. */
+
+.pivot-groups {
+	max-width: 900px;
+	margin: 1.5rem 0;
+}
+
+.pivot-groups-table input[type="text"] {
+	width: 100%;
+}
+
+/* ------------------------------------- écran d'édition : sections repliables */
+
+.pivot-listing-edit {
+	--pivot-nav-height: 48px;
+}
+
+.pivot-section-nav {
+	position: sticky;
+	top: var( --wp-admin--admin-bar--height, 32px );
+	z-index: 20;
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: space-between;
+	min-height: var( --pivot-nav-height );
+	margin: 1rem 0 12px;
+	padding: 0 12px;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	background: #fff;
+	box-shadow: 0 2px 6px rgba( 0, 0, 0, 0.06 );
+	box-sizing: border-box;
+}
+
+.pivot-section-nav ul {
+	display: flex;
+	flex: 1 1 auto;
+	gap: 2px;
+	min-width: 0;
+	margin: 0;
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.pivot-section-nav li {
+	flex: 0 0 auto;
+	margin: 0;
+}
+
+.pivot-section-nav a {
+	display: block;
+	padding: 14px 10px 11px;
+	border-bottom: 3px solid transparent;
+	color: #50575e;
+	font-weight: 500;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.pivot-section-nav a:hover {
+	color: #2271b1;
+}
+
+.pivot-section-nav a:focus {
+	box-shadow: none;
+	outline: 2px solid #2271b1;
+	outline-offset: -2px;
+}
+
+.pivot-section-nav a.is-current {
+	border-bottom-color: #2271b1;
+	color: #1d2327;
+}
+
+.pivot-section-nav-actions {
+	display: flex;
+	flex: 0 0 auto;
+	gap: 0.75rem;
+	align-items: center;
+}
+
+.pivot-section {
+	margin: 0 0 12px;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	background: #fff;
+	/* Une ancre ne se cache pas sous le bandeau ; WordPress ajoute déjà la
+	   barre d'administration par scroll-padding-top. */
+	scroll-margin-top: calc( var( --pivot-nav-height ) + 12px );
+}
+
+.pivot-section-title {
+	margin: 0;
+	font-size: 1.15em;
+}
+
+.pivot-section-toggle {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	width: 100%;
+	padding: 12px 16px;
+	border: 0;
+	border-radius: 4px;
+	background: none;
+	color: #1d2327;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.pivot-section-toggle:hover {
+	background: #f6f7f7;
+}
+
+.pivot-section-toggle:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: -2px;
+}
+
+.pivot-section-meta {
+	color: #646970;
+	font-size: 13px;
+	font-weight: 400;
+}
+
+.pivot-section-toggle .dashicons {
+	margin-left: auto;
+	color: #646970;
+	transition: transform 0.15s;
+}
+
+.pivot-section.is-collapsed .pivot-section-toggle .dashicons {
+	transform: rotate( 180deg );
+}
+
+.pivot-section-body {
+	padding: 0 16px 12px;
+	border-top: 1px solid #f0f0f1;
+}
+
+/* Repliée sans display: none : voir Pivot_Listing_Edit::section_open(). */
+.pivot-section.is-collapsed .pivot-section-body {
+	height: 0;
+	padding-bottom: 0;
+	overflow: hidden;
+	border-top: 0;
+	visibility: hidden;
+}
+
+.pivot-section-body > .description:first-child {
+	margin-top: 12px;
+}
+
+/* Tableaux de réglages resserrés. */
+.pivot-listing-edit .form-table {
+	margin-top: 0;
+}
+
+.pivot-listing-edit .form-table th {
+	width: 180px;
+	padding: 14px 10px 10px 0;
+}
+
+.pivot-listing-edit .form-table td {
+	padding: 8px 10px;
+}
+
+.pivot-listing-edit .form-table td p.description {
+	max-width: 75ch;
+	margin-top: 4px;
+	font-size: 12px;
+}
+
+.pivot-listing-edit .pivot-lang-heading {
+	margin: 1rem 0 0;
+	padding-top: 1rem;
+	border-top: 1px solid #f0f0f1;
+}
+
+.pivot-listing-edit .pivot-lang-heading:first-of-type {
+	border-top: 0;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.pivot-section-toggle .dashicons {
+		transition: none;
+	}
+}
+
+@media ( max-width: 782px ) {
+	.pivot-section-nav-actions .pivot-sections-toggle {
+		display: none;
+	}
+
+	.pivot-listing-edit .form-table td {
+		padding: 4px 0 12px;
+	}
+}
+
+/* Barre d'administration non fixe : le bandeau colle en haut de l'écran. */
+@media ( max-width: 600px ) {
+	.pivot-section-nav {
+		top: 0;
+	}
+}
+
+/* ----------------------------------------- liste des pages : recherche */
+
+.pivot-listings-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 1rem;
+	align-items: center;
+	justify-content: space-between;
+	margin: 1rem 0 0.75rem;
+}
+
+.pivot-listings-count {
+	margin: 0;
+	color: #646970;
+}
+
+.pivot-listings-search.search-box {
+	float: none;
+	height: auto;
+	margin: 0;
+}
+
+.pivot-listings-search input[type="search"] {
+	width: 280px;
+	max-width: 100%;
+}
+
+@media ( max-width: 782px ) {
+	.pivot-listings-search.search-box {
+		position: static;
+		display: flex;
+		gap: 0.5rem;
+		width: 100%;
+	}
+
+	.pivot-listings-search input[type="search"] {
+		flex: 1 1 auto;
+		width: auto;
+	}
 }

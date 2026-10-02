@@ -52,6 +52,18 @@
 
 /* ----------------------------------------------------------------- listing */
 
+.pivot-listing-banner {
+	margin: 0 0 var( --pivot-gap );
+}
+
+.pivot-listing-banner img {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-height: 400px;
+	object-fit: cover;
+}
+
 .pivot-listing-header {
 	margin-bottom: var( --pivot-gap );
 }
@@ -97,6 +109,29 @@
 	margin: 0;
 	padding: 0;
 	border: 0;
+}
+
+/* Groupe de critères : un intertitre au-dessus des critères qu'il réunit,
+   comme « Équipements » au-dessus de ses cases. */
+.pivot-filter-group {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.pivot-filter-group-title {
+	margin-bottom: 0.6em;
+	padding: 0;
+	font-weight: 700;
+}
+
+.pivot-filter-group > .pivot-field + .pivot-field {
+	margin-top: 0.75em;
+}
+
+.pivot-filter-group > .pivot-field-toggle + .pivot-field-toggle {
+	margin-top: 0;
 }
 
 .pivot-check {
@@ -165,6 +200,31 @@
 	display: none;
 }
 
+/* Critère de date : « du [ 10/10/2026 ] au [ 31/10/2026 ] ». Le calendrier
+   est celui du navigateur, dans la langue du visiteur. */
+.pivot-dates {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.4em;
+}
+
+.pivot-field .pivot-dates input[type="date"] {
+	flex: 1 1 9.5em;
+	min-width: 0;
+	max-width: 13em;
+	padding: 0.45em 0.5em;
+	border: var( --pivot-border, 1px solid rgba( 0, 0, 0, 0.2 ) );
+	border-radius: var( --pivot-radius, 6px );
+	background: #fff;
+	font: inherit;
+}
+
+.pivot-dates-word {
+	color: var( --pivot-muted, rgba( 0, 0, 0, 0.6 ) );
+	font-size: 0.9em;
+}
+
 .pivot-criteria-actions {
 	display: flex;
 	gap: 0.5rem;
@@ -176,6 +236,31 @@
 	margin-bottom: var( --pivot-gap );
 	border-radius: var( --pivot-radius );
 	background: rgba( 0, 0, 0, 0.04 );
+}
+
+/* Bulle d'une offre : bouton du tracé GPX (itinéraires). Le tracé lui-même
+   porte les classes pivot-map-track-line et pivot-map-track-casing. */
+.pivot-map-track {
+	margin: 0.6em 0 0;
+}
+
+.pivot-map-track-button {
+	padding: 0.35em 0.8em;
+	font-size: 0.92em;
+}
+
+.pivot-map-track-button[aria-pressed="true"] {
+	border-color: currentColor;
+	font-weight: 700;
+}
+
+.pivot-map-track-button:disabled {
+	cursor: default;
+	opacity: 0.7;
+}
+
+.pivot-map-track-button.is-error {
+	border-style: dashed;
 }
 
 .pivot-results-count {
@@ -192,6 +277,48 @@
 	gap: var( --pivot-gap );
 }
 
+/* Colonnes d'une page de listing, aux paliers de la grille Bootstrap : le
+   nombre réglé pour la page à partir de 1200 px, trois au plus dès 992 px,
+   deux dès 576 px (tablette), une en dessous (mobile). Une grille sans classe
+   pivot-cols-N, comme celle d'un gabarit de thème plus ancien, garde le
+   remplissage automatique ci-dessus. */
+.pivot-listing .pivot-grid[class*="pivot-cols-"] {
+	grid-template-columns: minmax( 0, 1fr );
+}
+
+@media ( min-width: 576px ) {
+	.pivot-listing .pivot-grid.pivot-cols-2,
+	.pivot-listing .pivot-grid.pivot-cols-3,
+	.pivot-listing .pivot-grid.pivot-cols-4,
+	.pivot-listing .pivot-grid.pivot-cols-5,
+	.pivot-listing .pivot-grid.pivot-cols-6 {
+		grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+	}
+}
+
+@media ( min-width: 992px ) {
+	.pivot-listing .pivot-grid.pivot-cols-3,
+	.pivot-listing .pivot-grid.pivot-cols-4,
+	.pivot-listing .pivot-grid.pivot-cols-5,
+	.pivot-listing .pivot-grid.pivot-cols-6 {
+		grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
+	}
+}
+
+@media ( min-width: 1200px ) {
+	.pivot-listing .pivot-grid.pivot-cols-4 {
+		grid-template-columns: repeat( 4, minmax( 0, 1fr ) );
+	}
+
+	.pivot-listing .pivot-grid.pivot-cols-5 {
+		grid-template-columns: repeat( 5, minmax( 0, 1fr ) );
+	}
+
+	.pivot-listing .pivot-grid.pivot-cols-6 {
+		grid-template-columns: repeat( 6, minmax( 0, 1fr ) );
+	}
+}
+
 .pivot-card {
 	display: flex;
 	flex-direction: column;
@@ -202,6 +329,7 @@
 }
 
 .pivot-card-media {
+	position: relative;
 	aspect-ratio: 4 / 3;
 	overflow: hidden;
 	background: rgba( 0, 0, 0, 0.04 );
@@ -443,6 +571,195 @@
 	font-size: 0.82em;
 }
 
+/* -------------------------------------------------------------- fermetures */
+
+/* Zones de fermeture liées à une offre (Pivot_Closures). Couleurs réglables :
+   --pivot-closed et --pivot-closed-text pour « fermé ce … »,
+   --pivot-impact et --pivot-impact-text pour « Impact chasse + ». */
+
+[data-pivot-closure][hidden],
+[data-pivot-closure-end][hidden],
+[data-pivot-closure-group][hidden] {
+	display: none !important;
+}
+
+.pivot-closures {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.35rem;
+}
+
+.pivot-card-media .pivot-closures {
+	position: absolute;
+	top: 0.6rem;
+	right: 0.6rem;
+	left: 0.6rem;
+	z-index: 2;
+}
+
+.pivot-closure-today,
+.pivot-closure-impact {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	margin: 0;
+	padding: 0.3em 0.7em;
+	border-radius: var( --pivot-radius, 6px );
+	font-size: 0.82rem;
+	font-weight: 700;
+	line-height: 1.25;
+	text-decoration: none;
+	box-shadow: 0 1px 3px rgba( 0, 0, 0, 0.25 );
+}
+
+.pivot-closure-today {
+	background: var( --pivot-closed, #c62828 );
+	color: var( --pivot-closed-text, #fff );
+}
+
+.pivot-closure-impact {
+	background: var( --pivot-impact, #f39200 );
+	color: var( --pivot-impact-text, #1d1d1b );
+}
+
+a.pivot-closure-impact:hover,
+a.pivot-closure-impact:focus-visible {
+	color: var( --pivot-impact-text, #1d1d1b );
+	text-decoration: underline;
+}
+
+.pivot-closure-more {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.2em;
+	height: 1.2em;
+	border: 1.5px solid currentColor;
+	border-radius: 50%;
+	font-size: 0.9em;
+	line-height: 1;
+}
+
+/* Fiche : alerte du jour. */
+
+.pivot-closure-alerts {
+	margin: var( --pivot-gap, 1.5rem ) 0;
+}
+
+.pivot-closure-alert {
+	padding: 0.9rem 1.1rem;
+	border-left: 5px solid var( --pivot-closed, #c62828 );
+	border-radius: var( --pivot-radius, 6px );
+	background: rgba( 198, 40, 40, 0.08 );
+}
+
+.pivot-closure-alert.is-upcoming {
+	border-left-color: var( --pivot-impact, #f39200 );
+	background: rgba( 243, 146, 0, 0.1 );
+}
+
+.pivot-closure-alert p {
+	margin: 0;
+}
+
+.pivot-closure-alert p + p {
+	margin-top: 0.4rem;
+}
+
+.pivot-closure-alert-title {
+	font-weight: 700;
+}
+
+.pivot-closure-alert .pivot-closure-kind {
+	display: inline-block;
+	margin-right: 0.4rem;
+	font-size: 0.9em;
+}
+
+.pivot-closure-alert .pivot-closure-impact {
+	margin-right: 0.4rem;
+	box-shadow: none;
+}
+
+.pivot-closure-alert-more {
+	margin: 0.5rem 0 0;
+	font-size: 0.9em;
+}
+
+/* Fiche : dates à venir. */
+
+.pivot-closures-schedule {
+	margin-bottom: var( --pivot-gap, 1.5rem );
+	scroll-margin-top: 2rem;
+}
+
+.pivot-closures-schedule h2 {
+	margin: 0 0 0.6rem;
+	padding-bottom: 0.3rem;
+	border-bottom: var( --pivot-border );
+	font-size: 1.05rem;
+}
+
+.pivot-closures-reason {
+	margin: 0 0 0.6rem;
+	color: var( --pivot-muted );
+}
+
+.pivot-closures-month h3 {
+	margin: 0.9rem 0 0.3rem;
+	font-size: 0.95rem;
+}
+
+.pivot-closures-month ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.pivot-closures-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.15rem 0.75rem;
+	padding: 0.35rem 0.5rem;
+	border-bottom: 1px solid rgba( 0, 0, 0, 0.06 );
+}
+
+.pivot-closures-row.is-today {
+	border-radius: var( --pivot-radius, 6px );
+	background: rgba( 198, 40, 40, 0.08 );
+	box-shadow: inset 4px 0 0 var( --pivot-closed, #c62828 );
+}
+
+.pivot-closures-date {
+	flex: 0 0 auto;
+	font-weight: 600;
+}
+
+.pivot-closures-today-tag {
+	align-self: center;
+	padding: 0.05em 0.5em;
+	border-radius: var( --pivot-radius, 6px );
+	background: var( --pivot-closed, #c62828 );
+	color: var( --pivot-closed-text, #fff );
+	font-size: 0.75em;
+	font-weight: 700;
+}
+
+.pivot-closures-row:not( .is-today ) .pivot-closures-today-tag {
+	display: none;
+}
+
+.pivot-closures-kind,
+.pivot-closures-zones {
+	color: var( --pivot-muted );
+	font-size: 0.88em;
+}
+
+.pivot-closures-zones {
+	flex: 1 1 14rem;
+}
+
 /* ------------------------------------------------------------- adaptations */
 
 @media ( max-width: 782px ) {
@@ -485,6 +802,13 @@
 	.pivot-field select {
 		background: rgba( 255, 255, 255, 0.04 );
 		color: inherit;
+	}
+
+	/* L'icône et le calendrier du navigateur suivent le thème sombre. */
+	.pivot-field .pivot-dates input[type="date"] {
+		background: rgba( 255, 255, 255, 0.04 );
+		color: inherit;
+		color-scheme: dark;
 	}
 
 	.pivot-field .pivot-range input[aria-invalid="true"] {

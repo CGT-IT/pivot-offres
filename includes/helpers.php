@@ -113,6 +113,8 @@ function pivot_settings( $key = null, $default = null ) {
 			'map_cluster'        => 1,
 			'index_delivery'     => 'file',
 			'schema_org'         => 1,
+			'sitemap'            => 1,
+			'llms_txt'           => 1,
 		);
 
 		$stored = get_option( 'pivot_settings', array() );
@@ -174,6 +176,25 @@ function pivot_normalize( $string ) {
 }
 
 /**
+ * Texte brut d'un fragment HTML de PIVOT, sur une ligne.
+ *
+ * wp_strip_all_tags() retire les balises sans rien mettre à leur place : deux
+ * paragraphes se collaient (« un sens.Infos pratiques »), et les entités
+ * restaient telles quelles (« &nbsp; » dans le JSON-LD). Les blocs et les
+ * sauts de ligne deviennent donc des espaces, les entités sont décodées.
+ *
+ * @param string $html Fragment HTML.
+ * @return string
+ */
+function pivot_plain_text( $html ) {
+	$text = (string) preg_replace( '#<(?:br|hr|/?(?:p|div|li|ul|ol|h[1-6]|tr|td|th|table|blockquote|section|article))\b[^>]*>#i', ' ', (string) $html );
+	$text = html_entity_decode( wp_strip_all_tags( $text, true ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+
+	// Un &nbsp; décodé devient U+00A0, que \s ne reconnaît pas sans /u.
+	return trim( (string) preg_replace( '/[\s\x{00A0}\x{202F}]+/u', ' ', $text ) );
+}
+
+/**
  * Lit un nombre, tel que PIVOT l'écrit ou tel qu'un visiteur le tape.
  *
  * PIVOT écrit « 9.50 » ; un visiteur belge tape plutôt « 9,50 », parfois
@@ -209,6 +230,55 @@ function pivot_parse_number( $value ) {
 	}
 
 	return ( floor( $number ) === $number && abs( $number ) < PHP_INT_MAX ) ? (int) $number : $number;
+}
+
+/**
+ * Lit une date, telle que PIVOT l'écrit ou telle qu'un navigateur l'envoie.
+ *
+ * PIVOT écrit « 10/10/2026 » ; un champ de date HTML envoie « 2026-10-10 ».
+ * Les deux sont admis, ainsi que les séparateurs « - » et « . » en ordre
+ * jour-mois-année. Le résultat est un entier AAAAMMJJ : deux dates se
+ * comparent alors comme deux nombres, et l'index reste compact.
+ *
+ * @param mixed $value Valeur brute.
+ * @return int|null 20261010, ou null si ce n'est pas une date du calendrier.
+ */
+function pivot_parse_date( $value ) {
+	if ( is_int( $value ) ) {
+		$value = (string) $value;
+	}
+
+	if ( ! is_string( $value ) ) {
+		return null;
+	}
+
+	$value = trim( $value );
+
+	if ( preg_match( '/^(\d{4})-(\d{1,2})-(\d{1,2})$/', $value, $m ) || preg_match( '/^(\d{4})(\d{2})(\d{2})$/', $value, $m ) ) {
+		list( , $year, $month, $day ) = $m;
+	} elseif ( preg_match( '#^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$#', $value, $m ) ) {
+		list( , $day, $month, $year ) = $m;
+	} else {
+		return null;
+	}
+
+	if ( ! checkdate( (int) $month, (int) $day, (int) $year ) ) {
+		return null;
+	}
+
+	return (int) $year * 10000 + (int) $month * 100 + (int) $day;
+}
+
+/**
+ * Écrit une date AAAAMMJJ au format ISO, celui des champs de date HTML.
+ *
+ * @param int $date Date lue par pivot_parse_date().
+ * @return string 2026-10-10.
+ */
+function pivot_date_iso( $date ) {
+	$date = (int) $date;
+
+	return sprintf( '%04d-%02d-%02d', intdiv( $date, 10000 ), intdiv( $date, 100 ) % 100, $date % 100 );
 }
 
 /**

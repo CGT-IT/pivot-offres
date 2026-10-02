@@ -25,6 +25,7 @@ class Pivot_Tools {
 		settings_errors( 'pivot_tools' );
 
 		self::section_cache();
+		self::section_legacy();
 		self::section_diagnostics();
 
 		echo '</div>';
@@ -102,6 +103,27 @@ class Pivot_Tools {
 				);
 				break;
 
+			case 'legacy_import':
+				$report = Pivot_Legacy_Import::run();
+				$lines  = Pivot_Legacy_Import::messages( $report );
+				$text   = sprintf(
+					/* translators: 1 : pages ajoutées, 2 : filtres ajoutés, 3 : pages déjà reprises. */
+					__( 'Reprise terminée : %1$d page(s) et %2$d filtre(s) ajoutés, %3$d page(s) déjà reprise(s).', 'pivot-offres' ),
+					$report['pages'],
+					$report['filters'],
+					$report['already']
+				);
+
+				// settings_errors() publie le message sans l'échapper : les titres
+				// de page qu'il cite viennent de la base.
+				add_settings_error(
+					'pivot_tools',
+					'legacy_import',
+					implode( '<br />', array_map( 'esc_html', array_merge( array( $text ), $lines ) ) ),
+					$lines ? 'warning' : 'updated'
+				);
+				break;
+
 			case 'reset_onboarding':
 				Pivot_Onboarding::reset();
 				add_settings_error(
@@ -168,6 +190,43 @@ class Pivot_Tools {
 			esc_html__( 'Tout vider', 'pivot-offres' )
 		);
 		echo '</p>';
+		echo '</form>';
+	}
+
+	/**
+	 * Bloc « Ancien plugin PIVOT », tant que ses tables sont en base.
+	 */
+	private static function section_legacy() {
+		if ( ! Pivot_Legacy_Import::tables_present() ) {
+			return;
+		}
+
+		$state = Pivot_Legacy_Import::state();
+
+		echo '<hr />';
+		echo '<h2>' . esc_html__( 'Ancien plugin PIVOT', 'pivot-offres' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Les pages et les filtres de l\'ancien plugin sont encore en base. La reprise recrée ici ceux qui manquent : une page déjà reprise, ou dont l\'adresse est prise, est laissée de côté. Les tables de l\'ancien plugin ne sont pas modifiées.', 'pivot-offres' ) . '</p>';
+
+		if ( 'done' === $state['status'] ) {
+			printf(
+				'<p>%s</p>',
+				esc_html(
+					sprintf(
+						/* translators: 1 : durée, 2 : nombre de pages. */
+						__( 'Dernière reprise il y a %1$s. Pages reprises depuis l\'ancien plugin : %2$d.', 'pivot-offres' ),
+						human_time_diff( (int) $state['time'] ),
+						count( (array) $state['map'] )
+					)
+				)
+			);
+		}
+
+		echo '<form method="post" class="pivot-tool-actions">';
+		wp_nonce_field( 'pivot_tools' );
+		printf(
+			'<p><button type="submit" name="pivot_action" value="legacy_import" class="button">%s</button></p>',
+			esc_html__( 'Reprendre les pages de l\'ancien plugin', 'pivot-offres' )
+		);
 		echo '</form>';
 	}
 

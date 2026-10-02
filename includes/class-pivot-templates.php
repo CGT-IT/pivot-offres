@@ -320,6 +320,62 @@ class Pivot_Templates {
 	}
 
 	/**
+	 * Critères d'une page, réunis par groupe.
+	 *
+	 * Un groupe s'affiche à la place du premier de ses critères, sous son nom ;
+	 * un critère sans groupe forme un bloc à lui seul. Le groupe est lu dans
+	 * la configuration de la page, par la clé du critère : il ne sert qu'à
+	 * l'affichage, et le changer ne demande pas de reconstruire l'index.
+	 *
+	 * @param array       $filters Critères de l'index, dans l'ordre de la page.
+	 * @param array       $listing Configuration de la page.
+	 * @param string|null $lang    Langue.
+	 * @return array Blocs : key et label du groupe (vides pour un critère seul), filters.
+	 */
+	public static function filter_groups( $filters, $listing, $lang = null ) {
+		$lang   = $lang ? $lang : Pivot_I18n::current();
+		$groups = array();
+
+		foreach ( (array) pivot_get( $listing, 'filters', array() ) as $definition ) {
+			$group = (string) pivot_get( $definition, 'group', '' );
+
+			if ( '' !== $group ) {
+				$groups[ (string) pivot_get( $definition, 'key', '' ) ] = $group;
+			}
+		}
+
+		$blocks = array();
+		$places = array();
+
+		foreach ( (array) $filters as $filter ) {
+			$key   = (string) pivot_get( $filter, 'key', '' );
+			$group = isset( $groups[ $key ] ) ? $groups[ $key ] : '';
+
+			if ( '' === $group ) {
+				$blocks[] = array(
+					'key'     => '',
+					'label'   => '',
+					'filters' => array( $filter ),
+				);
+				continue;
+			}
+
+			if ( ! isset( $places[ $group ] ) ) {
+				$places[ $group ] = count( $blocks );
+				$blocks[]         = array(
+					'key'     => sanitize_title( $group ),
+					'label'   => Pivot_Listings::filter_group_label( $listing, $group, $lang ),
+					'filters' => array(),
+				);
+			}
+
+			$blocks[ $places[ $group ] ]['filters'][] = $filter;
+		}
+
+		return $blocks;
+	}
+
+	/**
 	 * Charge feuilles de style et scripts.
 	 */
 	public function enqueue() {
@@ -330,6 +386,10 @@ class Pivot_Templates {
 		}
 
 		wp_enqueue_style( 'pivot-offres', PIVOT_URL . 'assets/css/pivot.css', array(), PIVOT_VERSION );
+
+		// Fermé aujourd'hui ou non : décidé à la date du visiteur, sur les
+		// vignettes comme sur la fiche (Pivot_Closures).
+		Pivot_Closures::enqueue();
 
 		if ( 'listing' !== $context['kind'] ) {
 			// Fiche détail : le lien de retour dépend de la provenance du
@@ -399,6 +459,8 @@ class Pivot_Templates {
 				'mapAttr'    => pivot_settings( 'map_attribution' ),
 				'mapCluster' => pivot_settings( 'map_cluster', 1 ) ? 1 : 0,
 				'search'     => (int) $listing['search_enabled'],
+				'closures'   => Pivot_Closures::i18n( (array) pivot_get( $listing, 'offer_types', array() ) ),
+				'tracks'     => self::track_config( $listing ),
 				'i18n'       => array(
 					'results'      => __( 'offre(s)', 'pivot-offres' ),
 					'noResult'     => __( 'Aucune offre ne correspond à votre recherche.', 'pivot-offres' ),
@@ -410,6 +472,10 @@ class Pivot_Templates {
 					'page'         => __( 'Page', 'pivot-offres' ),
 					'seeOffer'     => __( 'Voir la fiche', 'pivot-offres' ),
 					'allOption'    => __( 'Toutes', 'pivot-offres' ),
+					'showTrack'    => __( 'Afficher le tracé', 'pivot-offres' ),
+					'hideTrack'    => __( 'Masquer le tracé', 'pivot-offres' ),
+					'loadingTrack' => __( 'Chargement du tracé…', 'pivot-offres' ),
+					'noTrack'      => __( 'Tracé indisponible', 'pivot-offres' ),
 				),
 			)
 		);
@@ -575,8 +641,7 @@ class Pivot_Templates {
 			return '';
 		}
 
-		$text = wp_strip_all_tags( $text, true );
-		$text = trim( preg_replace( '/\s+/', ' ', $text ) );
+		$text = pivot_plain_text( $text );
 
 		return $words > 0 ? wp_trim_words( $text, $words, '…' ) : $text;
 	}
@@ -591,24 +656,40 @@ class Pivot_Templates {
 	private static function scan_description( $offer, $lang ) {
 		// visible_specs a déjà écarté les champs masqués et choisi, pour chaque
 		// champ, la version de la bonne langue.
-		foreach ( self::visible_specs( $offer, $lang ) as $spec ) {
-			$urn = Pivot_Fields::base_urn( pivot_get( $spec, 'urn', '' ) );
+		$specs = self::visible_specs( $offer, $lang );
 
-			if ( false === strpos( $urn, 'desc' ) ) {
-				continue;
-			}
+		// Faute de cette version, visible_specs en garde une autre : pour un
+		// descriptif, c'était du néerlandais sur une page française, quand
+		// l'offre n'a de descriptif qu'en néerlandais et en allemand. Seules
+		// comptent la langue demandée puis la forme française, dans cet ordre,
+		// comme pour offer_description().
+		$langs = array_unique(
+			array_map(
+				array( 'Pivot_Fields', 'urn_lang' ),
+				Pivot_Fields::urn_variants( 'urn:fld:descmarket', $lang )
+			)
+		);
 
-			$value = pivot_get( $spec, 'value' );
+		foreach ( $langs as $wanted ) {
+			foreach ( $specs as $spec ) {
+				$urn = (string) pivot_get( $spec, 'urn', '' );
 
-			if ( is_string( $value ) && strlen( trim( $value ) ) > 30 ) {
-				return $value;
-			}
+				if ( Pivot_Fields::urn_lang( $urn ) !== $wanted || false === strpos( Pivot_Fields::base_urn( $urn ), 'desc' ) ) {
+					continue;
+				}
 
-			foreach ( (array) pivot_get( $spec, 'children', array() ) as $child ) {
-				$child_value = pivot_get( $child, 'value' );
+				$value = pivot_get( $spec, 'value' );
 
-				if ( is_string( $child_value ) && strlen( trim( $child_value ) ) > 30 ) {
-					return $child_value;
+				if ( is_string( $value ) && strlen( trim( $value ) ) > 30 ) {
+					return $value;
+				}
+
+				foreach ( (array) pivot_get( $spec, 'children', array() ) as $child ) {
+					$child_value = pivot_get( $child, 'value' );
+
+					if ( is_string( $child_value ) && strlen( trim( $child_value ) ) > 30 ) {
+						return $child_value;
+					}
 				}
 			}
 		}
@@ -753,6 +834,108 @@ class Pivot_Templates {
 		}
 
 		return $gallery;
+	}
+
+	/**
+	 * Types d'offre dont la carte d'un listing propose le tracé GPX.
+	 *
+	 * @return array Par défaut, les itinéraires (8).
+	 */
+	public static function track_types() {
+		/**
+		 * Types d'offre dont la carte d'un listing propose le tracé GPX.
+		 *
+		 * Ne joue que pour les pages dont l'index ignore le GPX (niveau
+		 * inférieur à « complet avec offres liées ») : le bouton y est
+		 * proposé sur la foi du type, et le fichier cherché au clic. Au niveau
+		 * complet, le bouton n'apparaît que pour les offres qui en ont un.
+		 *
+		 * @param array $types Types d'offre.
+		 */
+		return array_values( array_map( 'intval', (array) apply_filters( 'pivot_track_offer_types', array( 8 ) ) ) );
+	}
+
+	/**
+	 * Configuration du tracé GPX pour le script du listing.
+	 *
+	 * @param array $listing Configuration de la page.
+	 * @return array types, lookup (route REST, vide si l'index connaît les GPX), style.
+	 */
+	public static function track_config( $listing ) {
+		$known = 3 === (int) pivot_get( $listing, 'content', 2 );
+
+		/**
+		 * Style du tracé sur la carte : options d'un L.Polyline de Leaflet.
+		 *
+		 * Le tracé porte aussi les classes pivot-map-track-line et
+		 * pivot-map-track-casing (liseré blanc), qu'une feuille de style peut
+		 * viser : stroke y prend le pas sur color.
+		 *
+		 * @param array $style   color, weight, opacity.
+		 * @param array $listing Configuration de la page.
+		 */
+		$style = apply_filters(
+			'pivot_track_style',
+			array(
+				'color'   => '#c2185b',
+				'weight'  => 4,
+				'opacity' => 0.9,
+			),
+			$listing
+		);
+
+		return array(
+			'types'  => self::track_types(),
+			'lookup' => $known ? '' : rest_url( Pivot_Rest::NAMESPACE_V1 . '/gpx/' ),
+			'style'  => (array) $style,
+		);
+	}
+
+	/**
+	 * Fichier GPX d'une offre : le tracé d'un itinéraire.
+	 *
+	 * C'est un média lié de type urn:val:typmed:gpx, servi par le service
+	 * media de PIVOT, qui autorise la lecture depuis un autre domaine : le
+	 * navigateur le charge directement. Le type d'un média n'est connu qu'au
+	 * niveau « complet avec offres liées » ; en deçà, la fonction ne trouve
+	 * rien.
+	 *
+	 * @param array $offer Offre normalisée.
+	 * @return array|null array( code, url ), ou null.
+	 */
+	public static function offer_gpx( $offer ) {
+		$media = array_merge(
+			array( pivot_get( $offer, 'media.default', array() ) ),
+			(array) pivot_get( $offer, 'media.others', array() )
+		);
+
+		foreach ( (array) pivot_get( $offer, 'relations', array() ) as $urn => $linked ) {
+			if ( false !== strpos( $urn, ':media:' ) ) {
+				$media = array_merge( $media, (array) $linked );
+			}
+		}
+
+		foreach ( $media as $item ) {
+			$code = (string) pivot_get( $item, 'code', '' );
+			$type = (string) pivot_get( $item, 'media_type', pivot_get( $item, array( 'by_urn', 'urn:fld:typmed', 0, 'value' ), '' ) );
+
+			if ( '' !== $code && 'urn:val:typmed:gpx' === $type ) {
+				$gpx = array(
+					'code' => $code,
+					'url'  => pivot_service_url() . '/media/' . rawurlencode( $code ),
+				);
+
+				/**
+				 * Fichier GPX d'une offre : pour le servir d'ailleurs (proxy, CDN).
+				 *
+				 * @param array $gpx   code, url.
+				 * @param array $offer Offre normalisée.
+				 */
+				return apply_filters( 'pivot_offer_gpx', $gpx, $offer );
+			}
+		}
+
+		return null;
 	}
 
 	/**

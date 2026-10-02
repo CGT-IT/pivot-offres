@@ -28,6 +28,7 @@ $pivot_options = array(
 	'pivot_lang_fingerprint',
 	'pivot_lang_changed',
 	'pivot_activation_failures',
+	'pivot_legacy_import',       // Pivot_Legacy_Import::OPTION
 	// Table de redirections des versions antérieures à la 2.6.0, au cas où
 	// la reprise de version n'aurait pas tourné.
 	'pivot_redirects',

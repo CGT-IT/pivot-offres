@@ -723,4 +723,101 @@ class Pivot_Fields {
 
 		return implode( ', ', array_filter( $parts ) );
 	}
+
+	/**
+	 * Périodes d'une offre pour un champ de date, prêtes à comparer.
+	 *
+	 * Un événement peut avoir plusieurs périodes : un objet urn:obj:date par
+	 * période, chacun avec sa date de début et sa date de fin. Chaque période
+	 * est rendue en entier, même quand le critère ne porte que sur l'une de
+	 * ses bornes : c'est la date de fin qui dit si une période est passée.
+	 *
+	 * Une date isolée, hors d'un objet date, donne une période d'un jour.
+	 *
+	 * @param array  $offer Offre normalisée.
+	 * @param string $urn   Objet date, l'une de ses dates, ou tout champ de type Date.
+	 * @return array Liste de array( début, fin ), en entiers AAAAMMJJ, triée.
+	 */
+	public static function date_periods( $offer, $urn ) {
+		$periods = array();
+
+		self::collect_periods( (array) pivot_get( $offer, 'specs', array() ), self::base_urn( $urn ), null, $periods );
+
+		$periods = array_values( array_unique( $periods, SORT_REGULAR ) );
+		sort( $periods );
+
+		return $periods;
+	}
+
+	/**
+	 * Parcourt les champs à la recherche d'une urn de date.
+	 *
+	 * @param array      $specs   Champs.
+	 * @param string     $base    Urn cherchée, sans préfixe de langue.
+	 * @param array|null $parent  Objet qui contient ces champs.
+	 * @param array      $periods Accumulateur.
+	 */
+	private static function collect_periods( $specs, $base, $parent, &$periods ) {
+		foreach ( (array) $specs as $spec ) {
+			$children = (array) pivot_get( $spec, 'children', array() );
+
+			if ( self::base_urn( (string) pivot_get( $spec, 'urn', '' ) ) === $base ) {
+				// L'objet lui-même, ou la date dans son objet : la période
+				// entière. Sinon, la date seule.
+				$period = self::object_period( $children ? $spec : $parent );
+
+				if ( ! $period ) {
+					$date   = pivot_parse_date( pivot_get( $spec, 'value' ) );
+					$period = $date ? array( $date, $date ) : null;
+				}
+
+				if ( $period ) {
+					$periods[] = $period;
+				}
+			}
+
+			if ( $children ) {
+				self::collect_periods( $children, $base, $spec, $periods );
+			}
+		}
+	}
+
+	/**
+	 * Période d'un objet date.
+	 *
+	 * Une borne manquante reprend l'autre ; à défaut des deux, l'intervalle
+	 * consolidé que certaines offres remplissent seul (voir render_dates).
+	 *
+	 * @param array|null $object Objet date.
+	 * @return array|null array( début, fin ), ou null si l'objet n'a pas de date lisible.
+	 */
+	private static function object_period( $object ) {
+		if ( ! $object ) {
+			return null;
+		}
+
+		$get = static function ( $suffix ) use ( $object ) {
+			return pivot_parse_date( pivot_get( $object, array( 'by_urn', 'urn:fld:date:' . $suffix, 0, 'value' ) ) );
+		};
+
+		$start = $get( 'datedeb' );
+		$end   = $get( 'datefin' );
+
+		if ( ! $start && ! $end ) {
+			$range = pivot_get( $object, array( 'by_urn', 'urn:fld:date:daterange', 0, 'value' ) );
+
+			if ( is_string( $range ) && false !== strpos( $range, '-' ) ) {
+				list( $start, $end ) = array_map( 'pivot_parse_date', array_map( 'trim', explode( '-', $range, 2 ) ) );
+			}
+		}
+
+		$start = $start ? $start : $end;
+		$end   = $end ? $end : $start;
+
+		if ( ! $start ) {
+			return null;
+		}
+
+		return $start <= $end ? array( $start, $end ) : array( $end, $start );
+	}
 }

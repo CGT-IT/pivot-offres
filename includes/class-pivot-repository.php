@@ -181,13 +181,25 @@ class Pivot_Repository {
 	/**
 	 * Page suivante d'une requête paginée.
 	 *
-	 * @param string $token Jeton retourné par le premier appel.
-	 * @param int    $page  Numéro de page (1-based).
+	 * Le niveau de détail doit être redemandé à chaque page : le jeton ne le
+	 * retient pas, et PIVOT renvoie sinon des offres sans aucun champ. Toutes
+	 * les offres au-delà de la première page perdaient ainsi leurs critères
+	 * sur champ PIVOT, leurs champs de vignette et, en mode « complet avec
+	 * offres liées », leur fiche détail mise en cache.
+	 *
+	 * @param string $token   Jeton retourné par le premier appel.
+	 * @param int    $page    Numéro de page (1-based).
+	 * @param int    $content Niveau de détail, le même qu'au premier appel.
 	 * @return array|WP_Error
 	 */
-	public static function query_page( $token, $page ) {
+	public static function query_page( $token, $page, $content = 2 ) {
 		$path     = 'query/paginated/' . $token . '/' . max( 1, (int) $page );
-		$response = Pivot_Client::get( $path, array( 'fmt' => 'xml', 'thumb' => pivot_settings( 'thumb', 'THB_MW' ) ), array( 'service' => 'query' ) );
+		$matrix   = array(
+			'fmt'     => 'xml',
+			'content' => (int) $content,
+			'thumb'   => pivot_settings( 'thumb', 'THB_MW' ),
+		);
+		$response = Pivot_Client::get( $path, $matrix, array( 'service' => 'query' ) );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;

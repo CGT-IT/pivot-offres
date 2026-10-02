@@ -244,9 +244,16 @@ class Pivot_Shortcode_Admin {
 				$values = (array) pivot_get( $listing, array( 'facet_values', $key ), array() );
 				$sample = array_slice( $values, 0, 4 );
 
-				$keys[] = $sample
+				$line = $sample
 					? $key . ' : ' . implode( ', ', $sample ) . ( count( $values ) > 4 ? '…' : '' )
 					: $key;
+
+				// Une date fixe se périme : on rappelle la forme relative.
+				if ( 'date' === pivot_get( $filter, 'type' ) ) {
+					$line .= ' · ' . $key . ':aujourdhui..+30';
+				}
+
+				$keys[] = $line;
 			}
 
 			if ( $keys ) {

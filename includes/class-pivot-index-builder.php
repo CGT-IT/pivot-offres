@@ -36,6 +36,19 @@ class Pivot_Index_Builder {
 	/** Idem, en proportion des offres de la page. */
 	const SYNC_MAX_RATIO = 0.2;
 
+	/**
+	 * Version du contenu des fiches neutres.
+	 *
+	 * À augmenter quand une fiche gagne une donnée que le différentiel ne
+	 * saurait ajouter aux fiches gardées — il ne relit que les offres
+	 * modifiées. Elle entre dans l'empreinte : la mise à jour de nuit suivante
+	 * fait alors une reconstruction complète.
+	 *
+	 * 2 : fermetures à venir (clé cl), par les zones de fermeture liées.
+	 * 3 : fichier GPX (clé g), pour le tracé sur la carte du listing.
+	 */
+	const RECORD_FORMAT = 3;
+
 	/** @var array Index déjà décodés pendant cette requête. */
 	private static $read_memo = array();
 
@@ -436,7 +449,7 @@ class Pivot_Index_Builder {
 			return self::finish( $listing, $state );
 		}
 
-		$page = Pivot_Repository::query_page( $state['token'], $next );
+		$page = Pivot_Repository::query_page( $state['token'], $next, (int) pivot_get( $listing, 'content', 2 ) );
 
 		if ( is_wp_error( $page ) ) {
 			return $page;
@@ -626,6 +639,24 @@ class Pivot_Index_Builder {
 			}
 		}
 
+		// Fermetures à venir, par les zones de fermeture liées : la vignette
+		// dit si l'offre est fermée le jour où on la regarde, ce que seul le
+		// navigateur sait. Les périodes déjà passées restent dehors.
+		$closures = Pivot_Closures::periods( $offer );
+
+		if ( $closures ) {
+			$record['cl'] = $closures;
+		}
+
+		// Tracé GPX d'un itinéraire, que la carte du listing propose
+		// d'afficher. Connu au seul niveau « complet avec offres liées » : en
+		// deçà, le navigateur le demande au clic (route REST pivot/v1/gpx).
+		$gpx = Pivot_Templates::offer_gpx( $offer );
+
+		if ( $gpx ) {
+			$record['g'] = $gpx['url'];
+		}
+
 		// Facettes : une clé stable par valeur, et ses traductions.
 		foreach ( (array) pivot_get( $listing, 'filters', array() ) as $filter ) {
 			$key = pivot_get( $filter, 'key' );
@@ -642,6 +673,17 @@ class Pivot_Index_Builder {
 
 				if ( $numbers ) {
 					$record['facets'][ $key ] = $numbers;
+				}
+				continue;
+			}
+
+			// Un critère de date compare des périodes : [début, fin] en
+			// AAAAMMJJ, une par période de l'offre.
+			if ( 'date' === pivot_get( $filter, 'type' ) ) {
+				$periods = self::date_values( $filter, $offer );
+
+				if ( $periods ) {
+					$record['facets'][ $key ] = $periods;
 				}
 				continue;
 			}
@@ -801,6 +843,43 @@ class Pivot_Index_Builder {
 	}
 
 	/**
+	 * Périodes d'une offre pour un critère de date.
+	 *
+	 * Quand le critère porte sur la période entière, les périodes qui se
+	 * chevauchent ou se suivent sont fusionnées : un événement donné jour
+	 * par jour tient en une seule entrée, et la réponse reste la même — une
+	 * période touche l'intervalle demandé si et seulement si leur réunion le
+	 * touche. Comparer un début ou une fin demande au contraire de les garder
+	 * toutes.
+	 *
+	 * @param array $filter Définition du filtre.
+	 * @param array $offer  Offre normalisée.
+	 * @return array Liste de array( début, fin ).
+	 */
+	private static function date_values( $filter, $offer ) {
+		$periods = Pivot_Fields::date_periods( $offer, (string) pivot_get( $filter, 'urn', '' ) );
+
+		if ( count( $periods ) < 2 || 'overlap' !== Pivot_Listings::date_match( $filter ) ) {
+			return $periods;
+		}
+
+		$merged = array( array_shift( $periods ) );
+
+		foreach ( $periods as $period ) {
+			$last = count( $merged ) - 1;
+			$next = (int) gmdate( 'Ymd', strtotime( pivot_date_iso( $merged[ $last ][1] ) . ' +1 day UTC' ) );
+
+			if ( $period[0] <= $next ) {
+				$merged[ $last ][1] = max( $merged[ $last ][1], $period[1] );
+			} else {
+				$merged[] = $period;
+			}
+		}
+
+		return $merged;
+	}
+
+	/**
 	 * Entrée de facette issue d'un champ d'adresse traduit.
 	 *
 	 * @param array  $offer Offre.
@@ -822,13 +901,6 @@ class Pivot_Index_Builder {
 	}
 
 	/**
-	 * Entrées de facette issues d'un champ PIVOT.
-	 *
-	 * @param array $filter Définition du filtre.
-	 * @param array $offer  Offre normalisée.
-	 * @return array
-	 */
-	/**
 	 * Version linguistique retenue pour une facette.
 	 *
 	 * La forme nue quand elle existe — elle porte le français et ne bouge pas
@@ -841,12 +913,13 @@ class Pivot_Index_Builder {
 	 */
 	private static function facet_variant( $offer, $base ) {
 		$found = array();
+		$own   = self::has_own_field( $offer, $base );
 
 		foreach ( (array) pivot_get( $offer, 'specs', array() ) as $spec ) {
 			$spec_urn  = (string) pivot_get( $spec, 'urn', '' );
 			$spec_base = Pivot_Fields::base_urn( $spec_urn );
 
-			if ( $spec_base !== $base && 0 !== strpos( $spec_base, $base . ':' ) ) {
+			if ( ! self::spec_belongs( $spec, $spec_base, $base, $own ) ) {
 				continue;
 			}
 
@@ -862,6 +935,55 @@ class Pivot_Index_Builder {
 		return $found ? (string) key( $found ) : '';
 	}
 
+	/**
+	 * L'offre porte-t-elle le champ lui-même, toutes langues confondues ?
+	 *
+	 * @param array  $offer Offre normalisée.
+	 * @param string $base  Urn sans préfixe.
+	 * @return bool
+	 */
+	private static function has_own_field( $offer, $base ) {
+		foreach ( (array) pivot_get( $offer, 'specs', array() ) as $spec ) {
+			if ( Pivot_Fields::base_urn( (string) pivot_get( $spec, 'urn', '' ) ) === $base ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Le champ d'une offre alimente-t-il le critère posé sur une urn ?
+	 *
+	 * Le champ lui-même. À défaut, ses cases à cocher : un choix multiple
+	 * (spécialités culinaires…) arrive en booléens enfants, sans champ
+	 * parent. Quand le champ est là, ses enfants sont des champs distincts —
+	 * urn:fld:class:value (le classement en chiffres), la mention
+	 * « Superior » — et doubleraient les entrées de sa liste.
+	 *
+	 * @param array  $spec      Champ de l'offre.
+	 * @param string $spec_base Son urn, sans préfixe de langue.
+	 * @param string $base      Urn du critère, sans préfixe de langue.
+	 * @param bool   $own       L'offre porte-t-elle le champ lui-même ?
+	 * @return bool
+	 */
+	private static function spec_belongs( $spec, $spec_base, $base, $own ) {
+		if ( $spec_base === $base ) {
+			return true;
+		}
+
+		return ! $own
+			&& 0 === strpos( $spec_base, $base . ':' )
+			&& 'Boolean' === pivot_get( $spec, 'type', '' );
+	}
+
+	/**
+	 * Entrées de facette issues d'un champ PIVOT.
+	 *
+	 * @param array $filter Définition du filtre.
+	 * @param array $offer  Offre normalisée.
+	 * @return array
+	 */
 	private static function spec_entries( $filter, $offer ) {
 		$urn = pivot_get( $filter, 'urn' );
 
@@ -877,6 +999,7 @@ class Pivot_Index_Builder {
 		// donnerait autant de valeurs distinctes pour une seule réalité. On
 		// n'en garde donc qu'une, la forme nue de préférence.
 		$variant = self::facet_variant( $offer, $urn );
+		$own     = self::has_own_field( $offer, $urn );
 
 		$entries = array();
 
@@ -889,8 +1012,7 @@ class Pivot_Index_Builder {
 
 			$spec_urn = Pivot_Fields::base_urn( $spec_urn );
 
-			// Correspondance exacte, ou champ enfant pour les valeurs multiples.
-			if ( $spec_urn !== $urn && 0 !== strpos( $spec_urn, $urn . ':' ) ) {
+			if ( ! self::spec_belongs( $spec, $spec_urn, $urn, $own ) ) {
 				continue;
 			}
 
@@ -1140,17 +1262,32 @@ class Pivot_Index_Builder {
 
 		// Valeurs découvertes, proposées à l'administrateur pour la traduction.
 		// Un critère numérique n'a rien à traduire : on n'en retient que
-		// l'étendue, écrite comme le shortcode l'attend (« 1..165 »).
+		// l'étendue, écrite comme le shortcode l'attend (« 1..165 »). De même
+		// pour une date : « 2026-01-10..2026-12-20 ».
 		$ranges = array();
+		$dates  = array();
 
 		foreach ( (array) pivot_get( $listing, 'filters', array() ) as $filter ) {
 			if ( 'range' === pivot_get( $filter, 'type' ) && pivot_get( $filter, 'key' ) ) {
 				$ranges[ $filter['key'] ] = true;
 			}
+
+			if ( 'date' === pivot_get( $filter, 'type' ) && pivot_get( $filter, 'key' ) ) {
+				$dates[ $filter['key'] ] = true;
+			}
 		}
 
 		foreach ( $records as $record ) {
 			foreach ( (array) pivot_get( $record, 'facets', array() ) as $key => $values ) {
+				if ( isset( $dates[ $key ] ) ) {
+					foreach ( $values as $period ) {
+						$dates[ $key ] = true === $dates[ $key ]
+							? $period
+							: array( min( $dates[ $key ][0], $period[0] ), max( $dates[ $key ][1], $period[1] ) );
+					}
+					continue;
+				}
+
 				if ( isset( $ranges[ $key ] ) ) {
 					foreach ( $values as $value ) {
 						$ranges[ $key ] = true === $ranges[ $key ]
@@ -1179,6 +1316,12 @@ class Pivot_Index_Builder {
 		foreach ( $ranges as $key => $bounds ) {
 			if ( is_array( $bounds ) ) {
 				$facets[ $key ] = array( $bounds[0] . '..' . $bounds[1] );
+			}
+		}
+
+		foreach ( $dates as $key => $bounds ) {
+			if ( is_array( $bounds ) ) {
+				$facets[ $key ] = array( pivot_date_iso( $bounds[0] ) . '..' . pivot_date_iso( $bounds[1] ) );
 			}
 		}
 
@@ -1216,7 +1359,7 @@ class Pivot_Index_Builder {
 
 		$item = array( 'c' => $code );
 
-		foreach ( array( 't', 'z', 'r', 'nu', 'lat', 'lng', 'i' ) as $key ) {
+		foreach ( array( 't', 'z', 'r', 'nu', 'lat', 'lng', 'i', 'cl', 'g' ) as $key ) {
 			$value = pivot_get( $record, $key );
 			if ( null !== $value ) {
 				$item[ $key ] = $value;
@@ -1336,8 +1479,8 @@ class Pivot_Index_Builder {
 
 		foreach ( (array) pivot_get( $record, 'facets', array() ) as $key => $values ) {
 			// Un nombre nu ne dit rien à la recherche : taper « 4 » ne doit pas
-			// ramener tous les hôtels de quatre chambres.
-			if ( 'range' === pivot_get( $filters, array( $key, 'type' ) ) ) {
+			// ramener tous les hôtels de quatre chambres. Une date non plus.
+			if ( in_array( pivot_get( $filters, array( $key, 'type' ) ), array( 'range', 'date' ), true ) ) {
 				continue;
 			}
 
@@ -1393,6 +1536,11 @@ class Pivot_Index_Builder {
 
 			if ( 'range' === $entry['type'] ) {
 				$out[] = array_merge( $entry, self::range_facet( $filter, $records ) );
+				continue;
+			}
+
+			if ( 'date' === $entry['type'] ) {
+				$out[] = array_merge( $entry, self::date_facet( $filter, $records ) );
 				continue;
 			}
 
@@ -1470,6 +1618,43 @@ class Pivot_Index_Builder {
 		$facet['min']  = pivot_parse_number( floor( round( $min * $scale, 6 ) ) / $scale );
 		$facet['max']  = pivot_parse_number( ceil( round( $max * $scale, 6 ) ) / $scale );
 		$facet['step'] = 10 === $scale ? 0.1 : 1;
+
+		return $facet;
+	}
+
+	/**
+	 * Étendue d'un critère de date, pour borner le calendrier du navigateur.
+	 *
+	 * Les bornes sont écrites au format ISO, celui des champs de date HTML.
+	 *
+	 * @param array $filter  Définition du filtre.
+	 * @param array $records Fiches neutres.
+	 * @return array
+	 */
+	private static function date_facet( $filter, $records ) {
+		$min = null;
+		$max = null;
+
+		foreach ( $records as $record ) {
+			foreach ( (array) pivot_get( $record, array( 'facets', pivot_get( $filter, 'key' ) ), array() ) as $period ) {
+				if ( ! is_array( $period ) || 2 !== count( $period ) ) {
+					continue;
+				}
+
+				$min = null === $min ? $period[0] : min( $min, $period[0] );
+				$max = null === $max ? $period[1] : max( $max, $period[1] );
+			}
+		}
+
+		$facet = array(
+			'operator' => pivot_get( $filter, 'operator', 'between' ),
+			'match'    => Pivot_Listings::date_match( $filter ),
+		);
+
+		if ( null !== $min ) {
+			$facet['min'] = pivot_date_iso( $min );
+			$facet['max'] = pivot_date_iso( $max );
+		}
 
 		return $facet;
 	}
@@ -1919,7 +2104,8 @@ class Pivot_Index_Builder {
 	/**
 	 * Empreinte de ce dont dépendent les fiches neutres.
 	 *
-	 * Si elle change, les fiches gardées ne correspondent plus à la page.
+	 * Si elle change, les fiches gardées ne correspondent plus à la page : la
+	 * configuration de la page, les langues, et le format des fiches.
 	 *
 	 * @param array $listing Configuration.
 	 * @return string
@@ -1933,6 +2119,7 @@ class Pivot_Index_Builder {
 					(int) pivot_get( $listing, 'content', 2 ),
 					(array) pivot_get( $listing, 'filters', array() ),
 					Pivot_I18n::enabled(),
+					self::RECORD_FORMAT,
 				)
 			)
 		);

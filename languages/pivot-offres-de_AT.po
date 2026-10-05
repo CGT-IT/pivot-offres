@@ -1743,3 +1743,27 @@ msgstr "Route wird geladen…"
 
 msgid "Tracé indisponible"
 msgstr "Route nicht verfügbar"
+
+msgid "Téléchargement des pictogrammes lancé. Il se poursuit en arrière-plan ; les index seront reconstruits ensuite si de nouveaux pictogrammes arrivent."
+msgstr "Download der Piktogramme gestartet. Er läuft im Hintergrund weiter; danach werden die Indizes neu aufgebaut, falls neue Piktogramme hinzukommen."
+
+msgid "Pictogrammes"
+msgstr "Piktogramme"
+
+msgid "Les pictogrammes PIVOT (classements, équipements, balisages, épingles de carte) sont copiés sur ce site, dans les tailles et couleurs déclarées par le thème, pour que les visiteurs ne les demandent plus à PIVOT. Les manquants sont téléchargés chaque jour."
+msgstr "Die PIVOT-Piktogramme (Klassifizierungen, Ausstattung, Markierungen, Kartenpins) werden in den vom Theme festgelegten Größen und Farben auf diese Website kopiert, damit Besucher sie nicht mehr bei PIVOT abrufen. Fehlende werden täglich heruntergeladen."
+
+msgid "%1$d fichiers (%2$s), %3$d urn(s) sans pictogramme chez PIVOT, affichées en texte."
+msgstr "%1$d Dateien (%2$s), %3$d URN(s) ohne Piktogramm bei PIVOT, als Text angezeigt."
+
+msgid "Téléchargement en cours."
+msgstr "Download läuft."
+
+msgid "Dernière vérification : %s."
+msgstr "Letzte Prüfung: %s."
+
+msgid "Télécharger les manquants"
+msgstr "Fehlende herunterladen"
+
+msgid "Tout retélécharger"
+msgstr "Alles erneut herunterladen"

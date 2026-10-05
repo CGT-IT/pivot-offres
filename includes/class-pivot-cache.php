@@ -56,7 +56,9 @@ class Pivot_Cache {
 	 * @return array
 	 */
 	public static function public_groups() {
-		return array( 'index' );
+		// pictos (Pivot_Pictos) n'est pas dans groups() : « Tout vider » ne
+		// doit pas effacer des fichiers vers lesquels pointent les index.
+		return array( 'index', 'pictos' );
 	}
 
 	/**
@@ -207,7 +209,7 @@ class Pivot_Cache {
 			. "Require all denied\n"
 		);
 
-		foreach ( self::groups() as $group ) {
+		foreach ( array_unique( array_merge( self::groups(), self::public_groups() ) ) as $group ) {
 			$dir = self::directory( $group );
 
 			// Un index.php par sous-dossier : le listing reste muet même si la

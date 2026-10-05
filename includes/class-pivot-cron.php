@@ -126,6 +126,7 @@ class Pivot_Cron {
 		wp_clear_scheduled_hook( 'pivot_purge_logs' );
 		wp_clear_scheduled_hook( 'pivot_nightly_sync' );
 		wp_clear_scheduled_hook( 'pivot_nightly_retry' );
+		wp_clear_scheduled_hook( 'pivot_sync_pictos' );
 
 		foreach ( array_keys( Pivot_Listings::all() ) as $listing_id ) {
 			wp_clear_scheduled_hook( 'pivot_continue_index', array( $listing_id ) );

@@ -349,15 +349,31 @@ function pivot_image_url( $code_cgt, $thumb = null, $args = array() ) {
 /**
  * URL d'un pictogramme d'urn.
  *
- * @param string $urn Urn (champ ou valeur de champ).
- * @param int    $h   Hauteur souhaitée.
- * @return string
+ * La copie locale (uploads/pivot-cache/pictos/) quand elle existe, sinon
+ * PIVOT. Voir Pivot_Pictos et le filtre pivot_pictos.
+ *
+ * @param string           $urn   Urn (champ, valeur de champ, type d'offre).
+ * @param string|array|int $usage Usage déclaré (« class », « equipment »,
+ *                                « signal », « pin »…), paramètres matriciels
+ *                                (array( 'h' => 20, 'c' => 'FFFFFF' )), ou
+ *                                hauteur en pixels.
+ * @return string Vide si PIVOT n'a pas de pictogramme pour cette urn.
  */
-function pivot_picto_url( $urn, $h = 32 ) {
-	if ( ! $urn ) {
-		return '';
-	}
-	return pivot_service_url() . '/img/' . rawurlencode( $urn ) . ';h=' . (int) $h;
+function pivot_picto_url( $urn, $usage = 32 ) {
+	return Pivot_Pictos::url( $urn, $usage );
+}
+
+/**
+ * PIVOT n'a-t-il qu'une image transparente pour cette urn ?
+ *
+ * Relevé lors du téléchargement des pictogrammes : de quoi afficher en texte
+ * un équipement sans pictogramme.
+ *
+ * @param string $urn Urn.
+ * @return bool
+ */
+function pivot_picto_is_empty( $urn ) {
+	return Pivot_Pictos::is_empty( $urn );
 }
 
 /**

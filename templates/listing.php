@@ -26,11 +26,17 @@ $pivot_index = Pivot_Index_Builder::ensure( $pivot_listing, $pivot_lang );
 // null ne veut pas dire « aucune offre » mais « index pas encore construit » :
 // la reconstruction vient d'être programmée. Les deux cas méritent des mots
 // différents, et celui-ci ne doit surtout pas être mis en cache par un proxy.
+// Les caches de page (W3 Total Cache, WP Super Cache…) ignorent les en-têtes
+// et ne lisent que DONOTCACHEPAGE.
 $pivot_pending = ( null === $pivot_index );
 
 if ( $pivot_pending ) {
 	nocache_headers();
 	header( 'Retry-After: 30' );
+
+	if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+		define( 'DONOTCACHEPAGE', true );
+	}
 }
 
 $pivot_items   = (array) pivot_get( $pivot_index, 'items', array() );

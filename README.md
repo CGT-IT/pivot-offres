@@ -86,6 +86,7 @@ La première page de résultats est écrite en HTML par PHP, à partir du même 
 | Fiches détail | `Fiches détail` | à la première visite après expiration ; ou à chaque reconstruction d'un index en mode **Complet avec offres liées**, puis chaque nuit pour les offres modifiées |
 | Thesaurus | `Thesaurus` | à la demande, durée longue conseillée |
 | Erreurs | `Erreurs` | évite de marteler le service sur une offre absente |
+| Pictogrammes | — | chaque jour pour les manquants, et quand le thème change ses usages ; jamais effacés par **Tout vider** (voir [Pictogrammes](#pictogrammes)) |
 
 Une fiche détail absente du cache coûte au visiteur un appel à PIVOT, d'une demi-seconde environ. Une page de listing réglée sur **Complet avec offres liées** reçoit, en construisant son index, chaque offre au niveau de détail de la fiche : elle la range au passage dans le cache des fiches, sans appel supplémentaire. Les fiches de ses offres s'ouvrent alors dès la première visite, que l'on vienne d'une vignette, d'un moteur de recherche ou d'un lien direct. En contrepartie, la construction de l'index est environ trois fois plus longue, et le cache privé grossit de 30 à 60 Ko par offre. Avec la mise à jour par différentiel, ces fiches sont gardées jusqu'à la reconstruction complète suivante, et celles des offres modifiées sont réécrites chaque nuit. Sans différentiel, gardez la durée `Fiches détail` au moins égale à celle des `Listes d'offres` : sinon les fiches expirent avant que la reconstruction suivante ne les renouvelle.
 
@@ -407,8 +408,6 @@ Seul le code sert à retrouver l'offre, en majuscules ou en minuscules. Les deux
 
 WordPress ajoute d'habitude une barre oblique finale aux adresses par une redirection 301. Le plugin la désactive sur les fiches : `/details/CODE&type=3` reste tel quel.
 
-**En venant d'une version antérieure à la 2.6.0**, les fiches étaient publiées sous `/offre/nom-de-loffre-CODE/`. Ces adresses renvoient désormais une 404. La mise à jour supprime la table de redirections, les réglages d'URL et le registre des adresses, puis reconstruit les index pour que les vignettes pointent vers `/details/`.
-
 ---
 
 ## Référencement
@@ -717,6 +716,36 @@ Deux conséquences pratiques :
 - **Vos règles d'exclusion s'écrivent une fois.** `urn:fld:nomreco` couvre aussi `nl:urn:fld:nomreco` : la comparaison se fait toujours sur l'urn débarrassée de son préfixe. Idem pour les gabarits, qui reçoivent l'urn nue dans `$row['urn']`.
 - **La langue prime sur l'ordre des champs.** Le descriptif essaie toutes les urns de la langue demandée avant les formes nues. Sans cela, dès qu'on déclare plusieurs urns par `pivot_description_urns`, la première remplie en français gagnerait contre la deuxième remplie en néerlandais.
 
+### Pictogrammes
+
+PIVOT sert ses pictogrammes (classements, équipements, balisages, épingles de carte) sans en-tête de cache : chaque visiteur les lui redemande. Le plugin les copie dans `uploads/pivot-cache/pictos/`, dans les tailles et couleurs que le thème déclare, et `pivot_picto_url()` sert la copie locale :
+
+```php
+pivot_picto_url( 'urn:val:class:3star', 'class' );      // usage déclaré
+pivot_picto_url( 'urn:fld:phone1', array( 'h' => 20 ) ); // paramètres PIVOT
+pivot_picto_url( 'urn:fld:eqpsrv:wifi', 30 );            // hauteur, ancienne signature
+```
+
+Un pictogramme absent du dossier est servi par PIVOT, comme avant. Pour une urn dont PIVOT n'a qu'une image transparente, la fonction renvoie une chaîne vide, et `pivot_picto_is_empty( $urn )` permet d'afficher l'équipement en texte.
+
+Les usages se déclarent par le filtre `pivot_pictos`. Ceux du plugin : `class` (h=22), `equipment` (h=30), `signal` (w=25) et `pin` (épingle de carte : modifier=pin, modifier=ori, w=30). Les urns sont soit des sources lues dans le thesaurus (`class`, `signal`, `equipment`, `types`), soit des urns explicites. Un paramètre répété s'écrit en tableau.
+
+```php
+add_filter( 'pivot_pictos', function ( $usages ) {
+	$usages['class']['args']['c'] = '71BE63';        // couleur des classements
+	$usages['equipment']['urns'][] = 'urn:fld:pmr';  // une urn de plus
+	$usages['contact'] = array(                      // un usage du thème
+		'args' => array( 'h' => 20, 'c' => '5F7089' ),
+		'urns' => array( 'urn:fld:phone1', 'urn:fld:mail1' ),
+	);
+	return $usages;
+} );
+```
+
+Le téléchargement est automatique : à l'activation, chaque jour pour les pictogrammes manquants, et dès qu'un thème change ses usages (vérifié à l'ouverture de l'administration). Quand de nouveaux pictogrammes arrivent, les index sont reconstruits, puisque les vignettes en portent l'adresse. À la main : **PIVOT → Cache et outils → Pictogrammes**, ou `wp pivot pictos` (`--force` pour tout reprendre, `--dry-run` pour la liste).
+
+Ces fichiers sont propres à chaque site et ne se versionnent pas. Ils vivent sous `uploads` pour survivre aux mises à jour du thème et du plugin, et **Tout vider** n'y touche pas : les index pointent vers eux.
+
 ### Styles
 
 `assets/css/pivot.css` est volontairement discret et pilotable par variables :
@@ -750,6 +779,7 @@ Le nombre de colonnes d'une page de listing se règle dans son écran d'édition
 | `pivot_index_record` | enrichir la fiche neutre d'une offre avant traduction |
 | `pivot_grouped_specs` | réorganiser les blocs de la fiche |
 | `pivot_index_item` | enrichir une entrée d'index, avant le rendu de la vignette |
+| `pivot_pictos` | tailles, couleurs et urns des pictogrammes copiés localement |
 | `pivot_card_fields` | champs supplémentaires embarqués dans les vignettes d'un type |
 | `pivot_track_offer_types` | types d'offre dont la carte propose le tracé GPX sans le connaître d'avance (8 par défaut) |
 | `pivot_track_style` | style du tracé GPX sur la carte d'un listing |
@@ -831,6 +861,7 @@ pivot-offres/
 │   ├── class-pivot-templates.php rendu et aides d'affichage
 │   ├── class-pivot-shortcodes.php shortcode d'insertion éditoriale
 │   ├── class-pivot-onboarding.php visites guidées
+│   ├── class-pivot-pictos.php    copie locale des pictogrammes, commande wp pivot pictos
 │   └── class-pivot-cron.php      tâches planifiées
 ├── admin/                        réglages, pages de listing, types d'offres, champs affichés, shortcode, outils, journal
 ├── templates/                    gabarits surchargeables, et exemples dans examples/

@@ -25,6 +25,7 @@ class Pivot_Tools {
 		settings_errors( 'pivot_tools' );
 
 		self::section_cache();
+		self::section_pictos();
 		self::section_legacy();
 		self::section_diagnostics();
 
@@ -91,14 +92,22 @@ class Pivot_Tools {
 				break;
 
 			case 'rebuild_indexes':
-				foreach ( array_keys( Pivot_Listings::active() ) as $listing_id ) {
-					Pivot_Index_Builder::invalidate( $listing_id );
-					wp_schedule_single_event( time() + 5, 'pivot_continue_index', array( $listing_id ) );
-				}
+				Pivot_Index_Builder::rebuild_all();
 				add_settings_error(
 					'pivot_tools',
 					'rebuild_scheduled',
 					__( 'Reconstruction lancée pour toutes les pages actives. Elle se poursuit en arrière-plan.', 'pivot-offres' ),
+					'updated'
+				);
+				break;
+
+			case 'sync_pictos':
+			case 'resync_pictos':
+				Pivot_Pictos::schedule( 'resync_pictos' === $action );
+				add_settings_error(
+					'pivot_tools',
+					'pictos_scheduled',
+					__( 'Téléchargement des pictogrammes lancé. Il se poursuit en arrière-plan ; les index seront reconstruits ensuite si de nouveaux pictogrammes arrivent.', 'pivot-offres' ),
 					'updated'
 				);
 				break;
@@ -188,6 +197,51 @@ class Pivot_Tools {
 		printf(
 			'<button type="submit" name="pivot_action" value="flush_all" class="button button-link-delete">%s</button>',
 			esc_html__( 'Tout vider', 'pivot-offres' )
+		);
+		echo '</p>';
+		echo '</form>';
+	}
+
+	/**
+	 * Bloc « Pictogrammes ».
+	 */
+	private static function section_pictos() {
+		$stats = Pivot_Pictos::stats();
+
+		echo '<h2>' . esc_html__( 'Pictogrammes', 'pivot-offres' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Les pictogrammes PIVOT (classements, équipements, balisages, épingles de carte) sont copiés sur ce site, dans les tailles et couleurs déclarées par le thème, pour que les visiteurs ne les demandent plus à PIVOT. Les manquants sont téléchargés chaque jour.', 'pivot-offres' ) . '</p>';
+
+		echo '<p>';
+		printf(
+			/* translators: 1 : nombre de fichiers, 2 : poids, 3 : nombre d'urns sans pictogramme. */
+			esc_html__( '%1$d fichiers (%2$s), %3$d urn(s) sans pictogramme chez PIVOT, affichées en texte.', 'pivot-offres' ),
+			(int) $stats['files'],
+			esc_html( size_format( (int) $stats['size'] ) ),
+			(int) $stats['empty']
+		);
+		echo ' ';
+
+		if ( $stats['running'] ) {
+			esc_html_e( 'Téléchargement en cours.', 'pivot-offres' );
+		} elseif ( $stats['last'] ) {
+			printf(
+				/* translators: %s : date et heure. */
+				esc_html__( 'Dernière vérification : %s.', 'pivot-offres' ),
+				esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $stats['last'] ) )
+			);
+		}
+		echo '</p>';
+
+		echo '<form method="post" class="pivot-tool-actions">';
+		wp_nonce_field( 'pivot_tools' );
+		echo '<p>';
+		printf(
+			'<button type="submit" name="pivot_action" value="sync_pictos" class="button">%s</button> ',
+			esc_html__( 'Télécharger les manquants', 'pivot-offres' )
+		);
+		printf(
+			'<button type="submit" name="pivot_action" value="resync_pictos" class="button">%s</button>',
+			esc_html__( 'Tout retélécharger', 'pivot-offres' )
 		);
 		echo '</p>';
 		echo '</form>';

@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       PIVOT Offres V2
  * Description:       Publie les offres touristiques de PIVOT/Web (Tourisme Wallonie) : pages de listing paramétrables, recherche et pagination 100 % côté client, cartographie, pages détail optimisées SEO, multilingue fr/nl/en/de à partir des traductions renvoyées par PIVOT. Aucune offre n'est stockée en base de données.
- * Version:           2.10.0
+ * Version:           2.11.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * License:           GPL-2.0-or-later
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PIVOT_VERSION', '2.10.0' );
+define( 'PIVOT_VERSION', '2.11.0' );
 define( 'PIVOT_FILE', __FILE__ );
 define( 'PIVOT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PIVOT_URL', plugin_dir_url( __FILE__ ) );
@@ -65,6 +65,7 @@ require_once PIVOT_DIR . 'includes/class-pivot-sitemap.php';
 require_once PIVOT_DIR . 'includes/class-pivot-templates.php';
 require_once PIVOT_DIR . 'includes/class-pivot-shortcodes.php';
 require_once PIVOT_DIR . 'includes/class-pivot-cron.php';
+require_once PIVOT_DIR . 'includes/class-pivot-pictos.php';
 // La reprise de l'ancien plugin tourne à l'activation, y compris depuis
 // WP-CLI, qui n'est pas is_admin() : elle est déclarée hors du bloc ci-dessous.
 require_once PIVOT_DIR . 'includes/class-pivot-legacy-import.php';
@@ -228,6 +229,7 @@ final class Pivot_Offres {
 		Pivot_Seo::instance();
 		Pivot_Rest::instance();
 		Pivot_Cron::instance();
+		Pivot_Pictos::instance();
 
 		if ( is_admin() ) {
 			Pivot_Admin::instance();
@@ -276,6 +278,7 @@ function pivot_activate() {
 		'dossier de cache'            => array( 'Pivot_Cache', 'ensure_directory' ),
 		'ancien cache'                => array( 'Pivot_Cache', 'purge_legacy_store' ),
 		'tâches planifiées'           => array( 'Pivot_Cron', 'schedule_events' ),
+		'pictogrammes'                => array( 'Pivot_Pictos', 'schedule' ),
 		'reprise de l\'ancien plugin' => array( 'Pivot_Legacy_Import', 'maybe_run' ),
 	);
 

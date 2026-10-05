@@ -225,6 +225,19 @@ class Pivot_Index_Builder {
 	}
 
 	/**
+	 * Reconstruit en arrière-plan les index de toutes les pages actives.
+	 *
+	 * Les anciens index restent servis jusqu'à ce que les nouveaux les
+	 * remplacent.
+	 */
+	public static function rebuild_all() {
+		foreach ( array_keys( Pivot_Listings::active() ) as $listing_id ) {
+			self::invalidate( $listing_id );
+			wp_schedule_single_event( time() + 5, 'pivot_continue_index', array( $listing_id ) );
+		}
+	}
+
+	/**
 	 * Marque les index comme périmés sans interrompre le service.
 	 *
 	 * @param string $listing_id Identifiant.

@@ -2476,3 +2476,35 @@ msgstr ""
 #: includes/class-pivot-templates.php
 msgid "Tracé indisponible"
 msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Téléchargement des pictogrammes lancé. Il se poursuit en arrière-plan ; les index seront reconstruits ensuite si de nouveaux pictogrammes arrivent."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Pictogrammes"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Les pictogrammes PIVOT (classements, équipements, balisages, épingles de carte) sont copiés sur ce site, dans les tailles et couleurs déclarées par le thème, pour que les visiteurs ne les demandent plus à PIVOT. Les manquants sont téléchargés chaque jour."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "%1$d fichiers (%2$s), %3$d urn(s) sans pictogramme chez PIVOT, affichées en texte."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Téléchargement en cours."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Dernière vérification : %s."
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Télécharger les manquants"
+msgstr ""
+
+#: admin/class-pivot-tools.php
+msgid "Tout retélécharger"
+msgstr ""

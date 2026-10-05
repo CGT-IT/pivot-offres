@@ -66,6 +66,7 @@
 
 			toggleUrnField( row );
 			toggleRangeOptions( row );
+			refreshKeys( container );
 
 			return row;
 		};
@@ -89,6 +90,7 @@
 			var row = event.target.closest( '.pivot-filter-row' );
 			if ( row ) {
 				row.parentNode.removeChild( row );
+				refreshKeys( container );
 			}
 		} );
 
@@ -104,12 +106,22 @@
 			if ( event.target.classList.contains( 'pivot-group-input' ) ) {
 				refreshGroupSuggestions( container );
 			}
+
+			refreshKeys( container );
+		} );
+
+		container.addEventListener( 'input', function ( event ) {
+			if ( event.target.matches( 'input[name*="[label]"], .pivot-urn-input' ) ) {
+				refreshKeys( container );
+			}
 		} );
 
 		Array.prototype.forEach.call( container.querySelectorAll( '.pivot-filter-row' ), function ( row ) {
 			toggleUrnField( row );
 			toggleRangeOptions( row );
 		} );
+
+		refreshKeys( container );
 
 		initFieldPicker( container );
 	}
@@ -178,6 +190,72 @@
 		}
 
 		urnField.hidden = source.value !== 'spec';
+	}
+
+	/**
+	 * Clé d'URL de chaque critère, calculée comme le fait le serveur à
+	 * l'enregistrement : la fin de l'urn, ou le nom de la source, suffixée
+	 * en cas de doublon. Un critère enregistré garde sa clé tant que sa
+	 * source et son urn ne changent pas.
+	 */
+	function refreshKeys( container ) {
+		var used = {};
+
+		Array.prototype.forEach.call( container.querySelectorAll( '.pivot-filter-row' ), function ( row ) {
+			var input = row.querySelector( '.pivot-key-input' );
+			var label = row.querySelector( 'input[name*="[label]"]' );
+			var source = row.querySelector( '.pivot-filter-source' );
+			var urn = row.querySelector( '.pivot-urn-input' );
+
+			if ( ! input || ! source ) {
+				return;
+			}
+
+			var sourceValue = source.value;
+			var urnValue = urn ? urn.value.trim() : '';
+			var savedKey = input.getAttribute( 'data-saved-key' ) || '';
+			var key;
+
+			if (
+				savedKey &&
+				sourceValue === input.getAttribute( 'data-saved-source' ) &&
+				( 'spec' !== sourceValue || urnValue === input.getAttribute( 'data-saved-urn' ) )
+			) {
+				key = savedKey;
+			} else if ( 'spec' === sourceValue && '' === urnValue ) {
+				key = '';
+			} else {
+				key = sanitizeKey(
+					'spec' === sourceValue
+						? urnValue.replace( /urn:(fld|obj):/g, '' ).replace( /:/g, '_' )
+						: sourceValue
+				);
+			}
+
+			// Le serveur écarte ces critères : ils ne prennent pas de clé.
+			var kept = label && label.value.trim() && ( 'spec' !== sourceValue || urnValue );
+
+			if ( kept ) {
+				var base = key || 'f';
+				var i = 2;
+
+				while ( used[ key ] ) {
+					key = base + '-' + i;
+					i++;
+				}
+
+				used[ key ] = true;
+			}
+
+			input.value = key;
+		} );
+	}
+
+	/**
+	 * Équivalent de sanitize_key() de WordPress.
+	 */
+	function sanitizeKey( value ) {
+		return String( value ).toLowerCase().replace( /[^a-z0-9_\-]/g, '' );
 	}
 
 
@@ -622,6 +700,7 @@
 			fill( row, 'select[name*="[operator]"]', item.getAttribute( 'data-operator' ) );
 			fill( row, 'select[name*="[date_operator]"]', item.getAttribute( 'data-operator' ) );
 			toggleRangeOptions( row );
+			refreshKeys( container );
 
 			row.querySelector( '.pivot-field-picker' ).hidden = true;
 		} );
@@ -1103,6 +1182,13 @@
 			reveal( document.querySelector( window.location.hash.replace( /[^#\w-]/g, '' ) ) );
 		}
 
+		// Liens vers une section posés dans un avertissement, hors du bandeau.
+		Array.prototype.slice.call( document.querySelectorAll( '.notice a[href^="#pivot-section-"]' ) ).forEach( function ( link ) {
+			link.addEventListener( 'click', function () {
+				reveal( document.querySelector( link.getAttribute( 'href' ) ) );
+			} );
+		} );
+
 		if ( ! nav ) {
 			return;
 		}
@@ -1266,7 +1352,46 @@
 		} );
 	}
 
+	/* --------------------------------------------- requête partagée */
+
+	/**
+	 * Avertit, dès la saisie du code de requête, qu'une autre page l'utilise :
+	 * PIVOT ne tient qu'un différentiel par requête, il est alors désactivé
+	 * pour toutes ces pages.
+	 */
+	function initSharedQuery() {
+		var input = document.querySelector( '.pivot-query-code' );
+		var notice = document.querySelector( '.pivot-query-shared' );
+
+		if ( ! input || ! notice ) {
+			return;
+		}
+
+		var pages = notice.querySelector( '.pivot-query-shared-pages' );
+		var shared = {};
+
+		try {
+			shared = JSON.parse( input.getAttribute( 'data-shared-queries' ) || '{}' ) || {};
+		} catch ( e ) {
+			return;
+		}
+
+		function check() {
+			var names = shared[ input.value.trim().toUpperCase() ];
+
+			if ( names && names.length ) {
+				pages.textContent = names.join( ', ' );
+			}
+
+			notice.hidden = ! ( names && names.length );
+		}
+
+		input.addEventListener( 'input', check );
+		check();
+	}
+
 	document.addEventListener( 'DOMContentLoaded', function () {
+		initSharedQuery();
 		initListingsSearch();
 		initSections();
 		initFilters();

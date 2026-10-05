@@ -953,3 +953,12 @@
 		width: auto;
 	}
 }
+
+/* Avertissement de requête partagée, sous le code de requête. */
+.pivot-query-shared {
+	margin: 8px 0 0;
+}
+
+.pivot-query-shared[hidden] {
+	display: none;
+}

@@ -278,7 +278,7 @@ class Pivot_Onboarding {
 					array(
 						'target' => '.pivot-filter-row:first-child input[name*="[key]"]',
 						'title'  => __( '5. Clé d\'URL', 'pivot-offres' ),
-						'text'   => __( 'Le nom du paramètre dans l\'adresse : ?province=namur. Laissez vide, il est calculé. Cette clé est identique dans toutes les langues, ce qui rend un lien filtré partageable entre versions linguistiques.', 'pivot-offres' ),
+						'text'   => __( 'Le nom du paramètre dans l\'adresse : ?province=namur. Elle est déduite de l\'urn du champ et ne se modifie pas. Cette clé est identique dans toutes les langues, ce qui rend un lien filtré partageable entre versions linguistiques.', 'pivot-offres' ),
 					),
 					array(
 						'target'   => '.pivot-filter-row:first-child .pivot-filter-i18n',

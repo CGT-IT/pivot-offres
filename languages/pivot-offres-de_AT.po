@@ -737,8 +737,8 @@ msgstr "Was der Besucher bedient. Auswahlliste für eine Wahl, Kontrollkästchen
 msgid "5. Clé d'URL"
 msgstr "5. URL-Schlüssel"
 
-msgid "Le nom du paramètre dans l'adresse : ?province=namur. Laissez vide, il est calculé. Cette clé est identique dans toutes les langues, ce qui rend un lien filtré partageable entre versions linguistiques."
-msgstr "Der Name des Parameters in der Adresse: ?province=namur. Leer lassen, er wird berechnet. Dieser Schlüssel ist in allen Sprachen gleich, sodass ein gefilterter Link zwischen den Sprachversionen teilbar bleibt."
+msgid "Le nom du paramètre dans l'adresse : ?province=namur. Elle est déduite de l'urn du champ et ne se modifie pas. Cette clé est identique dans toutes les langues, ce qui rend un lien filtré partageable entre versions linguistiques."
+msgstr "Der Name des Parameters in der Adresse: ?province=namur. Er wird aus der URN des Feldes abgeleitet und ist nicht änderbar. Dieser Schlüssel ist in allen Sprachen gleich, sodass ein gefilterter Link zwischen den Sprachversionen teilbar bleibt."
 
 msgid "Traduire le critère"
 msgstr "Das Kriterium übersetzen"

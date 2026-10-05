@@ -1039,6 +1039,10 @@ class Pivot_Index_Builder {
 
 			$value = trim( $value );
 
+			if ( self::is_excluded_value( $value ) ) {
+				continue;
+			}
+
 			if ( ! $labels && 0 === strpos( $value, 'urn:' ) ) {
 				$labels = Pivot_Thesaurus::label_set( $value );
 			}
@@ -1047,6 +1051,31 @@ class Pivot_Index_Builder {
 		}
 
 		return $entries;
+	}
+
+	/**
+	 * Cette valeur doit-elle rester hors des choix d'un critère ?
+	 *
+	 * Un classement échu ne qualifie plus l'offre : le proposer au visiteur
+	 * ne mènerait qu'à des offres qui ne sont plus classées. L'offre reste
+	 * dans le listing, sans valeur pour ce critère.
+	 *
+	 * @param string $value Valeur d'origine (urn ou texte).
+	 * @return bool
+	 */
+	private static function is_excluded_value( $value ) {
+		static $excluded = null;
+
+		if ( null === $excluded ) {
+			/**
+			 * Valeurs écartées des critères de recherche.
+			 *
+			 * @param array $values Urns de valeurs.
+			 */
+			$excluded = array_flip( (array) apply_filters( 'pivot_excluded_facet_values', array( 'urn:val:class:echue' ) ) );
+		}
+
+		return isset( $excluded[ $value ] );
 	}
 
 	/* --------------------------------------------------------------- écriture */
@@ -1432,13 +1461,29 @@ class Pivot_Index_Builder {
 	/**
 	 * Bascule la langue d'affichage, le temps de rendre des vignettes.
 	 *
+	 * WordPress ne bascule pas vers la locale qu'il croit courante. Or WPML
+	 * filtre cette locale (langue de l'administration, cookie) sans que les
+	 * traductions chargées suivent : après le retour de la langue précédente,
+	 * WordPress recharge la locale du site, et l'index anglais sortait avec
+	 * les textes français, le néerlandais avec ceux de l'index d'avant. La
+	 * bascule est donc forcée : le filtre ne répond qu'à la comparaison qui
+	 * ouvre switch_to_locale(), pas aux appels faits pendant la bascule.
+	 *
 	 * @param string $lang Langue.
 	 */
 	private static function switch_lang( $lang ) {
 		Pivot_I18n::set_current( $lang );
 
 		if ( function_exists( 'switch_to_locale' ) ) {
+			$force = static function () use ( &$force ) {
+				remove_filter( 'pre_determine_locale', $force );
+
+				return 'pivot-switch';
+			};
+
+			add_filter( 'pre_determine_locale', $force );
 			switch_to_locale( Pivot_I18n::locale( $lang ) );
+			remove_filter( 'pre_determine_locale', $force );
 		}
 	}
 
@@ -1687,16 +1732,33 @@ class Pivot_Index_Builder {
 	 * @return bool
 	 */
 	public static function shares_query( $listing ) {
-		$id    = (string) pivot_get( $listing, 'id', '' );
-		$query = (string) pivot_get( $listing, 'query_code', '' );
+		return (bool) self::query_siblings( $listing );
+	}
 
-		foreach ( Pivot_Listings::active() as $other ) {
-			if ( (string) $other['id'] !== $id && (string) $other['query_code'] === $query ) {
-				return true;
+	/**
+	 * Autres pages qui interrogent la même requête.
+	 *
+	 * @param array $listing     Configuration.
+	 * @param bool  $active_only Pages publiées seulement : les seules qui
+	 *                           consomment le différentiel.
+	 * @return array Configurations, par identifiant.
+	 */
+	public static function query_siblings( $listing, $active_only = true ) {
+		$id    = (string) pivot_get( $listing, 'id', '' );
+		$query = strtoupper( trim( (string) pivot_get( $listing, 'query_code', '' ) ) );
+		$out   = array();
+
+		if ( '' === $query ) {
+			return $out;
+		}
+
+		foreach ( $active_only ? Pivot_Listings::active() : Pivot_Listings::all() as $other_id => $other ) {
+			if ( (string) $other['id'] !== $id && strtoupper( (string) $other['query_code'] ) === $query ) {
+				$out[ $other_id ] = $other;
 			}
 		}
 
-		return false;
+		return $out;
 	}
 
 	/**

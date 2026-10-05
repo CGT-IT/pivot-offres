@@ -151,6 +151,24 @@ class Pivot_Listing_Edit {
 		if ( isset( $_GET['message'] ) && 'saved' === $_GET['message'] ) {
 			echo '<div class="notice notice-success"><p>' . esc_html__( 'Page enregistrée.', 'pivot-offres' ) . '</p></div>';
 			self::converted_notice();
+
+			// La section « Offres affichées » peut être repliée : l'avertissement
+			// qu'elle porte passerait inaperçu.
+			if ( ! $is_new && pivot_settings( 'diff_enabled', 1 ) ) {
+				$siblings = Pivot_Index_Builder::query_siblings( $listing, false );
+
+				if ( $siblings ) {
+					printf(
+						'<div class="notice notice-warning"><p>%s</p></div>',
+						sprintf(
+							/* translators: 1 : noms des autres pages, 2 : lien vers la section. */
+							esc_html__( 'Ce code de requête est aussi utilisé par %1$s : la mise à jour par différentiel ne peut pas fonctionner pour ces pages. %2$s', 'pivot-offres' ),
+							'<strong>' . esc_html( implode( ', ', array_map( array( __CLASS__, 'sibling_label' ), $siblings ) ) ) . '</strong>',
+							'<a href="#pivot-section-source">' . esc_html__( 'Pourquoi ?', 'pivot-offres' ) . '</a>'
+						)
+					);
+				}
+			}
 		}
 
 		self::section_nav( $is_new );
@@ -398,9 +416,10 @@ class Pivot_Listing_Edit {
 		self::row(
 			__( 'Code de requête', 'pivot-offres' ),
 			sprintf(
-				'<input type="text" name="pivot_listing[query_code]" value="%s" class="regular-text code" placeholder="QRY-00-0000-0000" required />',
-				esc_attr( $listing['query_code'] )
-			),
+				'<input type="text" name="pivot_listing[query_code]" value="%1$s" class="regular-text code pivot-query-code" placeholder="QRY-00-0000-0000" required data-shared-queries="%2$s" />',
+				esc_attr( $listing['query_code'] ),
+				esc_attr( (string) wp_json_encode( self::shared_queries( $listing ) ) )
+			) . self::query_shared_notice( $listing ),
 			__( 'Code de la requête pré-programmée créée dans PIVOT. C\'est elle qui détermine quelles offres apparaissent ici.', 'pivot-offres' )
 		);
 
@@ -473,6 +492,80 @@ class Pivot_Listing_Edit {
 		echo '</tbody></table>';
 
 		self::section_close();
+	}
+
+	/**
+	 * Codes de requête déjà pris par les autres pages, et par lesquelles.
+	 *
+	 * Lu par le JavaScript pour avertir dès la saisie du code, avant même
+	 * l'enregistrement. Vide quand le différentiel est coupé dans les réglages :
+	 * partager une requête n'a alors aucune conséquence.
+	 *
+	 * @param array $listing Configuration.
+	 * @return array Code => noms des pages, prêts à afficher.
+	 */
+	private static function shared_queries( $listing ) {
+		$out = array();
+
+		if ( ! pivot_settings( 'diff_enabled', 1 ) ) {
+			return $out;
+		}
+
+		foreach ( Pivot_Listings::all() as $id => $other ) {
+			$code = strtoupper( (string) $other['query_code'] );
+
+			if ( (string) $id === (string) $listing['id'] || '' === $code ) {
+				continue;
+			}
+
+			$out[ $code ][] = self::sibling_label( $other );
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Nom d'une page dans l'avertissement de requête partagée.
+	 *
+	 * @param array $listing Configuration.
+	 * @return string
+	 */
+	private static function sibling_label( $listing ) {
+		$label = '« ' . $listing['title'] . ' »';
+
+		if ( empty( $listing['active'] ) ) {
+			$label .= ' ' . __( '(non publiée)', 'pivot-offres' );
+		}
+
+		return $label;
+	}
+
+	/**
+	 * Avertissement sous le code de requête quand une autre page l'utilise.
+	 *
+	 * Rendu même sans conflit, masqué : le JavaScript l'affiche quand le code
+	 * saisi rejoint celui d'une autre page.
+	 *
+	 * @param array $listing Configuration.
+	 * @return string HTML.
+	 */
+	private static function query_shared_notice( $listing ) {
+		if ( ! pivot_settings( 'diff_enabled', 1 ) ) {
+			return '';
+		}
+
+		$names = array_map( array( __CLASS__, 'sibling_label' ), Pivot_Index_Builder::query_siblings( $listing, false ) );
+
+		return sprintf(
+			'<div class="notice notice-warning inline pivot-query-shared"%1$s><p>%2$s</p><p>%3$s</p></div>',
+			$names ? '' : ' hidden',
+			sprintf(
+				/* translators: %s : noms des autres pages de listing. */
+				esc_html__( 'Ce code de requête est déjà utilisé par %s.', 'pivot-offres' ),
+				'<strong><span class="pivot-query-shared-pages">' . esc_html( implode( ', ', $names ) ) . '</span></strong>'
+			),
+			esc_html__( 'Les deux pages fonctionneront, chacune avec ses propres paramètres. Mais PIVOT ne tient qu\'un seul différentiel par requête : tant qu\'elles sont publiées ensemble, la mise à jour par différentiel est désactivée pour chacune, et leurs index sont reconstruits entièrement — plus long, et plus d\'appels à PIVOT. Pour la garder, dupliquez la requête dans PIVOT et donnez un code distinct à chaque page.', 'pivot-offres' )
+		);
 	}
 
 	/**
@@ -831,12 +924,18 @@ class Pivot_Listing_Edit {
 
 		echo '</select></label>';
 
+		// Déduite de l'urn par le script, non modifiable. La clé enregistrée
+		// reste tant que la source et l'urn ne changent pas : les liens
+		// filtrés déjà diffusés restent valables.
 		printf(
-			'<label>%s<input type="text" name="%s[key]" value="%s" placeholder="%s" /></label>',
+			'<label>%s<input type="text" name="%s[key]" value="%s" class="pivot-key-input" placeholder="%s" readonly data-saved-key="%s" data-saved-source="%s" data-saved-urn="%s" /></label>',
 			esc_html__( 'Clé d\'URL', 'pivot-offres' ),
 			esc_attr( $name ),
 			esc_attr( $key ),
-			esc_attr__( 'calculée', 'pivot-offres' )
+			esc_attr__( 'calculée', 'pivot-offres' ),
+			esc_attr( $key ),
+			esc_attr( $key ? pivot_get( $filter, 'source', 'spec' ) : '' ),
+			esc_attr( $key ? pivot_get( $filter, 'urn', '' ) : '' )
 		);
 
 		echo '</div>';
@@ -1332,23 +1431,25 @@ class Pivot_Listing_Edit {
 	private static function allowed_html() {
 		return array(
 			'input'    => array(
-				'type'         => true,
-				'name'         => true,
-				'value'        => true,
-				'class'        => true,
-				'placeholder'  => true,
-				'min'          => true,
-				'max'          => true,
-				'checked'      => true,
-				'required'     => true,
-				'id'           => true,
-				'autocomplete' => true,
+				'type'                => true,
+				'name'                => true,
+				'value'               => true,
+				'class'               => true,
+				'placeholder'         => true,
+				'min'                 => true,
+				'max'                 => true,
+				'checked'             => true,
+				'required'            => true,
+				'id'                  => true,
+				'autocomplete'        => true,
+				'data-shared-queries' => true,
 			),
 			'select'   => array( 'name' => true, 'class' => true, 'id' => true ),
 			'option'   => array( 'value' => true, 'selected' => true ),
 			'textarea' => array( 'name' => true, 'rows' => true, 'class' => true, 'placeholder' => true, 'id' => true ),
 			'label'    => array( 'for' => true, 'class' => true ),
 			'code'     => array(),
+			'p'        => array(),
 			'br'       => array(),
 			'strong'   => array(),
 			'a'        => array( 'href' => true, 'class' => true, 'target' => true, 'rel' => true ),

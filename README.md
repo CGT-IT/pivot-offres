@@ -271,6 +271,29 @@ Pour adapter les textes, ajouter une visite ou en retirer une, passez par le fil
 
 ---
 
+## Mises à jour
+
+Les sites sont prévenus des nouvelles versions publiées sur GitHub ([mdegembe/pivot-offres](https://github.com/mdegembe/pivot-offres)), comme pour une extension de wordpress.org : **Extensions** et **Tableau de bord → Mises à jour** proposent la mise à jour, et **Voir les détails** affiche les notes de version. WordPress vérifie toutes les 12 heures. Le lien **Vérifier les mises à jour**, sous l'extension dans la liste, force la vérification.
+
+Un site doit recevoir une première fois à la main la version 2.10.0 ou une version ultérieure : c'est elle qui apporte ce mécanisme. Le dossier doit s'appeler `pivot-offres`.
+
+Rien n'est proposé sur une copie de développement, reconnue à son dossier `.git` : la mise à jour y remplacerait le dépôt et les changements non commités. Pour tester malgré tout, ajoutez `define( 'PIVOT_UPDATER_FORCE', true );` dans `wp-config.php`.
+
+### Publier une version
+
+1. Dans `pivot-offres.php`, montez le numéro à deux endroits : l'en-tête `Version:` et la constante `PIVOT_VERSION`.
+2. Commitez, posez le tag et poussez :
+   ```
+   git commit -am "Version 2.10.1"
+   git tag v2.10.1
+   git push origin master --tags
+   ```
+3. L'action GitHub `.github/workflows/release.yml` vérifie que le tag correspond aux deux numéros, construit `pivot-offres.zip` et crée la Release. Ses notes sont générées à partir des commits ; corrigez-les dans GitHub si besoin, ce sont elles que les sites affichent.
+
+Une Release sans `pivot-offres.zip` n'est jamais proposée aux sites. Si l'action échoue (numéros incohérents), corrigez, supprimez le tag (`git tag -d v2.10.1` puis `git push origin :refs/tags/v2.10.1`) et recommencez.
+
+---
+
 ## Vérifier la version installée
 
 Deux endroits l'affichent : la liste des extensions de WordPress, et la première ligne du tableau **PIVOT → Cache et outils → Diagnostic**.
@@ -785,6 +808,7 @@ pivot-offres/
 ├── uninstall.php                 nettoyage complet
 ├── includes/
 │   ├── preflight.php             contrôles avant chargement : PHP, extensions, collisions, dossiers
+│   ├── updater.php               mises à jour depuis les Releases GitHub
 │   ├── helpers.php               pivot_get(), réglages, URL d'images
 │   ├── class-pivot-i18n.php      langues, détection, ponts WPML et Polylang
 │   ├── class-pivot-cache.php     cache fichier (aucune offre en base)
@@ -811,7 +835,9 @@ pivot-offres/
 ├── admin/                        réglages, pages de listing, types d'offres, champs affichés, shortcode, outils, journal
 ├── templates/                    gabarits surchargeables, et exemples dans examples/
 ├── languages/                    .pot et catalogues nl, de, en
-└── assets/                       CSS, JavaScript, et Leaflet dans vendor/
+├── assets/                       CSS, JavaScript, et Leaflet dans vendor/
+├── lib/plugin-update-checker/    bibliothèque des mises à jour (MIT)
+└── .github/workflows/release.yml construction du zip et de la Release à chaque tag
 ```
 
 ---

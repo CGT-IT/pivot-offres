@@ -2,24 +2,33 @@
 /**
  * Plugin Name:       PIVOT Offres V2
  * Description:       Publie les offres touristiques de PIVOT/Web (Tourisme Wallonie) : pages de listing paramétrables, recherche et pagination 100 % côté client, cartographie, pages détail optimisées SEO, multilingue fr/nl/en/de à partir des traductions renvoyées par PIVOT. Aucune offre n'est stockée en base de données.
- * Version:           2.9.4
+ * Version:           2.10.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       pivot-offres
  * Domain Path:       /languages
+ * Update URI:        https://github.com/mdegembe/pivot-offres
  *
  * @package Pivot_Offres
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PIVOT_VERSION', '2.9.4' );
+define( 'PIVOT_VERSION', '2.10.0' );
 define( 'PIVOT_FILE', __FILE__ );
 define( 'PIVOT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PIVOT_URL', plugin_dir_url( __FILE__ ) );
 define( 'PIVOT_BASENAME', plugin_basename( __FILE__ ) );
+
+/*
+ * Mises à jour depuis les Releases GitHub. Branché avant les contrôles
+ * préalables : un site bloqué par l'un d'eux doit pouvoir recevoir le correctif.
+ */
+require_once PIVOT_DIR . 'includes/updater.php';
+
+pivot_register_updater();
 
 /*
  * Contrôles préalables : PHP, extensions, conflits de noms, dossier de cache.

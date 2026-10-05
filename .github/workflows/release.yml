@@ -1,0 +1,43 @@
+# Publie une Release à chaque tag vX.Y.Z.
+#
+# Le zip joint (pivot-offres.zip) est ce que les sites WordPress installent
+# quand ils proposent la mise à jour : voir includes/updater.php.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Une Release dont la version ne correspond pas au code serait proposée
+      # indéfiniment : WordPress la verrait toujours comme plus récente.
+      - name: Vérifier la cohérence des numéros de version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          header=$(sed -nE 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*([^[:space:]]+).*/\1/p' pivot-offres.php)
+          constant=$(sed -nE "s/^define\( 'PIVOT_VERSION', '([^']+)' \);.*/\1/p" pivot-offres.php)
+          echo "Tag : $tag / En-tête : $header / PIVOT_VERSION : $constant"
+          if [ "$tag" != "$header" ] || [ "$tag" != "$constant" ]; then
+            echo "::error::Le tag v$tag ne correspond pas à la version déclarée dans pivot-offres.php."
+            exit 1
+          fi
+
+      # git archive respecte les export-ignore de .gitattributes.
+      - name: Construire le zip
+        run: git archive --format=zip --prefix=pivot-offres/ -o pivot-offres.zip HEAD
+
+      - name: Créer la Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: pivot-offres.zip
+          generate_release_notes: true

@@ -35,6 +35,9 @@ class Pivot_Pictos {
 	/** Bilan de la dernière passe et empreinte des usages. */
 	const STATE_OPTION = 'pivot_pictos_state';
 
+	/** Format des pictogrammes demandés : 1, une dimension ; 2, un cadre (boxed()). */
+	const BOX = 2;
+
 	/** @var Pivot_Pictos|null */
 	private static $instance = null;
 
@@ -197,7 +200,7 @@ class Pivot_Pictos {
 			return '';
 		}
 
-		$args = self::args( $usage );
+		$args = self::boxed( $urn, self::args( $usage ) );
 		$file = self::file( $urn, $args );
 
 		if ( file_exists( Pivot_Cache::directory( self::GROUP ) . $file ) ) {
@@ -217,6 +220,78 @@ class Pivot_Pictos {
 		$empty = get_option( self::EMPTY_OPTION, array() );
 
 		return is_array( $empty ) && isset( $empty[ $urn ] );
+	}
+
+	/* ------------------------------------------------------------ tailles */
+
+	/**
+	 * Taille d'un pictogramme, pour ses attributs width et height : celle
+	 * qu'on demande à PIVOT.
+	 *
+	 * Une image qui déclare sa taille a sa place réservée avant d'arriver : la
+	 * page ne saute pas, et une image lente ne s'étale pas.
+	 *
+	 * @param string           $urn   Urn.
+	 * @param string|array|int $usage Nom d'usage, paramètres, ou hauteur.
+	 * @return array array( largeur, hauteur ), 0 pour une dimension inconnue.
+	 */
+	public static function size( $urn, $usage = '' ) {
+		$args = self::boxed( $urn, self::args( $usage ) );
+
+		return array( (int) pivot_get( $args, 'w', 0 ), (int) pivot_get( $args, 'h', 0 ) );
+	}
+
+	/**
+	 * Taille d'un pictogramme dont on n'a que l'adresse : celle qu'un index
+	 * a gardée, celle d'un classement déjà calculé.
+	 *
+	 * L'adresse porte ce qui a été demandé : ;w=30;h=20 chez PIVOT,
+	 * urn-…_w30_h20_… pour la copie locale (voir file()).
+	 *
+	 * @param string $url Adresse du pictogramme.
+	 * @return array array( largeur, hauteur ), 0 pour une dimension inconnue.
+	 */
+	public static function size_of_url( $url ) {
+		$name = rawurldecode( basename( (string) wp_parse_url( (string) $url, PHP_URL_PATH ) ) );
+		$get  = static function ( $param ) use ( $name ) {
+			return preg_match( '/[;_]' . $param . '=?(\d+)(?=[;_.]|$)/', $name, $match ) ? (int) $match[1] : 0;
+		};
+
+		return array( $get( 'w' ), $get( 'h' ) );
+	}
+
+	/**
+	 * Cadre demandé à PIVOT : la dimension manquante reprend l'autre.
+	 *
+	 * Demandé sur sa seule hauteur, un pictogramme a une largeur qui dépend de
+	 * son dessin (25×25 le plus souvent, 30×25 pour les visites). Demandé dans
+	 * un cadre, w=25;h=25, PIVOT renvoie exactement ce cadre, le dessin centré
+	 * sur un fond transparent : sa taille est connue d'avance, sans le mesurer.
+	 *
+	 * Sauf pour un classement, dont la largeur suit le nombre d'étoiles (66×22
+	 * pour trois) : il garde sa seule dimension demandée.
+	 *
+	 * @param string $urn  Urn.
+	 * @param array  $args Paramètres matriciels.
+	 * @return array
+	 */
+	public static function boxed( $urn, $args ) {
+		$args = (array) $args;
+
+		if ( 0 === strpos( (string) $urn, 'urn:val:class:' ) ) {
+			return $args;
+		}
+
+		$width  = (int) pivot_get( $args, 'w', 0 );
+		$height = (int) pivot_get( $args, 'h', 0 );
+
+		if ( $height && ! $width ) {
+			$args['w'] = $height;
+		} elseif ( $width && ! $height ) {
+			$args['h'] = $width;
+		}
+
+		return $args;
 	}
 
 	/* ------------------------------------------------------------ liste */
@@ -257,7 +332,9 @@ class Pivot_Pictos {
 				$urns = isset( $sources[ $source ] ) ? $sources[ $source ] : ( 0 === strpos( (string) $source, 'urn:' ) ? array( $source ) : array() );
 
 				foreach ( $urns as $urn ) {
-					$wanted[ self::file( $urn, $args ) ] = array( $urn, $args );
+					$boxed = self::boxed( $urn, $args );
+
+					$wanted[ self::file( $urn, $boxed ) ] = array( $urn, $boxed );
 				}
 			}
 		}
@@ -451,7 +528,9 @@ class Pivot_Pictos {
 	 * couleur, nouveau thème.
 	 */
 	public static function check_usages() {
-		$fingerprint = md5( (string) wp_json_encode( self::usages() ) );
+		// BOX : le format des fichiers (boxed()) compte aussi, pour que les
+		// copies soient refaites quand il change.
+		$fingerprint = md5( (string) wp_json_encode( self::usages() ) . '|box' . self::BOX );
 		$state       = (array) get_option( self::STATE_OPTION, array() );
 
 		if ( pivot_get( $state, 'usages' ) === $fingerprint ) {

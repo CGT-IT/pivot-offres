@@ -42,8 +42,10 @@ $pivot_closures = Pivot_Closures::badges(
 	<?php if ( $pivot_image ) : ?>
 		<div class="pivot-card-media">
 			<a href="<?php echo esc_url( $pivot_url ); ?>" tabindex="-1" aria-hidden="true">
+				<?php // Les proportions du cadre (.pivot-card-media, 4/3) : la place est réservée avant l'image. ?>
 				<img src="<?php echo esc_url( $pivot_image ); ?>"
 					alt="<?php echo esc_attr( $pivot_name ); ?>"
+					width="400" height="300"
 					loading="lazy" decoding="async" />
 			</a>
 			<?php echo $pivot_closures; // phpcs:ignore WordPress.Security.EscapeOutput -- échappé par Pivot_Closures::badges(). ?>

@@ -545,6 +545,16 @@ Un thème qui réécrit `listing.php` et ses critères doit prévoir les contrô
 <?php endif; ?>
 ```
 
+### Toute image déclare sa taille
+
+Une image sans `width` ni `height` n'a pas de place réservée : la page se décale quand elle arrive, et une image lente peut s'étaler avant que la feuille de style ne la contienne. Chaque `<img>` d'un gabarit porte donc ses dimensions, sans les mesurer : on reprend la taille demandée à PIVOT.
+
+- **Pictogramme :** `pivot_picto_img( $urn, $usage, $attrs )`, ou `pivot_picto_img_url( $url, $attrs )` pour une adresse déjà calculée (celle de l'index, d'un classement). Ces fonctions écrivent la balise avec la taille demandée. Un usage qui ne donne qu'une dimension (`'h' => 25`) est demandé à PIVOT dans un cadre carré (`w=25;h=25`) : PIVOT renvoie exactement ce cadre, le dessin centré sur un fond transparent. Seuls les classements gardent leur seule hauteur, leur largeur suivant le nombre d'étoiles.
+- **Photo demandée en largeur et hauteur** (`;w=428;h=285`) : ces deux valeurs.
+- **Photo demandée sur une seule dimension**, ou miniature PIVOT (`THB_LW` 480 px de large, `THB_MW` 300 px) : les proportions du cadre d'affichage, 16/9 par défaut. Le navigateur en tire une place provisoire, puis adopte les vraies proportions de l'image une fois chargée.
+- **Si le CSS ne fixe qu'une dimension** (une hauteur, par exemple), il doit fixer l'autre à `auto`. Sans cela, l'attribut devient une taille imposée.
+- **Marqueur Leaflet :** passez `iconSize` et `iconAnchor` à `L.icon()`. `Pivot_Pictos::size( $urn, $usage )` les donne.
+
 ### Lire et afficher les champs d'une offre
 
 Un gabarit de fiche lit les champs par ces fonctions, plutôt que de les réécrire dans le thème :

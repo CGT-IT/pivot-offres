@@ -833,7 +833,8 @@
 		if ( item.i ) {
 			html += '<div class="pivot-card-media">';
 			html += '<a href="' + url + '" tabindex="-1" aria-hidden="true">';
-			html += '<img src="' + escapeHtml( item.i ) + '" alt="' + name + '" loading="lazy" decoding="async" />';
+			// Même balisage que parts/card.php : la taille réserve la place.
+			html += '<img src="' + escapeHtml( item.i ) + '" alt="' + name + '" width="400" height="300" loading="lazy" decoding="async" />';
 			html += '</a>' + closures( item ) + '</div>';
 		}
 

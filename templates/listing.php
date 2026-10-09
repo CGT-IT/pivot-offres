@@ -79,7 +79,9 @@ get_header();
 					)
 				);
 			} else {
-				printf( '<img src="%s" alt="" fetchpriority="high" decoding="async" />', esc_url( $pivot_image ) );
+				// Taille inconnue : un bandeau 4/1 réserve la place, l'image
+				// reprend ses proportions en arrivant (max-height dans pivot.css).
+				printf( '<img src="%s" alt="" width="1600" height="400" fetchpriority="high" decoding="async" />', esc_url( $pivot_image ) );
 			}
 			?>
 		</figure>

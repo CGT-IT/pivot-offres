@@ -102,10 +102,14 @@ get_header();
 
 				$pivot_thumb = pivot_image_url( $pivot_media_code, 0 === $pivot_index ? 'THB_LW' : 'THB_MW' );
 				$pivot_alt   = $pivot_templates->media_title( $pivot_media, $pivot_name, $pivot_lang );
+				// Largeur des miniatures PIVOT (480 et 300 px) ; la hauteur suit la
+				// photo, 16/9 le plus souvent : de quoi réserver la place.
+				$pivot_size  = 0 === $pivot_index ? array( 480, 270 ) : array( 300, 169 );
 				?>
 				<figure class="pivot-gallery-item<?php echo 0 === $pivot_index ? ' is-primary' : ''; ?>">
 					<img src="<?php echo esc_url( $pivot_thumb ); ?>"
 						alt="<?php echo esc_attr( $pivot_alt ); ?>"
+						width="<?php echo (int) $pivot_size[0]; ?>" height="<?php echo (int) $pivot_size[1]; ?>"
 						loading="<?php echo 0 === $pivot_index ? 'eager' : 'lazy'; ?>"
 						decoding="async" />
 					<?php if ( pivot_get( $pivot_media, 'copyright' ) ) : ?>

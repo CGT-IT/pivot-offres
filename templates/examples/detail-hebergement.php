@@ -61,6 +61,7 @@ get_header();
 				<figure class="pivot-gallery-item<?php echo 0 === $index ? ' is-primary' : ''; ?>">
 					<img src="<?php echo esc_url( pivot_image_url( $media_code, 0 === $index ? 'THB_LW' : 'THB_MW' ) ); ?>"
 						alt="<?php echo esc_attr( $templates->media_title( $media, $name, $lang ) ); ?>"
+						width="<?php echo 0 === $index ? 480 : 300; ?>" height="<?php echo 0 === $index ? 270 : 169; ?>"
 						loading="<?php echo 0 === $index ? 'eager' : 'lazy'; ?>" decoding="async" />
 				</figure>
 			<?php endforeach; ?>

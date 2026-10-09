@@ -42,12 +42,12 @@ function pivot_preflight_problems( $check_collisions = true ) {
 	// déjà un nom que ce plugin va déclarer. C'est la cause la plus fréquente
 	// d'erreur fatale sur un site qui exploite déjà PIVOT.
 	if ( $check_collisions ) {
-		$functions = array( 'pivot_get', 'pivot_has', 'pivot_echo', 'pivot_settings', 'pivot_lang', 'pivot_normalize', 'pivot_plain_text', 'pivot_parse_number', 'pivot_parse_date', 'pivot_date_iso', 'pivot_slugify', 'pivot_is_code', 'pivot_image_url', 'pivot_picto_url', 'pivot_picto_is_empty', 'pivot_capability', 'pivot_service_url', 'pivot_ws_key' );
+		$functions = array( 'pivot_get', 'pivot_has', 'pivot_echo', 'pivot_settings', 'pivot_lang', 'pivot_normalize', 'pivot_plain_text', 'pivot_parse_number', 'pivot_parse_date', 'pivot_date_iso', 'pivot_slugify', 'pivot_is_code', 'pivot_image_url', 'pivot_picto_url', 'pivot_picto_img', 'pivot_picto_img_url', 'pivot_picto_is_empty', 'pivot_capability', 'pivot_service_url', 'pivot_ws_key' );
 
 		// Les classes déclarées dans le fichier principal sont compilées avant
 		// l'exécution de la moindre ligne : seules celles des fichiers inclus
 		// plus loin sont testables ici.
-		$classes = array( 'Pivot_I18n', 'Pivot_Cache', 'Pivot_Logger', 'Pivot_Client', 'Pivot_Parser', 'Pivot_Thesaurus', 'Pivot_Listings', 'Pivot_Repository', 'Pivot_Index_Builder', 'Pivot_Rewrites', 'Pivot_Rest', 'Pivot_Seo', 'Pivot_Sitemap', 'Pivot_Templates', 'Pivot_Cron', 'Pivot_Pictos', 'Pivot_Legacy_Import' );
+		$classes = array( 'Pivot_I18n', 'Pivot_Cache', 'Pivot_Logger', 'Pivot_Client', 'Pivot_Parser', 'Pivot_Thesaurus', 'Pivot_Listings', 'Pivot_Repository', 'Pivot_Index_Builder', 'Pivot_Rewrites', 'Pivot_Rest', 'Pivot_Seo', 'Pivot_Sitemap', 'Pivot_Templates', 'Pivot_Cron', 'Pivot_Pictos', 'Pivot_Legacy_Import', 'Pivot_Legacy_Shortcodes' );
 
 		$taken = array();
 

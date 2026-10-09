@@ -50,7 +50,7 @@ $dates  = (array) pivot_get( $item, 'x.date.values', array() );
 		<div class="pivot-card-media">
 			<a href="<?php echo esc_url( $url ); ?>" tabindex="-1" aria-hidden="true">
 				<img src="<?php echo esc_url( $image ); ?>" alt="<?php echo esc_attr( $name ); ?>"
-					loading="lazy" decoding="async" />
+					width="400" height="300" loading="lazy" decoding="async" />
 			</a>
 		</div>
 	<?php endif; ?>

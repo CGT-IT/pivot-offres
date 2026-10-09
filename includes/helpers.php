@@ -364,6 +364,64 @@ function pivot_picto_url( $urn, $usage = 32 ) {
 }
 
 /**
+ * Balise <img> d'un pictogramme d'urn, avec sa taille.
+ *
+ * À préférer à un <img src="pivot_picto_url()"> écrit à la main : width et
+ * height réservent la place du pictogramme avant qu'il n'arrive.
+ *
+ * @param string           $urn   Urn.
+ * @param string|array|int $usage Usage, paramètres ou hauteur (voir pivot_picto_url()).
+ * @param array            $attrs Autres attributs : class, alt, title…
+ * @return string HTML, vide si PIVOT n'a pas de pictogramme pour cette urn.
+ */
+function pivot_picto_img( $urn, $usage = 32, $attrs = array() ) {
+	return pivot_picto_img_url( Pivot_Pictos::url( $urn, $usage ), $attrs );
+}
+
+/**
+ * Balise <img> d'un pictogramme dont on a déjà l'adresse (index, classement).
+ *
+ * La taille vient de Pivot_Pictos::size_of_url(). Une hauteur imposée dans
+ * $attrs donne la largeur correspondante.
+ *
+ * @param string $url   Adresse du pictogramme.
+ * @param array  $attrs Autres attributs : class, alt, title, height…
+ * @return string HTML, vide sans adresse.
+ */
+function pivot_picto_img_url( $url, $attrs = array() ) {
+	if ( ! $url ) {
+		return '';
+	}
+
+	$attrs = (array) $attrs;
+
+	list( $width, $height ) = Pivot_Pictos::size_of_url( $url );
+
+	if ( isset( $attrs['height'] ) && ! isset( $attrs['width'] ) && $width && $height ) {
+		$attrs['width'] = (int) round( $width * (int) $attrs['height'] / $height );
+	}
+
+	$attrs += array(
+		'width'    => $width ? $width : null,
+		'height'   => $height ? $height : null,
+		'alt'      => '',
+		'decoding' => 'async',
+	);
+
+	$html = '<img src="' . esc_url( $url ) . '"';
+
+	foreach ( $attrs as $name => $value ) {
+		if ( null === $value || false === $value || 'src' === $name ) {
+			continue;
+		}
+
+		$html .= ' ' . esc_attr( $name ) . '="' . esc_attr( $value ) . '"';
+	}
+
+	return $html . ' />';
+}
+
+/**
  * PIVOT n'a-t-il qu'une image transparente pour cette urn ?
  *
  * Relevé lors du téléchargement des pictogrammes : de quoi afficher en texte

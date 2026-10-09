@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       PIVOT Offres V2
  * Description:       Publie les offres touristiques de PIVOT/Web (Tourisme Wallonie) : pages de listing paramétrables, recherche et pagination 100 % côté client, cartographie, pages détail optimisées SEO, multilingue fr/nl/en/de à partir des traductions renvoyées par PIVOT. Aucune offre n'est stockée en base de données.
- * Version:           2.12.0
+ * Version:           2.13.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * License:           GPL-2.0-or-later

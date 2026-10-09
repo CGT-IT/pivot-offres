@@ -577,11 +577,12 @@ class Pivot_Shortcodes {
 	}
 
 	/**
-	 * Construit le HTML.
+	 * Construit le HTML, par le gabarit parts/inline.php.
 	 *
 	 * Les vignettes passent par le même gabarit que les pages de listing :
 	 * styles et micro-données restent identiques, et un thème qui a surchargé
-	 * la vignette voit sa version reprise ici aussi.
+	 * la vignette voit sa version reprise ici aussi. Un thème qui surcharge
+	 * parts/inline.php pose en plus les vignettes dans sa propre grille.
 	 *
 	 * @param array  $items Entrées.
 	 * @param array  $atts  Attributs.
@@ -589,44 +590,27 @@ class Pivot_Shortcodes {
 	 * @return string
 	 */
 	private function markup( $items, $atts, $lang ) {
-		$classes = array( 'pivot-inline', 'pivot-cols-' . (int) $atts['colonnes'] );
+		$more_url = '';
 
-		if ( $atts['classe'] ) {
-			$classes[] = sanitize_html_class( $atts['classe'] );
+		if ( 'oui' === $atts['lien'] && $atts['listing'] ) {
+			$listing  = Pivot_Listings::get( $atts['listing'] );
+			$more_url = $listing ? Pivot_Listings::url( $listing, $lang ) : '';
 		}
 
 		ob_start();
 
-		echo '<div class="' . esc_attr( implode( ' ', $classes ) ) . '">';
-
-		if ( $atts['titre'] ) {
-			echo '<h2 class="pivot-inline-title">' . esc_html( $atts['titre'] ) . '</h2>';
-		}
-
-		echo '<div class="pivot-grid">';
-
-		foreach ( $items as $item ) {
-			Pivot_Templates::instance()->part( 'card', array( 'item' => $item ) );
-		}
-
-		echo '</div>';
-
-		if ( 'oui' === $atts['lien'] && $atts['listing'] ) {
-			$listing = Pivot_Listings::get( $atts['listing'] );
-			$url     = $listing ? Pivot_Listings::url( $listing, $lang ) : '';
-
-			if ( $url ) {
-				$label = $atts['lien_texte'] ? $atts['lien_texte'] : __( 'Voir toutes les offres', 'pivot-offres' );
-
-				printf(
-					'<p class="pivot-inline-more"><a class="pivot-button" href="%s">%s</a></p>',
-					esc_url( $url ),
-					esc_html( $label )
-				);
-			}
-		}
-
-		echo '</div>';
+		Pivot_Templates::instance()->part(
+			'inline',
+			array(
+				'items'      => $items,
+				'columns'    => (int) $atts['colonnes'],
+				'title'      => (string) $atts['titre'],
+				'class'      => $atts['classe'] ? sanitize_html_class( $atts['classe'] ) : '',
+				'more_url'   => (string) $more_url,
+				'more_label' => $atts['lien_texte'] ? $atts['lien_texte'] : __( 'Voir toutes les offres', 'pivot-offres' ),
+				'lang'       => $lang,
+			)
+		);
 
 		return (string) ob_get_clean();
 	}

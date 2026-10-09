@@ -1196,15 +1196,22 @@ class Pivot_Templates {
 	 * langue. La valeur d'un champ TextML est du HTML : à afficher par
 	 * Pivot_Fields::html(), ou à passer par Pivot_Fields::text().
 	 *
+	 * Une case cochée peut être l'une des options d'un champ à choix
+	 * multiples : « Anglais » de urn:fld:langvisit, « Langues de visite », ou
+	 * de urn:fld:langaudio, « Langues audio guide ». Sans ce titre, les deux
+	 * listes de langues se suivent sans qu'on sache laquelle est laquelle :
+	 * group et group_label le donnent, vides pour un champ isolé.
+	 *
 	 * @param array  $offer  Offre normalisée.
 	 * @param string $lang   Langue.
 	 * @param string $cat    Urn de la catégorie.
 	 * @param string $subcat Urn de la sous-catégorie, facultative.
-	 * @return array Liste de array( urn, type, label, value ).
+	 * @return array Liste de array( urn, type, label, value, subcat, group, group_label ).
 	 */
 	public static function category_rows( $offer, $lang, $cat, $subcat = '' ) {
-		$type = (int) pivot_get( $offer, 'type', 0 );
-		$out  = array();
+		$type   = (int) pivot_get( $offer, 'type', 0 );
+		$out    = array();
+		$groups = array();
 
 		foreach ( self::visible_specs( $offer, $lang ) as $spec ) {
 			if ( pivot_get( $spec, 'cat' ) !== $cat || ( $subcat && pivot_get( $spec, 'subcat' ) !== $subcat ) ) {
@@ -1217,11 +1224,31 @@ class Pivot_Templates {
 				continue;
 			}
 
+			$urn       = Pivot_Fields::base_urn( pivot_get( $spec, 'urn', '' ) );
+			$spec_type = (string) pivot_get( $spec, 'type', '' );
+			$group     = '';
+
+			// L'option urn:fld:langvisit:en appartient au champ urn:fld:langvisit.
+			if ( 'Boolean' === $spec_type && substr_count( $urn, ':' ) > 2 ) {
+				$parent = substr( $urn, 0, strrpos( $urn, ':' ) );
+
+				if ( ! isset( $groups[ $parent ] ) ) {
+					$groups[ $parent ] = 'MultiChoice' === pivot_get( Pivot_Thesaurus::urn( $parent ), 'type' )
+						? (string) Pivot_Thesaurus::label( $parent, $type, $lang )
+						: '';
+				}
+
+				$group = '' !== $groups[ $parent ] ? $parent : '';
+			}
+
 			$out[] = array(
-				'urn'   => Pivot_Fields::base_urn( pivot_get( $spec, 'urn', '' ) ),
-				'type'  => (string) pivot_get( $spec, 'type', '' ),
-				'label' => Pivot_Fields::label( $spec, $type, $lang ),
-				'value' => $value,
+				'urn'         => $urn,
+				'type'        => $spec_type,
+				'label'       => Pivot_Fields::label( $spec, $type, $lang ),
+				'value'       => $value,
+				'subcat'      => (string) pivot_get( $spec, 'subcat', '' ),
+				'group'       => $group,
+				'group_label' => $group ? $groups[ $group ] : '',
 			);
 		}
 

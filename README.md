@@ -516,7 +516,7 @@ Une offre incomplète produit une fiche plus courte, jamais une erreur.
 
 ### Gabarits
 
-Copiez-les dans votre thème, dans un dossier `pivot-offres/`, pour les surcharger : `listing.php`, `detail.php`, `parts/card.php`, `parts/filter-range.php`, `parts/filter-date.php`, `parts/closures-alert.php`, `parts/closures.php`.
+Copiez-les dans votre thème, dans un dossier `pivot-offres/`, pour les surcharger : `listing.php`, `detail.php`, `parts/card.php`, `parts/filter-range.php`, `parts/filter-date.php`, `parts/closures-alert.php`, `parts/closures.php`, et `parts/inline.php` pour le bloc du shortcode `[pivot_offres]` : un thème qui pose ses vignettes dans des colonnes Bootstrap sur ses pages de listing y reprend la même grille.
 
 Un thème qui réécrit `listing.php` affiche lui-même l'image d'en-tête : `$pivot_listing['image']` en donne l'adresse, et `$pivot_listing['image_id']` son identifiant dans la médiathèque (0 si elle n'en vient pas), pour `wp_get_attachment_image()`.
 
@@ -556,7 +556,7 @@ Un gabarit de fiche lit les champs par ces fonctions, plutôt que de les réécr
 | `Pivot_Fields::label( $spec, $type_id, $lang )` | libellé d'un champ, de l'offre ou du thesaurus |
 | `Pivot_Fields::offer_label( $offer, $urn, $lang )` | libellé du champ d'une offre |
 | `Pivot_Fields::subcat_labels( $offer, $lang, $subcat, $with_value )` | libellés d'une sous-catégorie : environnements, revêtements… |
-| `Pivot_Templates::category_rows( $offer, $lang, $cat, $subcat )` | champs renseignés d'une catégorie (`urn:cat:visite`…) : `urn`, `type`, `label`, `value` |
+| `Pivot_Templates::category_rows( $offer, $lang, $cat, $subcat )` | champs renseignés d'une catégorie (`urn:cat:visite`…) : `urn`, `type`, `label`, `value`, et pour une case qui est l'option d'un champ à choix multiples, `group` et `group_label` (« Langues de visite ») |
 | `Pivot_Templates::grouped_specs( $offer, $lang )` | tous les champs, par catégorie ; chaque ligne porte aussi son `type` |
 | `Pivot_Templates::offer_description_html( $offer, $lang, $urns )` | descriptif avec la mise en forme de PIVOT, filtré ; `offer_description()` le donne en texte |
 | `Pivot_Shortcodes::query_items( $query, $number, $shuffle, $lang )` | offres d'une requête, pour un carrousel de thème ; en cache, l'aléatoire tiré à chaque affichage |

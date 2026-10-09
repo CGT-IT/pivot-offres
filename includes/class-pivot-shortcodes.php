@@ -205,18 +205,43 @@ class Pivot_Shortcodes {
 	 * @return array|WP_Error
 	 */
 	private function from_query( $atts, $lang ) {
-		$query = strtoupper( trim( $atts['query'] ) );
-		$key   = sprintf( 'shortcode|%s|%s|%d|%s', $query, $lang, $atts['nombre'], $atts['tri'] );
+		// Une marge est demandée : le tri par nom ou l'aléatoire n'a de sens
+		// que sur un ensemble un peu plus large que la sélection affichée.
+		$fetch = 'defaut' === $atts['tri'] ? $atts['nombre'] : min( 60, $atts['nombre'] * 4 );
+		$items = self::query_pool( $atts['query'], $fetch, $lang );
+
+		if ( is_wp_error( $items ) ) {
+			return $items;
+		}
+
+		$items = $this->apply_filter( $items, $atts['filtre'] );
+		$items = $this->sort( $items, $atts['tri'] );
+
+		return array_slice( $items, 0, $atts['nombre'] );
+	}
+
+	/**
+	 * Premières offres d'une requête pré-programmée, en entrées d'index.
+	 *
+	 * Une seule page est demandée à PIVOT, et gardée en cache le temps d'un
+	 * index : un affichage ne déclenche pas d'appel. Le tri, l'aléatoire
+	 * compris, se fait après le cache, à chaque affichage.
+	 *
+	 * @param string      $query Code de requête.
+	 * @param int         $fetch Nombre d'offres à demander.
+	 * @param string|null $lang  Langue.
+	 * @return array|WP_Error
+	 */
+	public static function query_pool( $query, $fetch, $lang = null ) {
+		$query = strtoupper( trim( (string) $query ) );
+		$lang  = $lang ? $lang : Pivot_I18n::current();
+		$key   = sprintf( 'query|%s|%s|%d', $query, $lang, $fetch );
 
 		$cached = Pivot_Cache::get( self::GROUP, $key );
 
 		if ( is_array( $cached ) ) {
 			return $cached;
 		}
-
-		// Une marge est demandée : le tri par nom ou l'aléatoire n'a de sens
-		// que sur un ensemble un peu plus large que la sélection affichée.
-		$fetch = 'defaut' === $atts['tri'] ? $atts['nombre'] : min( 60, $atts['nombre'] * 4 );
 
 		$virtual = array(
 			'id'         => 'shortcode',
@@ -241,13 +266,34 @@ class Pivot_Shortcodes {
 			}
 		}
 
-		$items = $this->apply_filter( $items, $atts['filtre'] );
-		$items = $this->sort( $items, $atts['tri'] );
-		$items = array_slice( $items, 0, $atts['nombre'] );
-
 		Pivot_Cache::set( self::GROUP, $key, $items, (int) pivot_settings( 'ttl_index', 6 * HOUR_IN_SECONDS ) );
 
 		return $items;
+	}
+
+	/**
+	 * Offres d'une requête pré-programmée, pour un carrousel ou un bloc de
+	 * thème : le chemin de [pivot_offres query="…"], sans son balisage.
+	 *
+	 * @param string      $query   Code de requête.
+	 * @param int         $number  Nombre d'offres, de 1 à 48.
+	 * @param bool        $shuffle Ordre aléatoire, tiré à chaque affichage.
+	 * @param string|null $lang    Langue.
+	 * @return array Entrées d'index ; vide si PIVOT ne répond pas.
+	 */
+	public static function query_items( $query, $number, $shuffle = false, $lang = null ) {
+		$number = max( 1, min( 48, (int) $number ) );
+		$items  = self::query_pool( $query, $shuffle ? min( 60, $number * 4 ) : $number, $lang );
+
+		if ( is_wp_error( $items ) ) {
+			return array();
+		}
+
+		if ( $shuffle ) {
+			shuffle( $items );
+		}
+
+		return array_slice( $items, 0, $number );
 	}
 
 	/**

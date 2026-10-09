@@ -566,6 +566,138 @@ class Pivot_Fields {
 	}
 
 	/**
+	 * Valeur brute du premier champ trouvé, enfants compris : une urn de
+	 * valeur, une date, un nombre tels que PIVOT les écrit.
+	 *
+	 * @param array       $offer Offre normalisée.
+	 * @param string      $urn   Urn recherchée.
+	 * @param string|null $lang  Langue, pour les urns préfixées.
+	 * @return string
+	 */
+	public static function raw( $offer, $urn, $lang = null ) {
+		$specs = self::find_all( $offer, $urn, $lang );
+		$value = pivot_get( $specs, array( 0, 'value' ), '' );
+
+		return is_string( $value ) ? trim( $value ) : '';
+	}
+
+	/**
+	 * Valeur affichable du premier champ trouvé : libellé traduit d'un choix,
+	 * etc. Du HTML pour un champ TextML : à afficher par html().
+	 *
+	 * @param array       $offer Offre normalisée.
+	 * @param string      $urn   Urn recherchée.
+	 * @param string|null $lang  Langue.
+	 * @return string
+	 */
+	public static function value( $offer, $urn, $lang = null ) {
+		$specs = self::find_all( $offer, $urn, $lang );
+
+		return $specs ? self::render( $specs[0], $lang ) : '';
+	}
+
+	/**
+	 * Libellé d'un champ dans une langue.
+	 *
+	 * Le libellé vient de l'offre ; à défaut, du thesaurus (mis en cache).
+	 *
+	 * @param array  $spec    Champ.
+	 * @param int    $type_id Type d'offre.
+	 * @param string $lang    Langue.
+	 * @return string
+	 */
+	public static function label( $spec, $type_id, $lang ) {
+		$label = Pivot_I18n::pick( pivot_get( $spec, 'labels', array() ), $lang, '' );
+
+		if ( ! $label ) {
+			$label = Pivot_Thesaurus::label( self::base_urn( pivot_get( $spec, 'urn', '' ) ), (int) $type_id, $lang );
+		}
+
+		return (string) $label;
+	}
+
+	/**
+	 * Libellé du premier champ trouvé pour une urn, ou celui du thesaurus si
+	 * l'offre ne porte pas le champ.
+	 *
+	 * @param array  $offer Offre normalisée.
+	 * @param string $urn   Urn.
+	 * @param string $lang  Langue.
+	 * @return string
+	 */
+	public static function offer_label( $offer, $urn, $lang ) {
+		$specs = self::find_all( $offer, $urn, $lang );
+		$spec  = $specs ? $specs[0] : array( 'urn' => $urn );
+
+		return self::label( $spec, (int) pivot_get( $offer, 'type', 0 ), $lang );
+	}
+
+	/**
+	 * Libellés des champs d'une sous-catégorie : environnements traversés,
+	 * revêtements d'un itinéraire…
+	 *
+	 * Avec sa valeur, un revêtement porte sa part, « Asphalte : 50 à 75 % » ;
+	 * une part nulle (urn:val:revet:0) est passée.
+	 *
+	 * @param array  $offer      Offre normalisée.
+	 * @param string $lang       Langue.
+	 * @param string $subcat     Urn de la sous-catégorie.
+	 * @param bool   $with_value Ajouter la valeur, en texte, au libellé.
+	 * @return array
+	 */
+	public static function subcat_labels( $offer, $lang, $subcat, $with_value = false ) {
+		$type = (int) pivot_get( $offer, 'type', 0 );
+		$out  = array();
+
+		foreach ( (array) pivot_get( $offer, 'specs', array() ) as $spec ) {
+			if ( pivot_get( $spec, 'subcat' ) !== $subcat || 'urn:val:revet:0' === pivot_get( $spec, 'value' ) ) {
+				continue;
+			}
+
+			$label = self::label( $spec, $type, $lang );
+			$value = self::render( $spec, $lang );
+
+			if ( ! $label || '' === $value ) {
+				continue;
+			}
+
+			$out[] = $with_value ? $label . ' : ' . self::text( $value, pivot_get( $spec, 'type', '' ) ) : $label;
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Valeur de champ prête à afficher dans un gabarit.
+	 *
+	 * Un champ TextML porte du HTML (<p>…</p>), filtré par wp_kses_post() :
+	 * échappé, il s'afficherait balises comprises. Toute autre valeur est
+	 * échappée. Le HTML d'un TextML ne tient pas dans un <p> ni un <span> :
+	 * prévoir un <div>.
+	 *
+	 * @param string $value Valeur rendue (render(), category_rows()…).
+	 * @param string $type  Type PIVOT du champ.
+	 * @return string HTML.
+	 */
+	public static function html( $value, $type ) {
+		return 'TextML' === $type ? wp_kses_post( (string) $value ) : esc_html( (string) $value );
+	}
+
+	/**
+	 * Valeur de champ en texte, sur une ligne : listes, attributs, index.
+	 *
+	 * Le HTML d'un champ TextML est réduit à son texte ; toute autre valeur
+	 * est rendue telle quelle, et reste à échapper.
+	 *
+	 * @param string $value Valeur rendue.
+	 * @param string $type  Type PIVOT du champ.
+	 * @return string
+	 */
+	public static function text( $value, $type ) {
+		return 'TextML' === $type ? pivot_plain_text( $value ) : (string) $value;
+	}
+
+	/**
 	 * Parcourt récursivement une liste de champs.
 	 *
 	 * @param array    $specs    Champs.
@@ -613,7 +745,8 @@ class Pivot_Fields {
 					continue;
 				}
 
-				$value = self::render( $child, $lang );
+				// L'assemblage est du texte : le HTML d'un enfant TextML s'y réduit.
+				$value = self::text( self::render( $child, $lang ), pivot_get( $child, 'type', '' ) );
 
 				if ( '' === $value ) {
 					continue;
@@ -647,6 +780,11 @@ class Pivot_Fields {
 		// Une urn sans libellé n'apporte rien au visiteur.
 		if ( 0 === strpos( $value, 'urn:' ) ) {
 			return Pivot_Thesaurus::label( $value, 0, $lang );
+		}
+
+		// Un TextML sans texte (« <p><br></p> ») est un champ vide.
+		if ( 'TextML' === pivot_get( $spec, 'type', '' ) && '' === pivot_plain_text( $value ) ) {
+			return '';
 		}
 
 		return $value;

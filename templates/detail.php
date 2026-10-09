@@ -28,7 +28,7 @@ $pivot_lang    = Pivot_I18n::current();
 $pivot_code    = pivot_get( $pivot_offer, 'code', '' );
 $pivot_name    = Pivot_Templates::offer_name( $pivot_offer, $pivot_lang );
 $pivot_type    = $pivot_templates->offer_type_label( $pivot_offer, $pivot_lang );
-$pivot_desc    = Pivot_Templates::offer_description( $pivot_offer, 0, $pivot_lang );
+$pivot_desc    = Pivot_Templates::offer_description_html( $pivot_offer, $pivot_lang );
 $pivot_address = $pivot_templates->offer_address_line( $pivot_offer, $pivot_lang );
 $pivot_local   = $pivot_templates->offer_locality( $pivot_offer, $pivot_lang );
 $pivot_gallery = $pivot_templates->offer_gallery( $pivot_offer );
@@ -123,7 +123,7 @@ get_header();
 			<?php if ( $pivot_desc ) : ?>
 				<section class="pivot-detail-description">
 					<h2 class="screen-reader-text"><?php esc_html_e( 'Description', 'pivot-offres' ); ?></h2>
-					<?php echo wpautop( esc_html( $pivot_desc ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- texte échappé. ?>
+					<?php echo $pivot_desc; // phpcs:ignore WordPress.Security.EscapeOutput -- filtré par offer_description_html(). ?>
 				</section>
 			<?php endif; ?>
 
@@ -145,7 +145,7 @@ get_header();
 						<?php foreach ( $pivot_group['rows'] as $pivot_row ) : ?>
 							<div class="pivot-spec">
 								<dt><?php echo esc_html( pivot_get( $pivot_row, 'label', '' ) ); ?></dt>
-								<dd><?php echo esc_html( pivot_get( $pivot_row, 'value', '' ) ); ?></dd>
+								<dd><?php echo Pivot_Fields::html( pivot_get( $pivot_row, 'value', '' ), pivot_get( $pivot_row, 'type', '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé ou filtré par Pivot_Fields::html(). ?></dd>
 							</div>
 						<?php endforeach; ?>
 					</dl>

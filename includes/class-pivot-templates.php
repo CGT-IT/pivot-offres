@@ -647,6 +647,44 @@ class Pivot_Templates {
 	}
 
 	/**
+	 * Descriptif d'une offre avec la mise en forme de PIVOT (paragraphes,
+	 * listes, gras), pour la fiche.
+	 *
+	 * offer_description() le réduit à du texte, ce qui convient aux vignettes
+	 * et aux balises meta, pas à la fiche. Le premier champ qui a du texte
+	 * l'emporte, dans l'ordre des urns : passez-en plusieurs pour prendre un
+	 * descriptif court quand le long manque dans la langue. Faute de quoi, le
+	 * texte d'offer_description() est mis en paragraphes.
+	 *
+	 * @param array       $offer Offre normalisée.
+	 * @param string|null $lang  Langue.
+	 * @param array|null  $urns  Urns candidates ; par défaut, celles du filtre pivot_description_urns.
+	 * @return string HTML filtré, vide sans descriptif.
+	 */
+	public static function offer_description_html( $offer, $lang = null, $urns = null ) {
+		$lang = $lang ? $lang : Pivot_I18n::current();
+
+		if ( null === $urns ) {
+			/** Ce filtre est documenté dans offer_description(). */
+			$urns = apply_filters( 'pivot_description_urns', array( 'urn:fld:descmarket' ), $lang );
+		}
+
+		foreach ( (array) $urns as $urn ) {
+			$html = pivot_get( Pivot_Fields::localized_specs( $offer, $urn, $lang ), array( 0, 'value' ), '' );
+
+			if ( ! is_string( $html ) || '' === pivot_plain_text( $html ) ) {
+				continue;
+			}
+
+			return false === strpos( $html, '<' ) ? wpautop( esc_html( trim( $html ) ) ) : wp_kses_post( $html );
+		}
+
+		$text = self::offer_description( $offer, 0, $lang );
+
+		return '' === $text ? '' : wpautop( esc_html( $text ) );
+	}
+
+	/**
 	 * Repli : premier champ textuel dont l'urn évoque un descriptif.
 	 *
 	 * @param array  $offer Offre.
@@ -1115,6 +1153,7 @@ class Pivot_Templates {
 
 			$groups[ $cat ]['rows'][] = array(
 				'urn'    => $base,
+				'type'   => (string) pivot_get( $spec, 'type', '' ),
 				'label'  => $label,
 				'value'  => $value,
 				'subcat' => $subcat_label,
@@ -1147,6 +1186,46 @@ class Pivot_Templates {
 		 * @param string $lang   Langue.
 		 */
 		return apply_filters( 'pivot_grouped_specs', $groups, $offer, $lang );
+	}
+
+	/**
+	 * Champs renseignés d'une catégorie PIVOT, dans la langue de la page :
+	 * visite, accueil, tarifs, produits…
+	 *
+	 * Une urn traduite (nl:urn:fld:…) n'apparaît qu'une fois, dans la bonne
+	 * langue. La valeur d'un champ TextML est du HTML : à afficher par
+	 * Pivot_Fields::html(), ou à passer par Pivot_Fields::text().
+	 *
+	 * @param array  $offer  Offre normalisée.
+	 * @param string $lang   Langue.
+	 * @param string $cat    Urn de la catégorie.
+	 * @param string $subcat Urn de la sous-catégorie, facultative.
+	 * @return array Liste de array( urn, type, label, value ).
+	 */
+	public static function category_rows( $offer, $lang, $cat, $subcat = '' ) {
+		$type = (int) pivot_get( $offer, 'type', 0 );
+		$out  = array();
+
+		foreach ( self::visible_specs( $offer, $lang ) as $spec ) {
+			if ( pivot_get( $spec, 'cat' ) !== $cat || ( $subcat && pivot_get( $spec, 'subcat' ) !== $subcat ) ) {
+				continue;
+			}
+
+			$value = Pivot_Fields::render( $spec, $lang );
+
+			if ( '' === $value ) {
+				continue;
+			}
+
+			$out[] = array(
+				'urn'   => Pivot_Fields::base_urn( pivot_get( $spec, 'urn', '' ) ),
+				'type'  => (string) pivot_get( $spec, 'type', '' ),
+				'label' => Pivot_Fields::label( $spec, $type, $lang ),
+				'value' => $value,
+			);
+		}
+
+		return $out;
 	}
 
 	/**

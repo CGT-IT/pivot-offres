@@ -79,7 +79,8 @@ get_header();
 			continue;
 		}
 
-		$value = Pivot_Fields::render( $specs[0], $lang );
+		// En texte : la liste tient sur une ligne par point.
+		$value = Pivot_Fields::text( Pivot_Fields::render( $specs[0], $lang ), pivot_get( $specs[0], 'type', '' ) );
 
 		if ( '' !== $value ) {
 			$found[ $label ] = $value;
@@ -112,7 +113,7 @@ get_header();
 				<?php foreach ( $group['rows'] as $row ) : ?>
 					<div class="pivot-spec">
 						<dt><?php echo esc_html( pivot_get( $row, 'label', '' ) ); ?></dt>
-						<dd><?php echo esc_html( pivot_get( $row, 'value', '' ) ); ?></dd>
+						<dd><?php echo Pivot_Fields::html( pivot_get( $row, 'value', '' ), pivot_get( $row, 'type', '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé ou filtré par Pivot_Fields::html(). ?></dd>
 					</div>
 				<?php endforeach; ?>
 			</dl>

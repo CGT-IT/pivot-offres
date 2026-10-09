@@ -632,7 +632,8 @@ class Pivot_Index_Builder {
 				$values = array();
 
 				foreach ( $specs as $spec ) {
-					$value = Pivot_Fields::render( $spec, $lang );
+					// Une vignette affiche du texte : le HTML d'un TextML s'y réduit.
+					$value = Pivot_Fields::text( Pivot_Fields::render( $spec, $lang ), pivot_get( $spec, 'type', '' ) );
 
 					if ( '' !== $value && ! in_array( $value, $values, true ) ) {
 						$values[] = $value;

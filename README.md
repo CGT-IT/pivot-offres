@@ -39,6 +39,7 @@ La reprise ne tourne qu'une fois, et seulement si aucune page de listing n'exist
 | Description | texte d'introduction |
 | Tri aléatoire | non repris : les offres suivent l'ordre de PIVOT |
 | Type de page, shortcode | non repris : l'affichage suit le type de chaque offre |
+| `[pivot_shortcode]`, `_slider`, `_event`, `_event_slider` dans les contenus | toujours affichés, par `[pivot_offres]` (voir [Anciens shortcodes](#anciens-shortcodes)) |
 | Filtre « Nom » (`urn:fld:nomofr`) | aucun critère : la recherche libre, active par défaut, cherche déjà dans le nom |
 | Commune, Localité | critères **Commune** et **Localité**, en liste déroulante |
 | Cases « Type » (`urn:typ:…`) | un critère **Type d'offre** à cases à cocher |
@@ -469,6 +470,27 @@ Les étendues s'écrivent avec `..` et non avec `<` ou `>` : WordPress vide un a
 
 L'écran d'édition d'une page de listing affiche par ailleurs le shortcode correspondant, prêt à copier.
 
+### Anciens shortcodes
+
+Les shortcodes de l'ancien plugin restent affichés : `[pivot_shortcode]`, `[pivot_shortcode_slider]`, `[pivot_shortcode_event]` et `[pivot_shortcode_event_slider]` sont traduits à l'affichage vers `[pivot_offres]`, sans que les contenus soient modifiés en base — pages, Elementor, widgets et traductions WPML compris.
+
+```
+[pivot_shortcode query='OTH-A0-006J-6FFM' type='default' nboffers='30' nbcol='4']
+→ [pivot_offres query="OTH-A0-006J-6FFM" nombre="30" colonnes="4"]
+```
+
+| Ancien attribut | Devient |
+|---|---|
+| `query` | `query` |
+| `nboffers` | `nombre` (au plus 48) ; par défaut 3, ou 6 pour les carrousels |
+| `nbcol` | `colonnes` (au plus 6) ; par défaut 4, ou 2 pour les carrousels |
+| `sortmode='shuffle'` | `tri="aleatoire"` |
+| `sortmode='asc'` et `sortfield='urn:fld:nomofr'` | `tri="nom"` ; un autre tri garde l'ordre de PIVOT |
+| `type`, `details` | sans objet : la vignette suit le type de chaque offre |
+| `filterurn`, `filtervalue`, `date1`, `value1`, `date2`, `value2` | **ignorés** |
+
+Les carrousels s'affichent en grille. Les filtres que l'ancien plugin ajoutait à la requête ne sont pas transmis à PIVOT : la sélection s'affiche sans eux. Un administrateur connecté voit alors, au-dessus des vignettes, un avertissement avec le shortcode `[pivot_offres]` à poser à la place, une fois le filtre porté dans la requête PIVOT elle-même. Les visiteurs ne le voient pas.
+
 ### Détails qui comptent
 
 Les vignettes passent par le **même gabarit** que les pages de listing : si votre thème a surchargé `pivot-offres/parts/card.php`, sa version est reprise ici aussi.
@@ -522,6 +544,35 @@ Un thème qui réécrit `listing.php` et ses critères doit prévoir les contrô
 	<?php Pivot_Templates::instance()->part( 'filter-date', array( 'filter' => $filter ) ); ?>
 <?php endif; ?>
 ```
+
+### Lire et afficher les champs d'une offre
+
+Un gabarit de fiche lit les champs par ces fonctions, plutôt que de les réécrire dans le thème :
+
+| Fonction | Renvoie |
+|---|---|
+| `Pivot_Fields::raw( $offer, $urn, $lang )` | valeur brute du premier champ : urn de valeur, date, nombre |
+| `Pivot_Fields::value( $offer, $urn, $lang )` | valeur affichable : libellé traduit d'un choix, « Oui »… |
+| `Pivot_Fields::label( $spec, $type_id, $lang )` | libellé d'un champ, de l'offre ou du thesaurus |
+| `Pivot_Fields::offer_label( $offer, $urn, $lang )` | libellé du champ d'une offre |
+| `Pivot_Fields::subcat_labels( $offer, $lang, $subcat, $with_value )` | libellés d'une sous-catégorie : environnements, revêtements… |
+| `Pivot_Templates::category_rows( $offer, $lang, $cat, $subcat )` | champs renseignés d'une catégorie (`urn:cat:visite`…) : `urn`, `type`, `label`, `value` |
+| `Pivot_Templates::grouped_specs( $offer, $lang )` | tous les champs, par catégorie ; chaque ligne porte aussi son `type` |
+| `Pivot_Templates::offer_description_html( $offer, $lang, $urns )` | descriptif avec la mise en forme de PIVOT, filtré ; `offer_description()` le donne en texte |
+| `Pivot_Shortcodes::query_items( $query, $number, $shuffle, $lang )` | offres d'une requête, pour un carrousel de thème ; en cache, l'aléatoire tiré à chaque affichage |
+
+**Une valeur de champ s'affiche par `Pivot_Fields::html( $value, $type )`**, jamais par `esc_html()` seul. Un champ `TextML` (compléments de visite, de tarif, horaires…) porte du HTML : échappé, il s'afficherait `<p>` compris. `html()` le filtre par `wp_kses_post()` et échappe toute autre valeur. Ce HTML ne tient ni dans un `<p>` ni dans un `<span>` : prévoyez un `<div>`. Là où il faut une ligne de texte — une liste, un attribut —, `Pivot_Fields::text( $value, $type )` réduit le HTML à son texte.
+
+```php
+<?php foreach ( Pivot_Templates::category_rows( $offer, $lang, 'urn:cat:tarif' ) as $row ) : ?>
+	<div>
+		<strong><?php echo esc_html( $row['label'] ); ?></strong>
+		<?php echo Pivot_Fields::html( $row['value'], $row['type'] ); ?>
+	</div>
+<?php endforeach; ?>
+```
+
+Un `TextML` sans texte (`<p><br></p>`) est un champ vide : `Pivot_Fields::render()` renvoie alors une chaîne vide, et le champ n'apparaît pas.
 
 ### Un gabarit par type d'offre
 
@@ -860,6 +911,7 @@ pivot-offres/
 │   ├── class-pivot-sitemap.php   pages de listing et fiches dans le plan du site XML
 │   ├── class-pivot-templates.php rendu et aides d'affichage
 │   ├── class-pivot-shortcodes.php shortcode d'insertion éditoriale
+│   ├── class-pivot-legacy-shortcodes.php anciens [pivot_shortcode…], rendus par [pivot_offres]
 │   ├── class-pivot-onboarding.php visites guidées
 │   ├── class-pivot-pictos.php    copie locale des pictogrammes, commande wp pivot pictos
 │   └── class-pivot-cron.php      tâches planifiées

@@ -450,7 +450,8 @@ class Pivot_Listings {
 		// le nombre d'offres par page et l'affichage de la carte sont écrits dans
 		// le fichier d'index et relus par le JavaScript : sans eux dans cette
 		// liste, modifier le titre d'une page laissait l'ancien s'afficher
-		// jusqu'à l'expiration du cache, six heures plus tard par défaut.
+		// jusqu'à l'expiration du cache, six heures plus tard par défaut. Le tri
+		// aussi : c'est l'ordre des offres dans l'index.
 		//
 		// Les groupes de critères n'en font pas partie : les gabarits les lisent
 		// dans la configuration, au moment d'afficher les critères.
@@ -462,6 +463,8 @@ class Pivot_Listings {
 			|| (int) $existing['show_map'] !== (int) $clean['show_map']
 			|| $existing['title'] !== $clean['title']
 			|| wp_json_encode( $existing['titles'] ) !== wp_json_encode( $clean['titles'] )
+			|| $existing['sort_field'] !== $clean['sort_field']
+			|| $existing['sort_mode'] !== $clean['sort_mode']
 			|| self::indexed_filters( $existing['filters'] ) !== self::indexed_filters( $clean['filters'] );
 
 		if ( $structure_changed ) {

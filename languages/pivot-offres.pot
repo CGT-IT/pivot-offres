@@ -762,7 +762,7 @@ msgid "Pour restreindre à un critère :"
 msgstr ""
 
 #: admin/class-pivot-listing-edit.php
-msgid "Attributs : nombre, colonnes, tri (defaut, nom, aleatoire), titre, filtre, lien=\"oui\" pour ajouter un lien vers cette page."
+msgid "Attributs : nombre, colonnes, tri (defaut, nom, aleatoire, debut, fin), titre, filtre, lien=\"oui\" pour ajouter un lien vers cette page."
 msgstr ""
 
 #: admin/class-pivot-onboarding.php
@@ -1421,6 +1421,14 @@ msgstr ""
 
 #: admin/class-pivot-shortcode-admin.php
 msgid "Aléatoire"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Date de début, la plus proche d'abord"
+msgstr ""
+
+#: admin/class-pivot-shortcode-admin.php
+msgid "Date de fin, la plus proche d'abord"
 msgstr ""
 
 #: admin/class-pivot-shortcode-admin.php

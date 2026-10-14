@@ -888,6 +888,35 @@ class Pivot_Fields {
 	}
 
 	/**
+	 * Période qui compte aujourd'hui, pour ranger une offre par date.
+	 *
+	 * La première qui n'est pas encore terminée : un spectacle donné en 2023
+	 * puis en décembre se range en décembre, une exposition en cours à sa
+	 * date d'ouverture. Si toutes sont passées, la dernière.
+	 *
+	 * @param array    $periods Périodes triées, comme date_periods() les rend.
+	 * @param int|null $today   Aujourd'hui, AAAAMMJJ ; par défaut, à l'heure du site.
+	 * @return array|null array( début, fin ), ou null sans période.
+	 */
+	public static function current_period( $periods, $today = null ) {
+		$periods = array_values( (array) $periods );
+
+		if ( ! $periods ) {
+			return null;
+		}
+
+		$today = null === $today ? (int) current_time( 'Ymd' ) : (int) $today;
+
+		foreach ( $periods as $period ) {
+			if ( (int) $period[1] >= $today ) {
+				return $period;
+			}
+		}
+
+		return end( $periods );
+	}
+
+	/**
 	 * Parcourt les champs à la recherche d'une urn de date.
 	 *
 	 * @param array      $specs   Champs.

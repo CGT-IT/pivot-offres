@@ -137,6 +137,8 @@ class Pivot_Shortcode_Admin {
 			'defaut'    => __( 'Celui de PIVOT', 'pivot-offres' ),
 			'nom'       => __( 'Alphabétique', 'pivot-offres' ),
 			'aleatoire' => __( 'Aléatoire', 'pivot-offres' ),
+			'debut'     => __( 'Date de début, la plus proche d\'abord', 'pivot-offres' ),
+			'fin'       => __( 'Date de fin, la plus proche d\'abord', 'pivot-offres' ),
 		) as $value => $label ) {
 			printf(
 				'<option value="%s"%s>%s</option>',

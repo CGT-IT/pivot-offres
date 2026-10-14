@@ -135,6 +135,7 @@ Chaque page associe une URL de votre site à un code de requête PIVOT. Aucune p
 | Colonnes | vignettes par ligne à partir de 1200 px de large ; en dessous, trois au plus dès 992 px, deux sur tablette (dès 576 px), une sur mobile — les paliers de la grille Bootstrap |
 | Carte | pointe les offres géolocalisées de la page |
 | Image d'en-tête | bandeau au-dessus du titre, repris comme image de partage (`og:image`) |
+| Tri | urn d'un champ, croissant ou décroissant, appliqué à l'écriture de l'index : PIVOT ne le reçoit pas. Un champ de date (`urn:fld:date:datedeb`) range chaque offre sur sa première période pas encore terminée ; les offres terminées, puis celles sans valeur, passent en dernier. Vide : l'ordre de PIVOT |
 | Critères de recherche | voir ci-dessous |
 
 ### Ajouter un filtre : les critères suggérés
@@ -444,7 +445,7 @@ Le shortcode `[pivot_offres]` pose une liste de vignettes dans un contenu WordPr
 ```
 
 - **`listing`** — reprend l'index d'une page de listing existante. C'est la forme à préférer : rien n'est redemandé à PIVOT, l'index est déjà là.
-- **`query`** — interroge directement une requête pré-programmée. Seules les offres nécessaires sont demandées, et le résultat est mis en cache : un shortcode ne déclenche pas un appel par affichage de page.
+- **`query`** — interroge directement une requête pré-programmée. Seules les offres nécessaires sont demandées — toutes pour un tri par date —, et le résultat est mis en cache : un shortcode ne déclenche pas un appel par affichage de page.
 - **`codes`** — une sélection nommée, dans l'ordre que vous écrivez. Pour un article qui met trois adresses en avant.
 
 ### Attributs
@@ -453,7 +454,7 @@ Le shortcode `[pivot_offres]` pose une liste de vignettes dans un contenu WordPr
 |---|---|---|
 | `nombre` | 6 | nombre de vignettes |
 | `colonnes` | 3 | de 1 à 6 ; repasse à 2 puis 1 sur petit écran |
-| `tri` | `defaut` | `defaut`, `nom`, `aleatoire` |
+| `tri` | `defaut` | `defaut` (l'ordre de PIVOT), `nom`, `aleatoire`, `debut`, `fin`. `debut` et `fin` rangent les événements sur la date de début ou de fin de leur période en cours ou à venir, la plus proche d'abord ; les événements terminés, puis les offres sans date, viennent après. Un `-` devant inverse l'ordre : `tri="-debut"`. Avec `query`, un tri par date demande la requête entière à PIVOT (500 offres au plus) : au-delà, passez par `listing` |
 | `filtre` | — | `province:namur\|type:hotel` — restreint sur les critères de la page ; un critère numérique prend une étendue : `chambres:3..` (au moins 3), `prix:..50` (au plus 50), `distance:5..10` ; un critère de date aussi : `date:2026-10-01..2026-10-31`, `date:..31/12/2026`, `date:2026-10-10`, et en relatif `date:aujourdhui..+30` (les 30 prochains jours) |
 | `titre` | — | titre affiché au-dessus |
 | `lien` | `non` | `oui` ajoute un lien vers la page de listing |
@@ -485,7 +486,8 @@ Les shortcodes de l'ancien plugin restent affichés : `[pivot_shortcode]`, `[piv
 | `nboffers` | `nombre` (au plus 48) ; par défaut 3, ou 6 pour les carrousels |
 | `nbcol` | `colonnes` (au plus 6) ; par défaut 4, ou 2 pour les carrousels |
 | `sortmode='shuffle'` | `tri="aleatoire"` |
-| `sortmode='asc'` et `sortfield='urn:fld:nomofr'` | `tri="nom"` ; un autre tri garde l'ordre de PIVOT |
+| `sortmode='asc'` et `sortfield='urn:fld:nomofr'` | `tri="nom"` |
+| `sortfield='urn:fld:date:datedeb'` / `'urn:fld:date:datefin'` | `tri="debut"` / `tri="fin"` ; précédé de `-` avec `sortmode='desc'`. Un tri sur un autre champ garde l'ordre de PIVOT |
 | `type`, `details` | sans objet : la vignette suit le type de chaque offre |
 | `filterurn`, `filtervalue`, `date1`, `value1`, `date2`, `value2` | **ignorés** |
 

@@ -46,8 +46,10 @@ class Pivot_Index_Builder {
 	 *
 	 * 2 : fermetures à venir (clé cl), par les zones de fermeture liées.
 	 * 3 : fichier GPX (clé g), pour le tracé sur la carte du listing.
+	 * 4 : valeur du champ de tri de la page (clé sort), voir sorted() ;
+	 *     périodes d'un événement (clé dt), pour le tri des shortcodes.
 	 */
-	const RECORD_FORMAT = 3;
+	const RECORD_FORMAT = 4;
 
 	/** @var array Index déjà décodés pendant cette requête. */
 	private static $read_memo = array();
@@ -671,6 +673,22 @@ class Pivot_Index_Builder {
 			$record['g'] = $gpx['url'];
 		}
 
+		// Périodes d'un événement, en AAAAMMJJ : le shortcode les lit pour
+		// ranger ses offres par date de début ou de fin.
+		$dates = Pivot_Fields::date_periods( $offer, 'urn:obj:date' );
+
+		if ( $dates ) {
+			$record['dt'] = $dates;
+		}
+
+		// Valeur de tri, lue ici : quand publish() range les fiches, l'offre
+		// n'est plus là — au différentiel, seules les fiches gardées le sont.
+		$sort = self::sort_material( $listing, $offer, $record );
+
+		if ( $sort ) {
+			$record['sort'] = $sort;
+		}
+
 		// Facettes : une clé stable par valeur, et ses traductions.
 		foreach ( (array) pivot_get( $listing, 'filters', array() ) as $filter ) {
 			$key = pivot_get( $filter, 'key' );
@@ -891,6 +909,49 @@ class Pivot_Index_Builder {
 		}
 
 		return $merged;
+	}
+
+	/**
+	 * Ce qui range une offre selon le champ de tri de la page.
+	 *
+	 * Un champ de date garde toutes les périodes de l'offre : celle qui
+	 * compte dépend du jour où l'index est écrit (voir sort_key()). Un autre
+	 * champ garde sa valeur dans chaque langue, dont dépend l'ordre
+	 * alphabétique. La dénomination reprend celle de la vignette, qui a ses
+	 * propres urns par langue et ses replis.
+	 *
+	 * @param array $listing Configuration.
+	 * @param array $offer   Offre normalisée.
+	 * @param array $record  Fiche neutre en cours.
+	 * @return array array( 'periods' => … ), array( 'values' => langue => valeur ), ou vide.
+	 */
+	private static function sort_material( $listing, $offer, $record ) {
+		$urn = trim( (string) pivot_get( $listing, 'sort_field', '' ) );
+
+		if ( '' === $urn ) {
+			return array();
+		}
+
+		$periods = Pivot_Fields::date_periods( $offer, $urn );
+
+		if ( $periods ) {
+			return array( 'periods' => $periods );
+		}
+
+		$is_name = in_array( Pivot_Fields::base_urn( $urn ), array( 'urn:fld:nomofr', 'urn:fld:nom' ), true );
+		$values  = array();
+
+		foreach ( Pivot_I18n::enabled() as $lang ) {
+			$value = $is_name
+				? (string) pivot_get( $record, array( 'names', $lang ), '' )
+				: Pivot_Fields::raw( $offer, $urn, $lang );
+
+			if ( '' !== $value ) {
+				$values[ $lang ] = $value;
+			}
+		}
+
+		return $values ? array( 'values' => $values ) : array();
 	}
 
 	/**
@@ -1257,7 +1318,7 @@ class Pivot_Index_Builder {
 				self::switch_lang( $lang );
 			}
 
-			foreach ( $records as $record ) {
+			foreach ( self::sorted( $listing, $records, $lang ) as $record ) {
 				$item = self::render_item(
 					$listing,
 					$record,
@@ -1382,6 +1443,119 @@ class Pivot_Index_Builder {
 	}
 
 	/**
+	 * Range les fiches selon le tri de la page.
+	 *
+	 * PIVOT ne reçoit pas ce tri : la requête s'interroge par son code, sans
+	 * les attributs sortField et sortMode que l'ancien plugin glissait dans
+	 * sa requête XML. Les offres arrivent donc dans l'ordre de PIVOT, celui
+	 * des codes, et celles qu'apporte un différentiel à la fin. Le tri se
+	 * fait ici, une fois par langue : l'ordre alphabétique en dépend.
+	 *
+	 * L'ordre suit ordered() : ce qui est terminé et ce qui n'a pas de valeur
+	 * passent après le reste.
+	 *
+	 * @param array  $listing Configuration.
+	 * @param array  $records Fiches neutres, par code.
+	 * @param string $lang    Langue.
+	 * @return array
+	 */
+	private static function sorted( $listing, $records, $lang ) {
+		$urn = trim( (string) pivot_get( $listing, 'sort_field', '' ) );
+
+		if ( '' === $urn || count( $records ) < 2 ) {
+			return $records;
+		}
+
+		$end   = 'urn:fld:date:datefin' === Pivot_Fields::base_urn( $urn );
+		$today = Pivot_Closures::today();
+		$rows  = array();
+
+		foreach ( $records as $record ) {
+			$rows[] = array_merge( self::sort_key( $record, $lang, $today, $end ), array( $record ) );
+		}
+
+		return self::ordered( $rows, 'DESC' === pivot_get( $listing, 'sort_mode', 'ASC' ) );
+	}
+
+	/**
+	 * Valeur comparable d'une fiche pour le tri.
+	 *
+	 * Une date est lue sur la période qui compte aujourd'hui, voir
+	 * Pivot_Fields::current_period().
+	 *
+	 * @param array  $record Fiche neutre.
+	 * @param string $lang   Langue.
+	 * @param int    $today  Aujourd'hui, AAAAMMJJ.
+	 * @param bool   $end    Ranger sur la fin des périodes plutôt que sur leur début.
+	 * @return array array( valeur, terminée ) ; valeur null si la fiche n'en a pas.
+	 */
+	private static function sort_key( $record, $lang, $today, $end ) {
+		$current = Pivot_Fields::current_period( pivot_get( $record, array( 'sort', 'periods' ), array() ), $today );
+
+		if ( $current ) {
+			return array( (int) $current[ $end ? 1 : 0 ], (int) $current[1] < $today );
+		}
+
+		$value = Pivot_I18n::pick( (array) pivot_get( $record, array( 'sort', 'values' ), array() ), $lang, '' );
+
+		if ( '' === $value ) {
+			return array( null, false );
+		}
+
+		$number = pivot_parse_number( $value );
+
+		return array( null !== $number ? $number : pivot_normalize( $value ), false );
+	}
+
+	/**
+	 * Range des entrées sur une valeur, croissante ou décroissante.
+	 *
+	 * Dans les deux sens, une entrée dont toutes les dates sont passées vient
+	 * après celles en cours ou à venir, et une entrée sans valeur en dernier :
+	 * une liste triée par date commence par ce qu'on peut encore voir. À
+	 * valeur égale, l'ordre de départ est gardé. Des nombres passent avant
+	 * du texte, quand un champ mélange les deux.
+	 *
+	 * Sert au tri des pages de listing comme à celui des shortcodes.
+	 *
+	 * @param array $rows Lignes array( valeur|null, terminée, entrée ), dans l'ordre de départ.
+	 * @param bool  $desc Ordre décroissant.
+	 * @return array Entrées rangées.
+	 */
+	public static function ordered( $rows, $desc = false ) {
+		$rows = array_values( $rows );
+
+		foreach ( array_keys( $rows ) as $rank ) {
+			$rows[ $rank ][3] = $rank;
+		}
+
+		usort(
+			$rows,
+			static function ( $a, $b ) use ( $desc ) {
+				$after = array( null === $a[0], ! empty( $a[1] ) ) <=> array( null === $b[0], ! empty( $b[1] ) );
+
+				if ( $after || null === $a[0] ) {
+					return $after ? $after : $a[3] <=> $b[3];
+				}
+
+				if ( is_string( $a[0] ) !== is_string( $b[0] ) ) {
+					$cmp = is_string( $a[0] ) ? 1 : -1;
+				} else {
+					$cmp = is_string( $a[0] ) ? strnatcmp( $a[0], $b[0] ) : $a[0] <=> $b[0];
+				}
+
+				if ( $desc ) {
+					$cmp = -$cmp;
+				}
+
+				return $cmp ? $cmp : $a[3] <=> $b[3];
+			}
+		);
+
+		return array_column( $rows, 2 );
+	}
+
+	/**
 	 * Traduit une fiche neutre en entrée d'index.
 	 *
 	 * Aucune clé n'est écrite si la donnée est absente : le JavaScript teste
@@ -1402,7 +1576,7 @@ class Pivot_Index_Builder {
 
 		$item = array( 'c' => $code );
 
-		foreach ( array( 't', 'z', 'r', 'nu', 'lat', 'lng', 'i', 'cl', 'g' ) as $key ) {
+		foreach ( array( 't', 'z', 'r', 'nu', 'lat', 'lng', 'i', 'cl', 'g', 'dt' ) as $key ) {
 			$value = pivot_get( $record, $key );
 			if ( null !== $value ) {
 				$item[ $key ] = $value;
@@ -1496,8 +1670,12 @@ class Pivot_Index_Builder {
 			};
 
 			add_filter( 'pre_determine_locale', $force );
-			switch_to_locale( Pivot_I18n::locale( $lang ) );
+			$switched = switch_to_locale( Pivot_I18n::locale( $lang ) );
 			remove_filter( 'pre_determine_locale', $force );
+
+			if ( $switched ) {
+				self::reload_core_locale();
+			}
 		}
 	}
 
@@ -1505,11 +1683,27 @@ class Pivot_Index_Builder {
 	 * Rend la langue d'affichage à sa détection normale.
 	 */
 	private static function restore_lang() {
-		if ( function_exists( 'restore_previous_locale' ) ) {
-			restore_previous_locale();
+		if ( function_exists( 'restore_previous_locale' ) && restore_previous_locale() ) {
+			self::reload_core_locale();
 		}
 
 		Pivot_I18n::set_current( null );
+	}
+
+	/**
+	 * Relit les mois et les jours du noyau, une fois la langue posée.
+	 *
+	 * WordPress reconstruit $wp_locale au milieu de la bascule, avant d'avoir
+	 * fini de passer ses traductions sur la nouvelle langue. Dans une requête
+	 * web, WPML les ramène entre-temps sur le français : l'index anglais,
+	 * écrit par la tâche planifiée, sortait avec « 31 déc. » sous des libellés
+	 * anglais. Relu après la bascule, $wp_locale suit les traductions telles
+	 * que les vignettes les voient. Le contrôleur de traductions n'est pas
+	 * touché : ses locales (fr_FR) ne sont pas toujours celles de l'index
+	 * (fr_BE), et le forcer faisait perdre au thème ses traductions.
+	 */
+	private static function reload_core_locale() {
+		$GLOBALS['wp_locale'] = new WP_Locale(); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 	}
 
 	/**
@@ -2194,6 +2388,7 @@ class Pivot_Index_Builder {
 					(array) pivot_get( $listing, 'query_params', array() ),
 					(int) pivot_get( $listing, 'content', 2 ),
 					(array) pivot_get( $listing, 'filters', array() ),
+					(string) pivot_get( $listing, 'sort_field', '' ),
 					Pivot_I18n::enabled(),
 					self::RECORD_FORMAT,
 				)

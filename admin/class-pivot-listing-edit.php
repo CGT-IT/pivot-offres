@@ -1365,7 +1365,7 @@ class Pivot_Listing_Edit {
 			);
 		}
 
-		echo '<p class="description">' . esc_html__( 'Attributs : nombre, colonnes, tri (defaut, nom, aleatoire), titre, filtre, lien="oui" pour ajouter un lien vers cette page.', 'pivot-offres' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Attributs : nombre, colonnes, tri (defaut, nom, aleatoire, debut, fin), titre, filtre, lien="oui" pour ajouter un lien vers cette page.', 'pivot-offres' ) . '</p>';
 
 		self::section_close();
 	}

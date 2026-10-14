@@ -18,6 +18,9 @@ class Pivot_Shortcodes {
 	const TAG   = 'pivot_offres';
 	const GROUP = 'offers';
 
+	/** Offres au plus qu'un tri par date demande à PIVOT, voir query_pool(). */
+	const POOL_MAX = 500;
+
 	/** @var Pivot_Shortcodes|null */
 	private static $instance = null;
 
@@ -189,7 +192,7 @@ class Pivot_Shortcodes {
 		$items = (array) pivot_get( $index, 'items', array() );
 
 		$items = $this->apply_filter( $items, $atts['filtre'], (array) pivot_get( $listing, 'filters', array() ) );
-		$items = $this->sort( $items, $atts['tri'] );
+		$items = self::sort( $items, $atts['tri'] );
 
 		return array_slice( $items, 0, $atts['nombre'] );
 	}
@@ -205,37 +208,61 @@ class Pivot_Shortcodes {
 	 * @return array|WP_Error
 	 */
 	private function from_query( $atts, $lang ) {
-		// Une marge est demandée : le tri par nom ou l'aléatoire n'a de sens
-		// que sur un ensemble un peu plus large que la sélection affichée.
-		$fetch = 'defaut' === $atts['tri'] ? $atts['nombre'] : min( 60, $atts['nombre'] * 4 );
-		$items = self::query_pool( $atts['query'], $fetch, $lang );
+		$items = self::query_pool( $atts['query'], self::pool_size( $atts['tri'], $atts['nombre'] ), $lang );
 
 		if ( is_wp_error( $items ) ) {
 			return $items;
 		}
 
 		$items = $this->apply_filter( $items, $atts['filtre'] );
-		$items = $this->sort( $items, $atts['tri'] );
+		$items = self::sort( $items, $atts['tri'] );
 
 		return array_slice( $items, 0, $atts['nombre'] );
 	}
 
 	/**
+	 * Offres à demander à PIVOT pour en montrer un certain nombre.
+	 *
+	 * Une marge suffit au tri par nom et à l'aléatoire, qui n'ont de sens que
+	 * sur un ensemble un peu plus large que la sélection affichée. Un tri par
+	 * date demande la requête entière : les prochains événements peuvent
+	 * être les derniers que PIVOT renvoie, rangés par code.
+	 *
+	 * @param string $tri    Tri, voir sort().
+	 * @param int    $number Offres affichées.
+	 * @return int 0 pour toute la requête.
+	 */
+	private static function pool_size( $tri, $number ) {
+		$tri = ltrim( strtolower( trim( (string) $tri ) ), '-' );
+
+		if ( 'debut' === $tri || 'fin' === $tri ) {
+			return 0;
+		}
+
+		return 'nom' === $tri || 'aleatoire' === $tri ? min( 60, $number * 4 ) : $number;
+	}
+
+	/**
 	 * Premières offres d'une requête pré-programmée, en entrées d'index.
 	 *
-	 * Une seule page est demandée à PIVOT, et gardée en cache le temps d'un
-	 * index : un affichage ne déclenche pas d'appel. Le tri, l'aléatoire
-	 * compris, se fait après le cache, à chaque affichage.
+	 * Une seule page est demandée à PIVOT — toutes, jusqu'à POOL_MAX offres,
+	 * pour la requête entière —, et gardée en cache le temps d'un index : un
+	 * affichage ne déclenche pas d'appel. Le tri, l'aléatoire compris, se
+	 * fait après le cache, à chaque affichage.
 	 *
 	 * @param string      $query Code de requête.
-	 * @param int         $fetch Nombre d'offres à demander.
+	 * @param int         $fetch Nombre d'offres à demander ; 0 pour toute la requête.
 	 * @param string|null $lang  Langue.
 	 * @return array|WP_Error
 	 */
 	public static function query_pool( $query, $fetch, $lang = null ) {
 		$query = strtoupper( trim( (string) $query ) );
 		$lang  = $lang ? $lang : Pivot_I18n::current();
-		$key   = sprintf( 'query|%s|%s|%d', $query, $lang, $fetch );
+		$fetch = max( 0, (int) $fetch );
+
+		// Le format des fiches entre dans la clé : une entrée gardée d'avant
+		// n'a pas les données qu'un tri plus récent attend (les périodes dt).
+		$key = sprintf( 'query|%s|%s|%d|%d', $query, $lang, $fetch, Pivot_Index_Builder::RECORD_FORMAT );
 
 		$cached = Pivot_Cache::get( self::GROUP, $key );
 
@@ -250,15 +277,46 @@ class Pivot_Shortcodes {
 			'filters'    => array(),
 		);
 
-		$page = Pivot_Repository::query_first_page( $virtual, $fetch );
+		$batch = max( 10, (int) pivot_settings( 'batch_size', 100 ) );
+		$page  = Pivot_Repository::query_first_page( $virtual, $fetch ? $fetch : $batch );
 
 		if ( is_wp_error( $page ) ) {
 			return $page;
 		}
 
+		$offers = (array) pivot_get( $page, 'offers', array() );
+		$token  = (string) pivot_get( $page, 'token', '' );
+		$pages  = $fetch || ! $token ? 1 : (int) pivot_get( $page, 'pagesCount', 1 );
+
+		// Une page de vignettes n'a pas à moissonner une très grosse requête :
+		// c'est le travail d'une page de listing, construite en arrière-plan.
+		if ( $pages > 1 && (int) pivot_get( $page, 'count', 0 ) > self::POOL_MAX ) {
+			Pivot_Logger::warn(
+				sprintf(
+					'Shortcode : la requête %1$s compte %2$d offres, seules les %3$d premières sont triées. Passez par une page de listing (listing="…").',
+					$query,
+					(int) pivot_get( $page, 'count', 0 ),
+					self::POOL_MAX
+				),
+				array( 'service' => 'query' )
+			);
+
+			$pages = max( 1, intdiv( self::POOL_MAX, $batch ) );
+		}
+
+		for ( $next = 2; $next <= $pages; $next++ ) {
+			$more = Pivot_Repository::query_page( $token, $next, $virtual['content'] );
+
+			if ( is_wp_error( $more ) ) {
+				return $more;
+			}
+
+			$offers = array_merge( $offers, (array) pivot_get( $more, 'offers', array() ) );
+		}
+
 		$items = array();
 
-		foreach ( (array) pivot_get( $page, 'offers', array() ) as $offer ) {
+		foreach ( $offers as $offer ) {
 			$item = Pivot_Index_Builder::item_from_offer( $offer, $lang, $virtual );
 
 			if ( $item ) {
@@ -275,25 +333,23 @@ class Pivot_Shortcodes {
 	 * Offres d'une requête pré-programmée, pour un carrousel ou un bloc de
 	 * thème : le chemin de [pivot_offres query="…"], sans son balisage.
 	 *
-	 * @param string      $query   Code de requête.
-	 * @param int         $number  Nombre d'offres, de 1 à 48.
-	 * @param bool        $shuffle Ordre aléatoire, tiré à chaque affichage.
-	 * @param string|null $lang    Langue.
+	 * @param string      $query  Code de requête.
+	 * @param int         $number Nombre d'offres, de 1 à 48.
+	 * @param bool|string $tri    Ordre, comme l'attribut tri (voir sort()) ; true
+	 *                            pour l'aléatoire, tiré à chaque affichage.
+	 * @param string|null $lang   Langue.
 	 * @return array Entrées d'index ; vide si PIVOT ne répond pas.
 	 */
-	public static function query_items( $query, $number, $shuffle = false, $lang = null ) {
+	public static function query_items( $query, $number, $tri = false, $lang = null ) {
+		$tri    = true === $tri ? 'aleatoire' : (string) $tri;
 		$number = max( 1, min( 48, (int) $number ) );
-		$items  = self::query_pool( $query, $shuffle ? min( 60, $number * 4 ) : $number, $lang );
+		$items  = self::query_pool( $query, self::pool_size( $tri, $number ), $lang );
 
 		if ( is_wp_error( $items ) ) {
 			return array();
 		}
 
-		if ( $shuffle ) {
-			shuffle( $items );
-		}
-
-		return array_slice( $items, 0, $number );
+		return array_slice( self::sort( $items, $tri ), 0, $number );
 	}
 
 	/**
@@ -557,23 +613,48 @@ class Pivot_Shortcodes {
 	/**
 	 * Ordonne la sélection.
 	 *
+	 * « debut » et « fin » rangent les événements sur la date de début ou de
+	 * fin de leur période en cours ou à venir (voir
+	 * Pivot_Fields::current_period()), la plus proche d'abord. Un « - »
+	 * devant le tri l'inverse : « -debut ». Les événements terminés, puis les
+	 * offres sans date, passent après les autres (voir
+	 * Pivot_Index_Builder::ordered()).
+	 *
 	 * @param array  $items Entrées.
-	 * @param string $tri   defaut|nom|aleatoire.
+	 * @param string $tri   defaut|nom|aleatoire|debut|fin.
 	 * @return array
 	 */
-	private function sort( $items, $tri ) {
-		if ( 'nom' === $tri ) {
-			usort(
-				$items,
-				static function ( $a, $b ) {
-					return strcoll( pivot_get( $a, 'n', '' ), pivot_get( $b, 'n', '' ) );
-				}
-			);
-		} elseif ( 'aleatoire' === $tri ) {
+	private static function sort( $items, $tri ) {
+		$tri  = strtolower( trim( (string) $tri ) );
+		$desc = 0 === strpos( $tri, '-' );
+		$tri  = ltrim( $tri, '-' );
+
+		if ( 'aleatoire' === $tri ) {
 			shuffle( $items );
+
+			return $items;
 		}
 
-		return $items;
+		if ( ! in_array( $tri, array( 'nom', 'debut', 'fin' ), true ) ) {
+			return $items;
+		}
+
+		$today = (int) current_time( 'Ymd' );
+		$rows  = array();
+
+		foreach ( $items as $item ) {
+			if ( 'nom' === $tri ) {
+				$rows[] = array( pivot_normalize( pivot_get( $item, 'n', '' ) ), false, $item );
+				continue;
+			}
+
+			$period = Pivot_Fields::current_period( pivot_get( $item, 'dt', array() ), $today );
+			$rows[] = $period
+				? array( (int) $period[ 'fin' === $tri ? 1 : 0 ], (int) $period[1] < $today, $item )
+				: array( null, false, $item );
+		}
+
+		return Pivot_Index_Builder::ordered( $rows, $desc );
 	}
 
 	/**

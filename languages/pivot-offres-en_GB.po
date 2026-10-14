@@ -569,8 +569,8 @@ msgstr "Paste this shortcode into a page or post to show a few cards from this s
 msgid "Pour restreindre à un critère :"
 msgstr "To restrict to one criterion:"
 
-msgid "Attributs : nombre, colonnes, tri (defaut, nom, aleatoire), titre, filtre, lien=\"oui\" pour ajouter un lien vers cette page."
-msgstr "Attributes: nombre, colonnes, tri (defaut, nom, aleatoire), titre, filtre, lien=\"oui\" to add a link to this page."
+msgid "Attributs : nombre, colonnes, tri (defaut, nom, aleatoire, debut, fin), titre, filtre, lien=\"oui\" pour ajouter un lien vers cette page."
+msgstr "Attributes: nombre, colonnes, tri (defaut, nom, aleatoire, debut, fin), titre, filtre, lien=\"oui\" to add a link to this page."
 
 msgid "Découvrir les pages de listing"
 msgstr "Discover the listing pages"
@@ -1063,6 +1063,12 @@ msgstr "Alphabetical"
 
 msgid "Aléatoire"
 msgstr "Random"
+
+msgid "Date de début, la plus proche d'abord"
+msgstr "Start date, soonest first"
+
+msgid "Date de fin, la plus proche d'abord"
+msgstr "End date, soonest first"
 
 msgid "Restreindre"
 msgstr "Restrict"

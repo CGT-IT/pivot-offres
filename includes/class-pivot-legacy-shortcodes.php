@@ -110,29 +110,49 @@ class Pivot_Legacy_Shortcodes {
 	 * Attributs [pivot_offres] équivalents.
 	 *
 	 * « type » et « details » n'ont pas d'équivalent : la vignette suit le
-	 * type de chaque offre. Un tri sur un autre champ que le nom garde
-	 * l'ordre de PIVOT.
+	 * type de chaque offre.
 	 *
 	 * @param array $atts Attributs de l'ancien shortcode, complétés.
 	 * @return array
 	 */
 	public static function convert( $atts ) {
-		$mode  = strtolower( trim( (string) $atts['sortmode'] ) );
-		$field = strtolower( trim( (string) $atts['sortfield'] ) );
-		$tri   = 'defaut';
-
-		if ( 'shuffle' === $mode ) {
-			$tri = 'aleatoire';
-		} elseif ( 'asc' === $mode && 'urn:fld:nomofr' === $field ) {
-			$tri = 'nom';
-		}
-
 		return array(
 			'query'    => trim( (string) $atts['query'] ),
 			'nombre'   => (int) $atts['nboffers'],
 			'colonnes' => (int) $atts['nbcol'],
-			'tri'      => $tri,
+			'tri'      => self::tri( $atts['sortmode'], $atts['sortfield'] ),
 		);
+	}
+
+	/**
+	 * Tri [pivot_offres] équivalent à sortMode et sortField.
+	 *
+	 * Le nom, la date de début et la date de fin d'un événement se
+	 * traduisent ; un tri sur un autre champ garde l'ordre de PIVOT. Sert
+	 * aussi aux shortcodes de thème qui ont gardé ces attributs.
+	 *
+	 * @param string $mode  ASC, DESC ou shuffle.
+	 * @param string $field Urn du champ.
+	 * @return string defaut, aleatoire, nom, debut, fin, ou l'un des trois derniers précédé de « - ».
+	 */
+	public static function tri( $mode, $field ) {
+		$mode  = strtolower( trim( (string) $mode ) );
+		$field = strtolower( trim( (string) $field ) );
+		$tris  = array(
+			'urn:fld:nomofr'       => 'nom',
+			'urn:fld:date:datedeb' => 'debut',
+			'urn:fld:date:datefin' => 'fin',
+		);
+
+		if ( 'shuffle' === $mode ) {
+			return 'aleatoire';
+		}
+
+		if ( ! isset( $tris[ $field ] ) || ! in_array( $mode, array( 'asc', 'desc' ), true ) ) {
+			return 'defaut';
+		}
+
+		return ( 'desc' === $mode ? '-' : '' ) . $tris[ $field ];
 	}
 
 	/**

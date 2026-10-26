@@ -115,6 +115,7 @@ function pivot_settings( $key = null, $default = null ) {
 			'schema_org'         => 1,
 			'sitemap'            => 1,
 			'llms_txt'           => 1,
+			'legacy_redirect'    => 1,
 		);
 
 		$stored = get_option( 'pivot_settings', array() );

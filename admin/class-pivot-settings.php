@@ -160,6 +160,11 @@ class Pivot_Settings {
 			'help'  => __( 'Les adresses sont relevées dans les index déjà construits, sans appel à PIVOT. Sans effet si une extension SEO remplace le plan du site de WordPress par le sien.', 'pivot-offres' ),
 		) );
 
+		$this->field( 'legacy_redirect', __( 'Anciennes adresses de fiche', 'pivot-offres' ), 'pivot_display', 'checkbox', array(
+			'label' => __( 'Rediriger /agenda/CODE&type=9 vers /details/CODE&type=9', 'pivot-offres' ),
+			'help'  => __( 'L\'ancien plugin PIVOT servait aussi les fiches sous le chemin de chaque page de listing. Ces adresses restent dans les textes, les favoris et les moteurs de recherche : une redirection 301 les envoie vers l\'adresse unique de la fiche. Sans effet sur un site qui n\'a jamais utilisé l\'ancien plugin.', 'pivot-offres' ),
+		) );
+
 		$this->field( 'llms_txt', __( 'Fichier llms.txt', 'pivot-offres' ), 'pivot_display', 'checkbox', array(
 			'label' => __( 'Publier /llms.txt, le sommaire du site à l\'usage des agents conversationnels', 'pivot-offres' ),
 			'help'  => __( 'Liste les pages de listing dans chaque langue, avec leur description. Un fichier llms.txt déposé à la racine du site l\'emporte.', 'pivot-offres' ),
@@ -457,7 +462,7 @@ class Pivot_Settings {
 		$clean['batch_size']     = isset( $input['batch_size'] ) ? max( 10, min( 500, (int) $input['batch_size'] ) ) : 100;
 		$clean['logs_retention'] = isset( $input['logs_retention'] ) ? max( 1, min( 90, (int) $input['logs_retention'] ) ) : 7;
 
-		foreach ( array( 'logs_enabled', 'map_cluster', 'schema_org', 'sitemap', 'llms_txt', 'hreflang', 'diff_enabled' ) as $key ) {
+		foreach ( array( 'logs_enabled', 'map_cluster', 'schema_org', 'sitemap', 'llms_txt', 'hreflang', 'diff_enabled', 'legacy_redirect' ) as $key ) {
 			$clean[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
 		}
 

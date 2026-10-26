@@ -34,6 +34,7 @@ La reprise ne tourne qu'une fois, et seulement si aucune page de listing n'exist
 | Ancien plugin | PIVOT Offres |
 |---|---|
 | Titre, chemin, requête, carte, tri | repris tels quels ; titres traduits depuis WPML (contexte `pivot`) |
+| Fiches sous le chemin d'une page (`/agenda/CODE&type=9`) | redirigées en 301 vers `/details/CODE&type=9` (voir [URL des fiches détail](#url-des-fiches-détail)) |
 | Nombre de colonnes | **Colonnes** de la page ; offres par page : 12, 15 pour 5 colonnes, 18 pour 6 |
 | Image de bandeau | **Image d'en-tête** de la page |
 | Description | texte d'introduction |
@@ -398,13 +399,14 @@ Sans libellé saisi dans une langue, un critère sur un champ PIVOT prend le nom
 
 Une fiche est publiée à l'adresse `https://exemple.be/details/CODEPIVOT&type=IDTYPE`, par exemple `/details/CHB-01-000RV1&type=3`. Sur un site multilingue, le préfixe de langue vient de l'extension de traduction : `/nl/details/CHB-01-000RV1&type=3`.
 
-Le plugin ne fait **aucune redirection** :
-
 | Adresse demandée | Résultat |
 |---|---|
 | `/details/CHB-01-000RV1&type=3` | fiche servie |
 | `/details/CHB-01-000RV1` (sans le type) | fiche servie |
 | `/details/CODE-INCONNU&type=3` | 404 |
+| `/agenda/CHB-01-000RV1&type=3`, `/nl/hebergements/gites/CHB-01-000RV1&type=3` | redirection 301 vers `/details/CHB-01-000RV1&type=3`, `/nl/details/CHB-01-000RV1&type=3` |
+
+La dernière ligne vient de l'ancien plugin PIVOT. Il servait aussi chaque fiche sous le chemin de la page de listing qui la montrait, et ces adresses restent dans les textes, les favoris et les moteurs de recherche. N'importe quel chemin est accepté, sur un ou plusieurs segments, pourvu qu'il se termine par `CODE&type=N` : une page renommée ou non reprise garde ainsi ses anciennes adresses. La redirection se coupe dans **PIVOT → Réglages → Affichage → Anciennes adresses de fiche** ; elle est active par défaut et reste sans effet sur un site qui n'a jamais utilisé l'ancien plugin.
 
 Seul le code sert à retrouver l'offre, en majuscules ou en minuscules. Les deux formes de code de PIVOT sont reconnues : avec tirets (`CHB-01-000RV1`) et avec soulignés (`CGT_0001_00000087`). Quand l'adresse demandée n'a pas de type, ou pas le bon, la fiche s'affiche quand même, et sa balise canonique indique l'adresse avec le type réel de l'offre.
 

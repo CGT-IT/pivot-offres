@@ -7,6 +7,9 @@
  *    chemin propre à chaque langue ;
  *  - les fiches détail : /details/CODEPIVOT&type=IDTYPE.
  *
+ * Les anciennes adresses de fiche, sous le chemin d'une page de listing
+ * (/agenda/CODEPIVOT&type=IDTYPE), sont redirigées vers /details/.
+ *
  * @package Pivot_Offres
  */
 
@@ -156,6 +159,7 @@ class Pivot_Rewrites {
 		// présence du segment n'importe où, pour laisser passer /nl/details/…
 		// dont le préfixe n'a pas encore été retiré.
 		if ( false === stripos( $request, 'details/' ) ) {
+			$this->redirect_legacy_detail( $request );
 			return;
 		}
 
@@ -186,6 +190,39 @@ class Pivot_Rewrites {
 
 		// Ce n'est pas une page WordPress : on neutralise l'analyse normale.
 		unset( $wp->query_vars['error'], $wp->query_vars['pagename'], $wp->query_vars['name'] );
+	}
+
+	/**
+	 * Redirige une ancienne adresse de fiche vers /details/, en 301.
+	 *
+	 * L'ancien plugin servait aussi les fiches sous le chemin de chaque page
+	 * de listing : /agenda/CODE&type=9, /nl/hebergements/CODE&type=2,
+	 * /les-produits/les-cuisiner/CODE&type=262. Ces adresses restent dans les
+	 * textes, les favoris et les moteurs de recherche.
+	 *
+	 * N'importe quel chemin est accepté, pas seulement ceux des pages de
+	 * listing actuelles : une page renommée ou non reprise garde ses anciennes
+	 * adresses. La signature CODE&type=N, elle, n'appartient qu'aux fiches de
+	 * l'ancien plugin. Un code inconnu de PIVOT finit en 404 sur /details/.
+	 *
+	 * @param string $request Chemin demandé, sans barres obliques autour.
+	 */
+	private function redirect_legacy_detail( $request ) {
+		if ( false === strpos( $request, '&type=' ) || ! pivot_settings( 'legacy_redirect', 1 ) ) {
+			return;
+		}
+
+		$pattern = '#^(?:(' . implode( '|', Pivot_I18n::languages() ) . ')/)?.+/([^/&]+)&type=([0-9]+)/?$#i';
+
+		if ( ! preg_match( $pattern, rawurldecode( $request ), $match ) || ! pivot_is_code( $match[2] ) ) {
+			return;
+		}
+
+		$lang = $match[1] ? strtolower( $match[1] ) : Pivot_I18n::current();
+
+		if ( wp_safe_redirect( self::detail_url( $match[2], (int) $match[3], $lang ), 301, 'PIVOT Offres' ) ) {
+			exit;
+		}
 	}
 
 	/**

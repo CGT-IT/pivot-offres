@@ -458,6 +458,7 @@ class Pivot_Templates {
 				'mapTiles'   => pivot_settings( 'map_tiles' ),
 				'mapAttr'    => pivot_settings( 'map_attribution' ),
 				'mapCluster' => pivot_settings( 'map_cluster', 1 ) ? 1 : 0,
+				'pins'       => $show_map ? self::map_pins( $listing ) : new stdClass(),
 				'search'     => (int) $listing['search_enabled'],
 				'closures'   => Pivot_Closures::i18n( (array) pivot_get( $listing, 'offer_types', array() ) ),
 				'tracks'     => self::track_config( $listing ),
@@ -927,6 +928,55 @@ class Pivot_Templates {
 			'lookup' => $known ? '' : rest_url( Pivot_Rest::NAMESPACE_V1 . '/gpx/' ),
 			'style'  => (array) $style,
 		);
+	}
+
+	/**
+	 * Épingles de la carte d'un listing : celle de PIVOT pour chaque type
+	 * d'offre présent dans la page.
+	 *
+	 * C'est le pictogramme du type en épingle (usage « pin » :
+	 * modifier=pin, modifier=ori, 30 px), servi par la copie locale de
+	 * Pivot_Pictos quand elle existe. Sa taille part avec lui : le script en
+	 * tire iconSize et iconAnchor, et place la pointe de l'épingle sur l'offre
+	 * avant que l'image n'arrive.
+	 *
+	 * Les types sont ceux que la dernière construction de l'index a relevés
+	 * (offer_types) : tant que l'index n'est pas construit, la carte garde les
+	 * marqueurs de Leaflet.
+	 *
+	 * @param array $listing Configuration de la page.
+	 * @return array Type => array( url, size ).
+	 */
+	public static function map_pins( $listing ) {
+		$pins = array();
+
+		foreach ( (array) pivot_get( $listing, 'offer_types', array() ) as $type_id ) {
+			$type_id = (int) $type_id;
+			$urn     = 'urn:typ:' . $type_id;
+			$url     = $type_id ? pivot_picto_url( $urn, 'pin' ) : '';
+
+			if ( ! $url ) {
+				continue;
+			}
+
+			$pins[ $type_id ] = array(
+				'url'  => $url,
+				'size' => Pivot_Pictos::size( $urn, 'pin' ),
+			);
+		}
+
+		/**
+		 * Épingles de la carte d'un listing, par type d'offre.
+		 *
+		 * Un tableau vide rend à la carte les marqueurs par défaut de Leaflet.
+		 *
+		 * @param array $pins    Type => array( url, size : array( largeur, hauteur ) ).
+		 * @param array $listing Configuration de la page.
+		 */
+		$pins = (array) apply_filters( 'pivot_map_pins', $pins, $listing );
+
+		// Un objet JSON, même pour des types qui se suivraient depuis 0.
+		return (object) $pins;
 	}
 
 	/**

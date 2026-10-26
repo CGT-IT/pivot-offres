@@ -133,7 +133,7 @@ Chaque page associe une URL de votre site à un code de requête PIVOT. Aucune p
 | Richesse des données | **Résumé** (rapide), **Complet** — indispensable dès qu'un filtre porte sur un champ PIVOT —, ou **Complet avec offres liées**, qui met aussi en cache les fiches détail des offres de la page (voir [Renouvellement du cache](#renouvellement-du-cache)) |
 | Offres par page | pagination navigateur |
 | Colonnes | vignettes par ligne à partir de 1200 px de large ; en dessous, trois au plus dès 992 px, deux sur tablette (dès 576 px), une sur mobile — les paliers de la grille Bootstrap |
-| Carte | pointe les offres géolocalisées de la page |
+| Carte | pointe les offres géolocalisées de la page, chacune avec l'épingle PIVOT de son type d'offre (voir [Pictogrammes](#pictogrammes)) |
 | Image d'en-tête | bandeau au-dessus du titre, repris comme image de partage (`og:image`) |
 | Tri | urn d'un champ, croissant ou décroissant, appliqué à l'écriture de l'index : PIVOT ne le reçoit pas. Un champ de date (`urn:fld:date:datedeb`) range chaque offre sur sa première période pas encore terminée ; les offres terminées, puis celles sans valeur, passent en dernier. Vide : l'ordre de PIVOT |
 | Critères de recherche | voir ci-dessous |
@@ -793,6 +793,17 @@ Un pictogramme absent du dossier est servi par PIVOT, comme avant. Pour une urn 
 
 Les usages se déclarent par le filtre `pivot_pictos`. Ceux du plugin : `class` (h=22), `equipment` (h=30), `signal` (w=25) et `pin` (épingle de carte : modifier=pin, modifier=ori, w=30). Les urns sont soit des sources lues dans le thesaurus (`class`, `signal`, `equipment`, `types`), soit des urns explicites. Un paramètre répété s'écrit en tableau.
 
+**La carte d'un listing pose chaque offre avec l'épingle de son type**, l'usage `pin` : la maison d'un hébergement, le calendrier d'un événement… Les types sont ceux que la dernière construction de l'index a relevés ; leur épingle part avec sa taille dans la configuration du script (`pins`), qui place la pointe sur l'offre avant que l'image n'arrive. Un type sans épingle chez PIVOT, ou un index pas encore construit, garde le marqueur de Leaflet. Les thèmes en héritent sans rien écrire. Une autre taille se règle sur l'usage `pin` (la carte suit, taille comprise) ; le filtre `pivot_map_pins` change les épingles d'une page, ou rend les marqueurs de Leaflet :
+
+```php
+add_filter( 'pivot_pictos', function ( $usages ) {
+	$usages['pin']['args']['w'] = 40;                    // épingles de 40 px
+	return $usages;
+} );
+
+add_filter( 'pivot_map_pins', '__return_empty_array' ); // marqueurs de Leaflet
+```
+
 ```php
 add_filter( 'pivot_pictos', function ( $usages ) {
 	$usages['class']['args']['c'] = '71BE63';        // couleur des classements
@@ -846,6 +857,7 @@ Le nombre de colonnes d'une page de listing se règle dans son écran d'édition
 | `pivot_card_fields` | champs supplémentaires embarqués dans les vignettes d'un type |
 | `pivot_track_offer_types` | types d'offre dont la carte propose le tracé GPX sans le connaître d'avance (8 par défaut) |
 | `pivot_track_style` | style du tracé GPX sur la carte d'un listing |
+| `pivot_map_pins` | épingles de la carte d'un listing, par type d'offre (`url`, `size`) ; vide pour les marqueurs de Leaflet |
 | `pivot_offer_gpx` | adresse du fichier GPX d'une offre (proxy, CDN) |
 | `pivot_closure_offer_types` | types d'offre lus comme des zones de fermeture (33 par défaut) |
 | `pivot_closure_impact_label` | libellé court d'un type de fermeture : « Impact chasse » |

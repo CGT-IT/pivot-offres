@@ -43,6 +43,8 @@
 
 	var map = null;
 	var markerLayer = null;
+	// Épingle Leaflet de chaque type d'offre, créée à la première offre du type.
+	var pinIcons = {};
 
 	// Tracé GPX affiché sur la carte : un seul à la fois. Les tracés lus sont
 	// gardés, par code d'offre, le temps de la page.
@@ -983,7 +985,7 @@
 				return;
 			}
 
-			var marker = window.L.marker( [ item.lat, item.lng ] );
+			var marker = window.L.marker( [ item.lat, item.lng ], markerOptions( item ) );
 			var popup = '<div class="pivot-map-popup"><strong>' + escapeHtml( item.n || '' ) + '</strong>';
 
 			if ( item.z || item.l ) {
@@ -1015,6 +1017,41 @@
 		if ( bounds.length && ! config.mapCenter ) {
 			map.fitBounds( bounds, { padding: [ 24, 24 ], maxZoom: 14 } );
 		}
+	}
+
+	/**
+	 * Options du marqueur d'une offre : l'épingle PIVOT de son type
+	 * (config.pins), à défaut le marqueur de Leaflet.
+	 *
+	 * La taille vient du serveur : la pointe de l'épingle (milieu du bas) est
+	 * posée sur l'offre avant que l'image n'arrive, et la bulle s'ouvre
+	 * au-dessus. Une icône par type, créée une seule fois.
+	 */
+	function markerOptions( item ) {
+		var pin = ( config.pins || {} )[ item.t ];
+		var options = { alt: item.n || '' };
+
+		if ( ! pin || ! pin.url ) {
+			return options;
+		}
+
+		if ( ! pinIcons[ item.t ] ) {
+			var size = pin.size || [];
+			var width = parseInt( size[ 0 ], 10 ) || 30;
+			var height = parseInt( size[ 1 ], 10 ) || width;
+
+			pinIcons[ item.t ] = window.L.icon( {
+				iconUrl: pin.url,
+				iconSize: [ width, height ],
+				iconAnchor: [ width / 2, height ],
+				popupAnchor: [ 0, -height ],
+				tooltipAnchor: [ width / 2, -height / 2 ]
+			} );
+		}
+
+		options.icon = pinIcons[ item.t ];
+
+		return options;
 	}
 
 	/* ------------------------------------------------------- tracé GPX */

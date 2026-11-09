@@ -436,10 +436,23 @@ function pivot_picto_is_empty( $urn ) {
 }
 
 /**
- * Capacité requise pour administrer le plugin.
+ * Capacité requise pour administrer le plugin : réglages, types d'offres,
+ * champs affichés, cache et outils, journal.
  *
  * @return string
  */
 function pivot_capability() {
 	return apply_filters( 'pivot_admin_capability', 'manage_options' );
+}
+
+/**
+ * Capacité requise pour gérer les pages de listing et construire un shortcode.
+ *
+ * Celle des éditeurs par défaut : ils publient des pages sans accéder aux
+ * réglages, où se trouve la clé ws_key. Les administrateurs l'ont aussi.
+ *
+ * @return string
+ */
+function pivot_listing_capability() {
+	return apply_filters( 'pivot_listing_capability', 'edit_others_pages' );
 }

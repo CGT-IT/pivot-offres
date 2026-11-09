@@ -697,7 +697,7 @@ class Pivot_Shortcodes {
 	}
 
 	/**
-	 * Message d'erreur, visible des seuls administrateurs.
+	 * Message d'erreur, visible des seuls éditeurs et administrateurs.
 	 *
 	 * Un visiteur n'a rien à faire d'un problème de configuration.
 	 *
@@ -705,7 +705,7 @@ class Pivot_Shortcodes {
 	 * @return string
 	 */
 	private function error( $message ) {
-		if ( ! current_user_can( pivot_capability() ) ) {
+		if ( ! current_user_can( pivot_listing_capability() ) ) {
 			return '';
 		}
 

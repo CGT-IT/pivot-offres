@@ -173,12 +173,13 @@ class Pivot_Admin {
 	 * Menus.
 	 */
 	public function menu() {
-		$cap = pivot_capability();
+		$cap     = pivot_capability();
+		$editors = pivot_listing_capability();
 
 		add_menu_page(
 			__( 'PIVOT Offres', 'pivot-offres' ),
 			__( 'PIVOT', 'pivot-offres' ),
-			$cap,
+			$editors,
 			'pivot-listings',
 			array( $this, 'render_listings' ),
 			'dashicons-location-alt',
@@ -189,7 +190,7 @@ class Pivot_Admin {
 			'pivot-listings',
 			__( 'Pages de listing', 'pivot-offres' ),
 			__( 'Pages de listing', 'pivot-offres' ),
-			$cap,
+			$editors,
 			'pivot-listings',
 			array( $this, 'render_listings' )
 		);
@@ -198,7 +199,7 @@ class Pivot_Admin {
 			'pivot-listings',
 			__( 'Ajouter une page', 'pivot-offres' ),
 			__( 'Ajouter une page', 'pivot-offres' ),
-			$cap,
+			$editors,
 			'pivot-listing-edit',
 			array( 'Pivot_Listing_Edit', 'render' )
 		);
@@ -207,7 +208,7 @@ class Pivot_Admin {
 			'pivot-listings',
 			__( 'Insérer des offres', 'pivot-offres' ),
 			__( 'Shortcode', 'pivot-offres' ),
-			$cap,
+			$editors,
 			'pivot-shortcode',
 			array( 'Pivot_Shortcode_Admin', 'render' )
 		);
@@ -334,7 +335,7 @@ class Pivot_Admin {
 	 * Écran « Pages de listing ».
 	 */
 	public function render_listings() {
-		if ( ! current_user_can( pivot_capability() ) ) {
+		if ( ! current_user_can( pivot_listing_capability() ) ) {
 			wp_die( esc_html__( 'Vous n\'avez pas accès à cet écran.', 'pivot-offres' ) );
 		}
 

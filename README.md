@@ -126,6 +126,8 @@ L'écran d'édition d'une page de listing indique la dernière vérification et 
 
 Chaque page associe une URL de votre site à un code de requête PIVOT. Aucune page WordPress n'est à publier : l'adresse est créée par l'extension.
 
+Les éditeurs gèrent les pages de listing et le formulaire **Shortcode** ; les réglages, les types d'offres, les champs affichés, le cache et le journal restent réservés aux administrateurs. Les filtres `pivot_listing_capability` et `pivot_admin_capability` déplacent ces deux limites (voir [Crochets PHP](#crochets-php)).
+
 | Réglage | Effet |
 |---|---|
 | URL | un ou plusieurs segments, ex. `sejourner/hotels` |
@@ -493,7 +495,7 @@ Les shortcodes de l'ancien plugin restent affichés : `[pivot_shortcode]`, `[piv
 | `type`, `details` | sans objet : la vignette suit le type de chaque offre |
 | `filterurn`, `filtervalue`, `date1`, `value1`, `date2`, `value2` | **ignorés** |
 
-Les carrousels s'affichent en grille. Les filtres que l'ancien plugin ajoutait à la requête ne sont pas transmis à PIVOT : la sélection s'affiche sans eux. Un administrateur connecté voit alors, au-dessus des vignettes, un avertissement avec le shortcode `[pivot_offres]` à poser à la place, une fois le filtre porté dans la requête PIVOT elle-même. Les visiteurs ne le voient pas.
+Les carrousels s'affichent en grille. Les filtres que l'ancien plugin ajoutait à la requête ne sont pas transmis à PIVOT : la sélection s'affiche sans eux. Un éditeur ou un administrateur connecté voit alors, au-dessus des vignettes, un avertissement avec le shortcode `[pivot_offres]` à poser à la place, une fois le filtre porté dans la requête PIVOT elle-même. Les visiteurs ne le voient pas.
 
 ### Détails qui comptent
 
@@ -879,7 +881,8 @@ Le nombre de colonnes d'une page de listing se règle dans son écran d'édition
 | `pivot_onboarding_tours` | étapes des visites guidées |
 | `pivot_suggestion_ignored_urns` | champs à ne jamais proposer en critère |
 | `pivot_image_url` | réécrire l'URL des images (CDN, proxy…) |
-| `pivot_admin_capability` | droit requis pour administrer l'extension |
+| `pivot_admin_capability` | droit requis pour la configuration : réglages, types d'offres, champs affichés, cache et outils, journal (`manage_options` par défaut) |
+| `pivot_listing_capability` | droit requis pour gérer les pages de listing et le formulaire Shortcode (`edit_others_pages` par défaut : éditeurs et administrateurs) |
 | `pivot_site_root` | racine utilisée pour construire les URL du plugin |
 | `pivot_private_cache_dir` | emplacement du cache privé, hors de l'arborescence servie par le Web |
 | `pivot_sslverify` | vérification du certificat lors des appels à PIVOT (`true` par défaut) |

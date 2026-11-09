@@ -188,7 +188,7 @@ class Pivot_Legacy_Shortcodes {
 			}
 		}
 
-		if ( ! $ignored || ! current_user_can( pivot_capability() ) ) {
+		if ( ! $ignored || ! current_user_can( pivot_listing_capability() ) ) {
 			return '';
 		}
 

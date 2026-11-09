@@ -30,7 +30,7 @@ class Pivot_Listing_Edit {
 	 * Enregistre le formulaire.
 	 */
 	public function handle_save() {
-		if ( ! isset( $_POST['pivot_listing_nonce'] ) || ! current_user_can( pivot_capability() ) ) {
+		if ( ! isset( $_POST['pivot_listing_nonce'] ) || ! current_user_can( pivot_listing_capability() ) ) {
 			return;
 		}
 
@@ -131,7 +131,7 @@ class Pivot_Listing_Edit {
 	 * Affiche l'écran.
 	 */
 	public static function render() {
-		if ( ! current_user_can( pivot_capability() ) ) {
+		if ( ! current_user_can( pivot_listing_capability() ) ) {
 			wp_die( esc_html__( 'Vous n\'avez pas accès à cet écran.', 'pivot-offres' ) );
 		}
 

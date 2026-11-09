@@ -214,12 +214,12 @@ class Pivot_Rest {
 	}
 
 	/**
-	 * Droits d'administration.
+	 * Droits sur les pages de listing : toutes ces routes servent leurs écrans.
 	 *
 	 * @return bool
 	 */
 	public function can_manage() {
-		return current_user_can( pivot_capability() );
+		return current_user_can( pivot_listing_capability() );
 	}
 
 	/**

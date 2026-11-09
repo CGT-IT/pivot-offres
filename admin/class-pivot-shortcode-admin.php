@@ -32,7 +32,7 @@ class Pivot_Shortcode_Admin {
 	 * Affiche l'écran.
 	 */
 	public static function render() {
-		if ( ! current_user_can( pivot_capability() ) ) {
+		if ( ! current_user_can( pivot_listing_capability() ) ) {
 			wp_die( esc_html__( 'Vous n\'avez pas accès à cet écran.', 'pivot-offres' ) );
 		}
 

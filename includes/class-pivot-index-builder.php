@@ -1225,6 +1225,20 @@ class Pivot_Index_Builder {
 			)
 		);
 
+		// En « complet avec offres liées », la reconstruction vient de réécrire
+		// la fiche détail de chaque offre (absorb()) : toutes ont pu changer.
+		// Aux autres niveaux, elle n'y touche pas.
+		if ( ! empty( $state['warmed'] ) ) {
+			$changed = array();
+
+			foreach ( $records as $code => $record ) {
+				$changed[ $code ] = (int) pivot_get( $record, 't', 0 );
+			}
+
+			/** Documentée dans sync(). */
+			do_action( 'pivot_offers_changed', $changed, $listing );
+		}
+
 		// Fiches gardées pour appliquer les différentiels des nuits suivantes.
 		if ( self::diff_enabled( $listing ) ) {
 			self::save_records( $listing_id, $records, (array) pivot_get( $state, 'keymap', array() ) );
@@ -1440,6 +1454,16 @@ class Pivot_Index_Builder {
 				)
 			)
 		);
+
+		/**
+		 * L'index d'une page vient d'être écrit, par une reconstruction
+		 * complète ou par le différentiel.
+		 *
+		 * @param array $listing  Configuration, telle qu'avant l'écriture.
+		 * @param int   $count    Nombre d'offres de l'index.
+		 * @param int   $previous Nombre d'offres de l'index précédent.
+		 */
+		do_action( 'pivot_index_published', $listing, count( $records ), (int) pivot_get( $listing, 'index_count', 0 ) );
 	}
 
 	/**
@@ -2105,6 +2129,7 @@ class Pivot_Index_Builder {
 			$warm    = 3 === (int) pivot_get( $listing, 'content', 2 );
 			$ttl     = $warm ? self::detail_ttl( $listing ) : 0;
 			$counts  = array( 0, 0, 0 );
+			$changed = array(); // Code => type d'offre, pour l'adresse des fiches.
 
 			foreach ( $offers as $offer ) {
 				$code      = (string) pivot_get( $offer, 'code', '' );
@@ -2117,7 +2142,13 @@ class Pivot_Index_Builder {
 				$counts[ $operation ]++;
 
 				if ( 2 === $operation ) {
+					$changed[ $code ] = (int) pivot_get( $records, array( $code, 't' ), 0 );
 					unset( $records[ $code ] );
+
+					// La fiche aussi : gardée, elle resterait affichée jusqu'à
+					// son expiration. Redemandée, elle suit PIVOT — à jour si
+					// l'offre a seulement quitté la requête, 404 si elle a disparu.
+					Pivot_Repository::forget_offer( $code );
 					continue;
 				}
 
@@ -2126,6 +2157,8 @@ class Pivot_Index_Builder {
 				if ( $record ) {
 					$records[ $code ] = $record;
 				}
+
+				$changed[ $code ] = (int) pivot_get( $record, 't', 0 );
 
 				// La fiche détail suit : réécrite si l'offre vient d'arriver au
 				// bon niveau de détail, oubliée sinon pour être relue à jour.
@@ -2146,6 +2179,16 @@ class Pivot_Index_Builder {
 			);
 
 			self::save_records( $listing_id, $records, (array) pivot_get( $state, 'keymap', array() ) );
+
+			/**
+			 * La fiche détail d'offres de la page a changé : ajoutées, modifiées
+			 * ou retirées par le différentiel, ou réécrites par une reconstruction
+			 * complète en « complet avec offres liées » (finish()).
+			 *
+			 * @param array $changed Types d'offre, par code.
+			 * @param array $listing Configuration.
+			 */
+			do_action( 'pivot_offers_changed', $changed, $listing );
 
 			$ack = Pivot_Repository::query_ack( $listing );
 

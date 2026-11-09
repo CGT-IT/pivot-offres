@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       PIVOT Offres V2
  * Description:       Publie les offres touristiques de PIVOT/Web (Tourisme Wallonie) : pages de listing paramétrables, recherche et pagination 100 % côté client, cartographie, pages détail optimisées SEO, multilingue fr/nl/en/de à partir des traductions renvoyées par PIVOT. Aucune offre n'est stockée en base de données.
- * Version:           2.14.3
+ * Version:           2.14.4
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * License:           GPL-2.0-or-later
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PIVOT_VERSION', '2.14.3' );
+define( 'PIVOT_VERSION', '2.14.4' );
 define( 'PIVOT_FILE', __FILE__ );
 define( 'PIVOT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PIVOT_URL', plugin_dir_url( __FILE__ ) );
@@ -63,6 +63,8 @@ require_once PIVOT_DIR . 'includes/class-pivot-rest.php';
 require_once PIVOT_DIR . 'includes/class-pivot-seo.php';
 require_once PIVOT_DIR . 'includes/class-pivot-sitemap.php';
 require_once PIVOT_DIR . 'includes/class-pivot-templates.php';
+require_once PIVOT_DIR . 'includes/class-pivot-admin-bar.php';
+require_once PIVOT_DIR . 'includes/class-pivot-page-cache.php';
 require_once PIVOT_DIR . 'includes/class-pivot-shortcodes.php';
 require_once PIVOT_DIR . 'includes/class-pivot-legacy-shortcodes.php';
 require_once PIVOT_DIR . 'includes/class-pivot-cron.php';
@@ -226,6 +228,8 @@ final class Pivot_Offres {
 		Pivot_Logger::instance();
 		Pivot_Rewrites::instance();
 		Pivot_Templates::instance();
+		Pivot_Admin_Bar::instance();
+		Pivot_Page_Cache::instance();
 		Pivot_Shortcodes::instance();
 		Pivot_Legacy_Shortcodes::instance();
 		Pivot_Seo::instance();

@@ -1773,3 +1773,12 @@ msgstr "Ontbrekende downloaden"
 
 msgid "Tout retélécharger"
 msgstr "Alles opnieuw downloaden"
+
+msgid "Rafraîchir l'offre"
+msgstr "Aanbod vernieuwen"
+
+msgid "Redemander l'offre %1$s à PIVOT. Version en cache depuis %2$s."
+msgstr "Aanbod %1$s opnieuw opvragen bij PIVOT. Versie in de cache sinds %2$s."
+
+msgid "Redemander l'offre %s à PIVOT."
+msgstr "Aanbod %s opnieuw opvragen bij PIVOT."

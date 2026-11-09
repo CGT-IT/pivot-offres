@@ -94,6 +94,20 @@ Une fiche détail absente du cache coûte au visiteur un appel à PIVOT, d'une d
 
 Reconstruction manuelle : **PIVOT → Cache et outils**, ou le bouton **Reconstruire maintenant** sur la page de listing (barre de progression, traitement par lots).
 
+Une seule fiche à remettre à jour, par exemple après l'ajout d'une traduction dans PIVOT : ouvrez-la connecté, puis **Rafraîchir l'offre** dans la barre d'administration. L'offre est retirée du cache et la page la redemande aussitôt à PIVOT ; l'infobulle du bouton indique depuis quand la version affichée est en cache. Le bouton est proposé à qui peut gérer les pages de listing. Il ne touche pas aux vignettes, qui viennent de l'index de chaque page de listing : pour elles, reconstruisez l'index.
+
+### Cache de page (W3 Total Cache)
+
+W3 Total Cache garde le HTML des pages de listing et des fiches, et le sert aux visiteurs sans passer par WordPress : sans purge, une page reconstruite resterait ancienne pour eux jusqu'à l'expiration de ce cache, alors qu'un administrateur connecté, qui le contourne, verrait la nouvelle. Quand W3 Total Cache est actif, le plugin vide donc lui-même :
+
+| Événement | Ce qui est vidé |
+|---|---|
+| Index écrit (reconstruction complète, manuelle ou planifiée, ou différentiel) | la page de listing dans chaque langue et toutes ses pages de pagination, plus les contenus publiés qui l'insèrent par `[pivot_offres listing="…"]`, dans le texte ou dans les données d'Elementor |
+| Offres ajoutées, modifiées ou retirées par le différentiel ; toutes les offres d'une page **Complet avec offres liées** reconstruite en entier, qui réécrit leurs fiches | leur fiche détail dans chaque langue |
+| Bouton **Rafraîchir l'offre** | la fiche détail dans chaque langue |
+
+Les fiches sont vidées sous leurs deux adresses, `/details/CODE&type=ID` et `/details/CODE`. Ne sont **pas** vidés : les contenus qui passent par `[pivot_offres query="…"]`, `codes="…"` ou les anciens shortcodes, qui ont leur propre cache ; un modèle Elementor (en-tête, section globale) qui insère une page de listing ; les fiches des offres d'une page en **Résumé** ou **Complet** reconstruite en entier : la reconstruction ne touche pas à leur cache, elles ne changent donc pas. Le filtre `pivot_page_cache_urls` ajoute ou retire des adresses.
+
 Les index volumineux sont construits par tranches : si le budget de temps est dépassé, la construction reprend en arrière-plan. Réduisez **Offres par appel** si votre hébergeur coupe les requêtes longues.
 
 ### Mise à jour par différentiel
@@ -888,6 +902,10 @@ Le nombre de colonnes d'une page de listing se règle dans son écran d'édition
 | `pivot_sslverify` | vérification du certificat lors des appels à PIVOT (`true` par défaut) |
 | `pivot_logs_max_rows` | nombre maximal de lignes conservées dans le journal (50 000 par défaut) |
 | `pivot_cache_flushed` | action déclenchée après une purge de cache |
+| `pivot_offer_refreshed` | action déclenchée quand une offre est retirée du cache par le bouton **Rafraîchir l'offre** (`$code`, `$url`, `$type`) |
+| `pivot_index_published` | action déclenchée après l'écriture d'un index (`$listing`, `$count`, `$previous`) |
+| `pivot_offers_changed` | action déclenchée quand la fiche détail d'offres a changé : différentiel, ou reconstruction complète en « complet avec offres liées » (`$changed` : type par code, `$listing`) |
+| `pivot_page_cache_urls` | adresses vidées du cache de page de W3 Total Cache (`$urls`, `$reason`) |
 | `pivot_purge_logs` | action à déclencher (`do_action`) pour purger le journal sans attendre la maintenance quotidienne |
 
 **À vérifier lors de la mise en service** : le descriptif par défaut est `urn:fld:descmarket`, seul. Les urns de téléphone, de courriel et de site web varient selon les types d'offres et les organismes. Consultez la structure logique de vos types (`/thesaurus/typeofr/{id}`) et ajoutez à `pivot_description_urns` si vos données portent d'autres niveaux de descriptif. Inutile d'y déclarer les variantes traduites : donnez l'urn nue, les versions préfixées par la langue sont trouvées seules.
@@ -939,6 +957,8 @@ pivot-offres/
 │   ├── class-pivot-seo.php       titres, canoniques, JSON-LD, llms.txt
 │   ├── class-pivot-sitemap.php   pages de listing et fiches dans le plan du site XML
 │   ├── class-pivot-templates.php rendu et aides d'affichage
+│   ├── class-pivot-admin-bar.php bouton « Rafraîchir l'offre » des fiches détail
+│   ├── class-pivot-page-cache.php purge du cache de page de W3 Total Cache
 │   ├── class-pivot-shortcodes.php shortcode d'insertion éditoriale
 │   ├── class-pivot-legacy-shortcodes.php anciens [pivot_shortcode…], rendus par [pivot_offres]
 │   ├── class-pivot-onboarding.php visites guidées

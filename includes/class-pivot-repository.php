@@ -101,6 +101,16 @@ class Pivot_Repository {
 	}
 
 	/**
+	 * Date à laquelle la fiche détail d'une offre a été mise en cache.
+	 *
+	 * @param string $code Code PIVOT.
+	 * @return int|null Horodatage, null si la fiche n'est pas en cache.
+	 */
+	public static function offer_cached_at( $code ) {
+		return Pivot_Cache::written_at( self::GROUP, self::offer_key( strtoupper( trim( (string) $code ) ), 3 ) );
+	}
+
+	/**
 	 * Range une offre déjà reçue de PIVOT, sans nouvel appel.
 	 *
 	 * Sert à la construction d'un index : une requête exécutée au niveau de

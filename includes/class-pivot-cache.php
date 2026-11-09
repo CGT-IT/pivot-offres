@@ -386,6 +386,28 @@ class Pivot_Cache {
 	}
 
 	/**
+	 * Date d'écriture d'une entrée, expirée ou non.
+	 *
+	 * L'entrée est écrite d'un bloc (fichier temporaire renommé) : la date du
+	 * fichier est celle de l'écriture, sans relire son contenu.
+	 *
+	 * @param string $group Groupe.
+	 * @param string $key   Clé.
+	 * @return int|null Horodatage, null si l'entrée est absente.
+	 */
+	public static function written_at( $group, $key ) {
+		$file = self::path( $group, $key );
+
+		if ( ! file_exists( $file ) ) {
+			return null;
+		}
+
+		$time = filemtime( $file );
+
+		return false === $time ? null : (int) $time;
+	}
+
+	/**
 	 * Vide un groupe complet (ou tout le cache si $group est vide).
 	 *
 	 * @param string $group Groupe à vider.

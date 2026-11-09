@@ -2516,3 +2516,17 @@ msgstr ""
 #: admin/class-pivot-tools.php
 msgid "Tout retélécharger"
 msgstr ""
+
+#: includes/class-pivot-admin-bar.php
+msgid "Rafraîchir l'offre"
+msgstr ""
+
+#: includes/class-pivot-admin-bar.php
+#. translators: 1 : code de l'offre, 2 : durée écoulée (« 3 heures »).
+msgid "Redemander l'offre %1$s à PIVOT. Version en cache depuis %2$s."
+msgstr ""
+
+#: includes/class-pivot-admin-bar.php
+#. translators: %s : code de l'offre.
+msgid "Redemander l'offre %s à PIVOT."
+msgstr ""

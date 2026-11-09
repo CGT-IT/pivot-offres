@@ -1773,3 +1773,12 @@ msgstr "Download missing ones"
 
 msgid "Tout retélécharger"
 msgstr "Download everything again"
+
+msgid "Rafraîchir l'offre"
+msgstr "Refresh offer"
+
+msgid "Redemander l'offre %1$s à PIVOT. Version en cache depuis %2$s."
+msgstr "Fetch offer %1$s again from PIVOT. Cached version from %2$s ago."
+
+msgid "Redemander l'offre %s à PIVOT."
+msgstr "Fetch offer %s again from PIVOT."

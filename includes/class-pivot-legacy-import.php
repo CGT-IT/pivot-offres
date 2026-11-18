@@ -28,7 +28,10 @@ class Pivot_Legacy_Import {
 	/** Statut « traduction terminée » de WPML String Translation. */
 	const WPML_COMPLETE = 10;
 
-	/** Recherche par nom : la recherche libre de ce plugin la couvre déjà. */
+	/**
+	 * Recherche par nom : elle ne devient pas un critère, mais active la
+	 * recherche libre de la page, qui cherche déjà dans le nom.
+	 */
 	const NAME_URN = 'urn:fld:nomofr';
 
 	/** Champs d'adresse de l'ancien plugin, et la source qui les remplace ici. */
@@ -334,7 +337,7 @@ class Pivot_Legacy_Import {
 			'show_map'       => ! empty( $page['map'] ),
 			'sort_field'     => $field,
 			'sort_mode'      => 'DESC' === $mode ? 'DESC' : 'ASC',
-			'search_enabled' => 1,
+			'search_enabled' => self::has_name_filter( $rows ) ? 1 : 0,
 			'intro'          => $intro,
 			'intros'         => '' !== $intro ? self::wpml_translations( $intro, 'description-for-' . $query ) : array(),
 			'image'          => trim( (string) pivot_get( $page, 'image', '' ) ),
@@ -342,6 +345,26 @@ class Pivot_Legacy_Import {
 			'filters'        => $filters,
 			'filter_groups'  => self::group_translations( $filters ),
 		);
+	}
+
+	/**
+	 * L'ancienne page proposait-elle une recherche par nom ?
+	 *
+	 * L'ancien formulaire n'affichait que les filtres réglés pour la page :
+	 * sans filtre « Nom », il n'y avait pas de champ de recherche, et la page
+	 * reprise n'en propose pas non plus.
+	 *
+	 * @param array $rows Lignes de pivot_filter de la page.
+	 * @return bool
+	 */
+	private static function has_name_filter( $rows ) {
+		foreach ( (array) $rows as $row ) {
+			if ( self::NAME_URN === trim( (string) pivot_get( $row, 'urn', '' ) ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

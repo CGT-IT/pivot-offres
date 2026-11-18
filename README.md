@@ -41,7 +41,7 @@ La reprise ne tourne qu'une fois, et seulement si aucune page de listing n'exist
 | Tri aléatoire | non repris : les offres suivent l'ordre de PIVOT |
 | Type de page, shortcode | non repris : l'affichage suit le type de chaque offre |
 | `[pivot_shortcode]`, `_slider`, `_event`, `_event_slider` dans les contenus | toujours affichés, par `[pivot_offres]` (voir [Anciens shortcodes](#anciens-shortcodes)) |
-| Filtre « Nom » (`urn:fld:nomofr`) | aucun critère : la recherche libre, active par défaut, cherche déjà dans le nom |
+| Filtre « Nom » (`urn:fld:nomofr`) | aucun critère : la **recherche libre** de la page est activée (elle cherche dans le nom). Une page sans ce filtre est reprise sans recherche libre |
 | Commune, Localité | critères **Commune** et **Localité**, en liste déroulante |
 | Cases « Type » (`urn:typ:…`) | un critère **Type d'offre** à cases à cocher |
 | Cases « Valeur » (`urn:val:class:3star`…) | un critère à cases à cocher sur le champ (`urn:fld:class`), au nom du groupe |

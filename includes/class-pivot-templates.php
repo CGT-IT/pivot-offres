@@ -1283,7 +1283,16 @@ class Pivot_Templates {
 				$parent = substr( $urn, 0, strrpos( $urn, ':' ) );
 
 				if ( ! isset( $groups[ $parent ] ) ) {
-					$groups[ $parent ] = 'MultiChoice' === pivot_get( Pivot_Thesaurus::urn( $parent ), 'type' )
+					// Le parent se lit dans la structure du type, un seul document en
+					// cache pour tous les champs. Une case cochée peut aussi être un
+					// champ à part entière, comme urn:fld:tarifind:gratuite : son
+					// préfixe n'existe pas, et l'interroger isolément donnait
+					// « [ETD105] Unknown URN » dans le journal, avec un appel à PIVOT
+					// toutes les cinq minutes. L'appel isolé ne sert plus que si le
+					// type n'a pas de structure.
+					$structure         = $type ? Pivot_Thesaurus::type_structure( $type ) : array();
+					$parent_def        = $structure ? pivot_get( $structure, $parent, array() ) : Pivot_Thesaurus::urn( $parent );
+					$groups[ $parent ] = 'MultiChoice' === pivot_get( $parent_def, 'type' )
 						? (string) Pivot_Thesaurus::label( $parent, $type, $lang )
 						: '';
 				}

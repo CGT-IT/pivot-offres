@@ -150,7 +150,7 @@ Les éditeurs gèrent les pages de listing et le formulaire **Shortcode** ; les 
 | Richesse des données | **Résumé** (rapide), **Complet** — indispensable dès qu'un filtre porte sur un champ PIVOT —, ou **Complet avec offres liées**, qui met aussi en cache les fiches détail des offres de la page (voir [Renouvellement du cache](#renouvellement-du-cache)) |
 | Offres par page | pagination navigateur |
 | Colonnes | vignettes par ligne à partir de 1200 px de large ; en dessous, trois au plus dès 992 px, deux sur tablette (dès 576 px), une sur mobile — les paliers de la grille Bootstrap |
-| Carte | pointe les offres géolocalisées de la page, chacune avec l'épingle PIVOT de son type d'offre (voir [Pictogrammes](#pictogrammes)) |
+| Carte | pointe les offres géolocalisées de la page, chacune avec l'épingle PIVOT de son type d'offre (voir [Pictogrammes](#pictogrammes)). Sans centre saisi, elle se cadre sur les épingles et se recadre à chaque filtre sur celles qui restent, ainsi que quand sa taille change (fenêtre, carte dont la hauteur suit les vignettes), tant que le visiteur ne l'a pas déplacée ou zoomée. Avec un centre et un zoom, elle reste fixe |
 | Image d'en-tête | bandeau au-dessus du titre, repris comme image de partage (`og:image`) |
 | Tri | urn d'un champ, croissant ou décroissant, appliqué à l'écriture de l'index : PIVOT ne le reçoit pas. Un champ de date (`urn:fld:date:datedeb`) range chaque offre sur sa première période pas encore terminée ; les offres terminées, puis celles sans valeur, passent en dernier. Vide : l'ordre de PIVOT |
 | Critères de recherche | voir ci-dessous |

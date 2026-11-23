@@ -43,6 +43,11 @@
 
 	var map = null;
 	var markerLayer = null;
+	// Épingles du dernier cadrage automatique (sans centre réglé), reprises
+	// quand la carte change de taille, sauf si le visiteur l'a déplacée ou
+	// zoomée depuis (mapTouched).
+	var mapBounds = null;
+	var mapTouched = false;
 	// Épingle Leaflet de chaque type d'offre, créée à la première offre du type.
 	var pinIcons = {};
 
@@ -968,6 +973,8 @@
 			} else {
 				map.setView( [ 50.45, 4.85 ], parseInt( config.mapZoom, 10 ) || 8 );
 			}
+
+			watchMapSize();
 		}
 
 		if ( markerLayer ) {
@@ -1014,9 +1021,60 @@
 
 		markerLayer.addTo( map );
 
-		if ( bounds.length && ! config.mapCenter ) {
-			map.fitBounds( bounds, { padding: [ 24, 24 ], maxZoom: 14 } );
+		// La grille vient d'être réécrite : une carte dont la hauteur suit
+		// celle des vignettes (colonne étirée d'un thème) a changé de taille.
+		// Leaflet garde l'ancienne tant qu'on ne la lui redemande pas, et
+		// cadrerait les épingles dans un rectangle qui n'existe plus.
+		map.invalidateSize( { pan: false } );
+
+		mapBounds = bounds.length && ! config.mapCenter ? bounds : null;
+		mapTouched = false;
+		fitMap();
+	}
+
+	function fitMap() {
+		if ( map && mapBounds ) {
+			map.fitBounds( mapBounds, { padding: [ 24, 24 ], maxZoom: 14 } );
 		}
+	}
+
+	/**
+	 * La carte change encore de taille après le rendu quand sa hauteur suit
+	 * les vignettes (leurs images arrivent) ou la fenêtre : elle reprend sa
+	 * taille et, sans centre réglé, recadre les épingles affichées.
+	 */
+	function watchMapSize() {
+		if ( typeof window.ResizeObserver !== 'function' ) {
+			return;
+		}
+
+		var width = mapNode.offsetWidth;
+		var height = mapNode.offsetHeight;
+		var timer = null;
+
+		[ 'mousedown', 'touchstart', 'keydown', 'wheel' ].forEach( function ( type ) {
+			mapNode.addEventListener( type, function () {
+				mapTouched = true;
+			}, { passive: true } );
+		} );
+
+		new window.ResizeObserver( function () {
+			if ( mapNode.offsetWidth === width && mapNode.offsetHeight === height ) {
+				return;
+			}
+
+			width = mapNode.offsetWidth;
+			height = mapNode.offsetHeight;
+
+			window.clearTimeout( timer );
+			timer = window.setTimeout( function () {
+				map.invalidateSize( { pan: false } );
+
+				if ( ! mapTouched ) {
+					fitMap();
+				}
+			}, 150 );
+		} ).observe( mapNode );
 	}
 
 	/**

@@ -238,8 +238,376 @@
 	background: rgba( 0, 0, 0, 0.04 );
 }
 
-/* Bulle d'une offre : bouton du tracé GPX (itinéraires). Le tracé lui-même
-   porte les classes pivot-map-track-line et pivot-map-track-casing. */
+/* Bulle d'une offre sur la carte d'un listing : aperçu de la vignette (photo,
+   type, nom, date, localité, lien vers la fiche, bouton du tracé GPX).
+   Réglages du thème : --pivot-popup-accent (fond du bouton « Voir la
+   fiche », texte blanc ; pas --pivot-accent, qui vaut currentColor par
+   défaut), --pivot-popup-font (police, à défaut celle de la page autour de
+   la carte). Le script émet pivot:popup sur la carte à chaque
+   ouverture, pour qu'un thème y ajoute ses données. */
+.pivot-map-popup-wrap .leaflet-popup-content-wrapper {
+	padding: 0;
+	overflow: hidden;
+	border-radius: 10px;
+	box-shadow: 0 6px 24px rgba( 0, 0, 0, 0.22 );
+}
+
+.pivot-map-popup-wrap .leaflet-popup-content {
+	width: 260px !important;
+	margin: 0;
+	font-family: var( --pivot-popup-font, var( --pivot-page-font, inherit ) );
+	font-size: 14px;
+	line-height: 1.4;
+	color: #222;
+}
+
+.pivot-map-popup-wrap .leaflet-popup-content p {
+	margin: 0;
+}
+
+.pivot-map-popup-wrap a.leaflet-popup-close-button {
+	top: 8px;
+	right: 8px;
+	z-index: 1;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	background: rgba( 255, 255, 255, 0.92 );
+	box-shadow: 0 1px 4px rgba( 0, 0, 0, 0.25 );
+	color: #222;
+	font: 18px/26px Arial, sans-serif;
+	text-align: center;
+}
+
+.pivot-map-popup-media {
+	display: block;
+	aspect-ratio: 16 / 9;
+	overflow: hidden;
+	background: rgba( 0, 0, 0, 0.06 );
+}
+
+.pivot-map-popup-media img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.3s ease;
+}
+
+a.pivot-map-popup-media:hover img {
+	transform: scale( 1.04 );
+}
+
+.pivot-map-popup-tracking .pivot-map-popup-media {
+	display: none;
+}
+
+.pivot-map-popup-body {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	padding: 0.8rem 1rem 1rem;
+}
+
+.pivot-map-popup-wrap .pivot-map-popup-type {
+	color: rgba( 0, 0, 0, 0.55 );
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.pivot-map-popup-wrap .pivot-map-popup-title {
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 1.25;
+}
+
+/* Leaflet colore les liens de la carte (.leaflet-container a) : le nom garde
+   la couleur du titre. */
+.pivot-map-popup-wrap .pivot-map-popup-title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.pivot-map-popup-wrap .pivot-map-popup-title a:hover,
+.pivot-map-popup-wrap .pivot-map-popup-title a:focus-visible {
+	text-decoration: underline;
+}
+
+.pivot-map-popup-date,
+.pivot-map-popup-place {
+	position: relative;
+	padding-left: 18px;
+	color: rgba( 0, 0, 0, 0.7 );
+}
+
+/* Pictogrammes calendrier et épingle, en masque : ils prennent la couleur
+   du texte. */
+.pivot-map-popup-date::before,
+.pivot-map-popup-place::before {
+	content: "";
+	position: absolute;
+	top: 0.2em;
+	left: 0;
+	width: 12px;
+	height: 12px;
+	background: currentColor;
+	-webkit-mask: var( --pivot-popup-icon ) center / contain no-repeat;
+	mask: var( --pivot-popup-icon ) center / contain no-repeat;
+}
+
+.pivot-map-popup-date::before {
+	--pivot-popup-icon: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 0h2v2h4V0h2v2h3v14H1V2h3V0zm9 6H3v8h10V6z'/%3E%3C/svg%3E" );
+}
+
+.pivot-map-popup-place::before {
+	--pivot-popup-icon: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 0a6 6 0 0 0-6 6c0 4.5 6 10 6 10s6-5.5 6-10a6 6 0 0 0-6-6zm0 8.5A2.5 2.5 0 1 1 8 3.5a2.5 2.5 0 0 1 0 5z'/%3E%3C/svg%3E" );
+}
+
+.pivot-map-popup-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 0.4rem !important;
+}
+
+/* Les deux boutons de la bulle, à l'abri des styles de bouton du thème. */
+.pivot-map-popup-wrap .pivot-map-popup-actions .pivot-button {
+	margin: 0;
+	padding: 0.5em 1em;
+	border: 1px solid var( --pivot-popup-accent, #222 );
+	border-radius: var( --pivot-radius, 6px );
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.2;
+	text-transform: none;
+	box-shadow: none;
+}
+
+.pivot-map-popup-wrap .pivot-map-popup-actions .pivot-map-track-button {
+	background: #fff;
+	color: var( --pivot-popup-accent, #222 );
+}
+
+.pivot-map-popup-wrap .pivot-map-popup-actions .pivot-map-track-button:hover,
+.pivot-map-popup-wrap .pivot-map-popup-actions .pivot-map-track-button:focus-visible {
+	background: rgba( 0, 0, 0, 0.05 );
+	color: var( --pivot-popup-accent, #222 );
+}
+
+.pivot-map-popup-wrap .pivot-map-popup-link {
+	border-color: transparent;
+	background: var( --pivot-popup-accent, #222 );
+	color: #fff;
+	font-weight: 600;
+}
+
+.pivot-map-popup-wrap .pivot-map-popup-link:hover,
+.pivot-map-popup-wrap .pivot-map-popup-link:focus-visible {
+	border-color: transparent;
+	color: #fff;
+	filter: brightness( 1.12 );
+}
+
+/* Territoires de chasse (Pivot_Hunting) : panneau en haut à droite de la
+   carte. Les contours portent pivot-hunting-closed / pivot-hunting-open. */
+.leaflet-container .pivot-hunting {
+	width: 250px;
+	max-width: calc( 100vw - 4rem );
+	overflow: hidden;
+	border-radius: 8px;
+	background: #fff;
+	box-shadow: 0 2px 12px rgba( 0, 0, 0, 0.25 );
+	color: #222;
+	font-family: var( --pivot-popup-font, var( --pivot-page-font, inherit ) );
+	font-size: 13px;
+	line-height: 1.35;
+}
+
+.leaflet-container .pivot-hunting-toggle {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	width: 100%;
+	margin: 0;
+	padding: 0.55rem 0.8rem;
+	border: 0;
+	border-radius: 0;
+	background: #c62828;
+	color: #fff;
+	font: inherit;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-align: left;
+	text-transform: uppercase;
+	cursor: pointer;
+}
+
+/* Chevron : vers le haut déplié, vers le bas replié. */
+.leaflet-container .pivot-hunting-toggle::after {
+	content: "";
+	width: 0.5em;
+	height: 0.5em;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate( -135deg ) translate( -2px, -2px );
+}
+
+/* Nombre de territoires en chasse visibles, sur le bouton replié comme déplié. */
+.leaflet-container .pivot-hunting-label {
+	flex: 1;
+}
+
+.leaflet-container .pivot-hunting-badge {
+	display: none;
+	min-width: 1.6em;
+	padding: 0.1em 0.45em;
+	border-radius: 1em;
+	background: #fff;
+	color: #c62828;
+	font-size: 12px;
+	letter-spacing: 0;
+	text-align: center;
+}
+
+.leaflet-container .pivot-hunting.has-badge .pivot-hunting-badge {
+	display: inline-block;
+}
+
+.leaflet-container .pivot-hunting.is-off .pivot-hunting-badge {
+	display: none;
+}
+
+.leaflet-container .pivot-hunting.is-collapsed .pivot-hunting-toggle::after {
+	transform: rotate( 45deg ) translate( -2px, -2px );
+}
+
+.leaflet-container .pivot-hunting.is-off .pivot-hunting-toggle {
+	background: #555;
+}
+
+.leaflet-container .pivot-hunting.is-collapsed {
+	width: auto;
+}
+
+.leaflet-container .pivot-hunting.is-collapsed .pivot-hunting-panel {
+	display: none;
+}
+
+.pivot-hunting-panel {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	padding: 0.7rem 0.8rem 0.8rem;
+}
+
+.leaflet-container .pivot-hunting p,
+.leaflet-container .pivot-hunting ul {
+	margin: 0;
+	padding: 0;
+}
+
+.pivot-hunting-show {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin: 0;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.pivot-hunting-day {
+	display: flex;
+	align-items: stretch;
+	gap: 0.3rem;
+}
+
+.leaflet-container .pivot-hunting-date {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	padding: 0.3rem 0.4rem;
+	border: 1px solid rgba( 0, 0, 0, 0.25 );
+	border-radius: 4px;
+	background: #fff;
+	color: inherit;
+	font: inherit;
+}
+
+.leaflet-container .pivot-hunting-step {
+	flex: 0 0 2rem;
+	margin: 0;
+	padding: 0;
+	border: 1px solid rgba( 0, 0, 0, 0.25 );
+	border-radius: 4px;
+	background: #fff;
+	color: inherit;
+	font: 700 18px/1 Arial, sans-serif;
+	cursor: pointer;
+}
+
+.leaflet-container .pivot-hunting-step:hover,
+.leaflet-container .pivot-hunting-step:focus-visible {
+	background: rgba( 0, 0, 0, 0.06 );
+}
+
+.leaflet-container .pivot-hunting-step:disabled,
+.leaflet-container .pivot-hunting-date:disabled {
+	cursor: default;
+	opacity: 0.5;
+}
+
+.pivot-hunting-status {
+	font-weight: 600;
+}
+
+.pivot-hunting-status.is-error {
+	color: #c62828;
+}
+
+.pivot-hunting.is-off .pivot-hunting-legend,
+.pivot-hunting.is-off .pivot-hunting-status {
+	display: none;
+}
+
+.leaflet-container .pivot-hunting-legend {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	list-style: none;
+}
+
+.pivot-hunting-legend li {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.45rem;
+	margin: 0;
+}
+
+.pivot-hunting-swatch {
+	flex: 0 0 16px;
+	height: 12px;
+	margin-top: 0.1em;
+	border: 2px solid;
+	border-radius: 2px;
+	opacity: 0.85;
+}
+
+.pivot-hunting-notice {
+	color: rgba( 0, 0, 0, 0.6 );
+	font-size: 11px;
+}
+
+.pivot-hunting-popup {
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+/* Ancienne bulle : bouton du tracé GPX dans son propre paragraphe. Le tracé
+   lui-même porte les classes pivot-map-track-line et pivot-map-track-casing. */
 .pivot-map-track {
 	margin: 0.6em 0 0;
 }

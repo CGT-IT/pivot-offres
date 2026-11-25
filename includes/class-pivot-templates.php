@@ -402,6 +402,13 @@ class Pivot_Templates {
 				wp_localize_script( 'pivot-detail', 'pivotDetailData', array( 'origins' => $candidates ) );
 			}
 
+			// Fiche d'itinéraire : territoires de chasse sur la carte du thème,
+			// s'il en dessine une avec Leaflet.
+			$offer = $this->current_offer();
+			if ( $offer ) {
+				Pivot_Hunting::enqueue_detail( $this->lang(), $offer );
+			}
+
 			return;
 		}
 
@@ -428,10 +435,16 @@ class Pivot_Templates {
 			}
 		}
 
+		$hunting = $show_map && Pivot_Hunting::listing_enabled( $listing );
+
+		if ( $hunting ) {
+			Pivot_Hunting::enqueue( $lang, $listing );
+		}
+
 		wp_enqueue_script(
 			'pivot-listing',
 			PIVOT_URL . 'assets/js/pivot-listing.js',
-			$show_map ? array( 'leaflet' ) : array(),
+			$show_map ? ( $hunting ? array( 'leaflet', 'pivot-hunting' ) : array( 'leaflet' ) ) : array(),
 			PIVOT_VERSION,
 			true
 		);
@@ -462,6 +475,7 @@ class Pivot_Templates {
 				'search'     => (int) $listing['search_enabled'],
 				'closures'   => Pivot_Closures::i18n( (array) pivot_get( $listing, 'offer_types', array() ) ),
 				'tracks'     => self::track_config( $listing ),
+				'hunting'    => $hunting ? 1 : 0,
 				'i18n'       => array(
 					'results'      => __( 'offre(s)', 'pivot-offres' ),
 					'noResult'     => __( 'Aucune offre ne correspond à votre recherche.', 'pivot-offres' ),

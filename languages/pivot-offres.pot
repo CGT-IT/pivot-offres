@@ -2530,3 +2530,80 @@ msgstr ""
 #. translators: %s : code de l'offre.
 msgid "Redemander l'offre %s à PIVOT."
 msgstr ""
+
+msgid "Chasse"
+msgstr ""
+
+msgid "Territoires de chasse"
+msgstr ""
+
+msgid "Date des chasses"
+msgstr ""
+
+msgid "Jour précédent"
+msgstr ""
+
+msgid "Jour suivant"
+msgstr ""
+
+msgid "Chargement des chasses…"
+msgstr ""
+
+#, php-format
+msgid "%1$d territoire(s) en chasse sur la carte, dont %2$d avec chemins fermés"
+msgstr ""
+
+msgid "Aucune chasse déclarée ce jour-là."
+msgstr ""
+
+msgid "Aucune chasse sur cette partie de la carte ce jour-là."
+msgstr ""
+
+msgid "Les territoires de chasse n'ont pas pu être chargés."
+msgstr ""
+
+msgid "Chasse avec fermeture : chemins fermés au public"
+msgstr ""
+
+msgid "Chasse sans fermeture : prudence"
+msgstr ""
+
+msgid "Battue"
+msgstr ""
+
+msgid "Chasse à l'affût"
+msgstr ""
+
+msgid "Autre chasse"
+msgstr ""
+
+#, php-format
+msgid "Territoire n° %s"
+msgstr ""
+
+msgid "Données du SPW (DNF), à titre indicatif. Respectez la signalisation sur place."
+msgstr ""
+
+msgid "Fermetures et conseils"
+msgstr ""
+
+msgid "Territoires de chasse © SPW"
+msgstr ""
+
+msgid "Automatique : sur une page d'itinéraires"
+msgstr ""
+
+msgid "Toujours"
+msgstr ""
+
+msgid "Jamais"
+msgstr ""
+
+msgid "Sur la carte, les territoires où une chasse est déclarée, du jour ou d'une autre date choisie par le visiteur (Service public de Wallonie, mis à jour chaque jour). Automatique : quand la page contient des itinéraires."
+msgstr ""
+
+msgid "Sur les cartes des listings, selon le réglage de chaque page (par défaut : les pages d'itinéraires)"
+msgstr ""
+
+msgid "Sur les cartes des fiches d'itinéraire dessinées par le thème avec Leaflet"
+msgstr ""

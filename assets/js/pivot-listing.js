@@ -975,6 +975,13 @@
 			}
 
 			watchMapSize();
+			initHunting();
+
+			// Leaflet impose sa police (Helvetica 12 px) : les bulles prennent
+			// celle de la page autour de la carte, sauf --pivot-popup-font du thème.
+			if ( window.getComputedStyle && mapNode.parentNode ) {
+				mapNode.style.setProperty( '--pivot-page-font', window.getComputedStyle( mapNode.parentNode ).fontFamily );
+			}
 		}
 
 		if ( markerLayer ) {
@@ -993,26 +1000,26 @@
 			}
 
 			var marker = window.L.marker( [ item.lat, item.lng ], markerOptions( item ) );
-			var popup = '<div class="pivot-map-popup"><strong>' + escapeHtml( item.n || '' ) + '</strong>';
 
-			if ( item.z || item.l ) {
-				popup += '<br />' + escapeHtml( [ item.z, item.l ].filter( Boolean ).join( ' ' ) );
-			}
-
-			if ( item.u ) {
-				popup += '<br /><a href="' + escapeHtml( item.u ) + '">' + escapeHtml( text( 'seeOffer' ) ) + '</a>';
-			}
-
-			if ( hasTrack( item ) ) {
-				popup += '<p class="pivot-map-track"><button type="button" class="pivot-button pivot-map-track-button" data-pivot-track aria-pressed="false">' +
-					escapeHtml( text( 'showTrack' ) ) + '</button></p>';
-			}
-
-			marker.bindPopup( popup + '</div>' );
+			marker.bindPopup( popupHtml( item ), {
+				className: 'pivot-map-popup-wrap',
+				minWidth: 240,
+				maxWidth: 280,
+				autoPanPadding: [ 24, 24 ]
+			} );
 
 			// La bulle est recréée à chaque ouverture : son bouton aussi.
 			marker.on( 'popupopen', function ( event ) {
-				bindTrackButton( event.popup.getElement(), item );
+				var node = event.popup.getElement();
+
+				bindPopupImage( node );
+				bindTrackButton( node, item );
+
+				// Un thème complète la bulle ici (prix, capacité…) : detail.item
+				// est l'offre de l'index, detail.popup l'élément de la bulle.
+				if ( node && typeof window.CustomEvent === 'function' ) {
+					mapNode.dispatchEvent( new window.CustomEvent( 'pivot:popup', { bubbles: true, detail: { item: item, popup: node } } ) );
+				}
 			} );
 
 			markerLayer.addLayer( marker );
@@ -1030,6 +1037,126 @@
 		mapBounds = bounds.length && ! config.mapCenter ? bounds : null;
 		mapTouched = false;
 		fitMap();
+	}
+
+	/**
+	 * Aperçu d'une offre dans la bulle de son épingle : photo, type, nom,
+	 * prochaine date d'un événement, localité et lien vers la fiche, plus le
+	 * bouton du tracé d'un itinéraire. Classes pivot-map-popup-* (pivot.css).
+	 */
+	function popupHtml( item ) {
+		var url = item.u ? escapeHtml( item.u ) : '';
+		var name = escapeHtml( item.n || '' );
+		var html = '<div class="pivot-map-popup">';
+
+		if ( item.i ) {
+			var img = '<img src="' + escapeHtml( item.i ) + '" alt="" width="280" height="160" loading="lazy" decoding="async" />';
+
+			html += url
+				? '<a class="pivot-map-popup-media" href="' + url + '" tabindex="-1" aria-hidden="true">' + img + '</a>'
+				: '<div class="pivot-map-popup-media">' + img + '</div>';
+		}
+
+		html += '<div class="pivot-map-popup-body">';
+
+		if ( item.tl ) {
+			html += '<p class="pivot-map-popup-type">' + escapeHtml( item.tl ) + '</p>';
+		}
+
+		html += '<p class="pivot-map-popup-title">' + ( url ? '<a href="' + url + '">' + name + '</a>' : name ) + '</p>';
+
+		var date = nextPeriod( item );
+		if ( date ) {
+			html += '<p class="pivot-map-popup-date">' + escapeHtml( date ) + '</p>';
+		}
+
+		var place = [ item.z, item.l ].filter( Boolean ).join( ' ' );
+		if ( item.m && item.m !== item.l ) {
+			place += ( place ? ' ' : '' ) + '(' + item.m + ')';
+		}
+		if ( place ) {
+			html += '<p class="pivot-map-popup-place">' + escapeHtml( place ) + '</p>';
+		}
+
+		if ( url || hasTrack( item ) ) {
+			html += '<p class="pivot-map-popup-actions">';
+
+			if ( url ) {
+				html += '<a class="pivot-button pivot-map-popup-link" href="' + url + '">' + escapeHtml( text( 'seeOffer' ) ) + '</a>';
+			}
+
+			if ( hasTrack( item ) ) {
+				html += '<button type="button" class="pivot-button pivot-map-track-button" data-pivot-track aria-pressed="false">' +
+					escapeHtml( text( 'showTrack' ) ) + '</button>';
+			}
+
+			html += '</p>';
+		}
+
+		return html + '</div></div>';
+	}
+
+	/**
+	 * Prochaine période d'un événement (item.dt, [début, fin] en AAAAMMJJ),
+	 * écrite dans la langue de la page : « 27 nov. 2026 », « 27 nov. – 29 nov.
+	 * 2026 ». Vide sans période à venir.
+	 */
+	function nextPeriod( item ) {
+		var periods = Array.isArray( item.dt ) ? item.dt : [];
+		var now = today();
+		var next = null;
+
+		periods.forEach( function ( period ) {
+			if ( Array.isArray( period ) && period.length === 2 && period[ 1 ] >= now && ( ! next || period[ 0 ] < next[ 0 ] ) ) {
+				next = period;
+			}
+		} );
+
+		if ( ! next || typeof Intl === 'undefined' || ! Intl.DateTimeFormat ) {
+			return '';
+		}
+
+		function toDate( value ) {
+			return new Date( Math.floor( value / 10000 ), Math.floor( value / 100 ) % 100 - 1, value % 100 );
+		}
+
+		var full = { day: 'numeric', month: 'short', year: 'numeric' };
+		var start = toDate( next[ 0 ] );
+		var end = toDate( next[ 1 ] );
+
+		try {
+			if ( next[ 0 ] === next[ 1 ] ) {
+				return new Intl.DateTimeFormat( config.lang || undefined, full ).format( start );
+			}
+
+			var sameYear = start.getFullYear() === end.getFullYear();
+			var first = new Intl.DateTimeFormat( config.lang || undefined, sameYear ? { day: 'numeric', month: 'short' } : full ).format( start );
+
+			return first + ' – ' + new Intl.DateTimeFormat( config.lang || undefined, full ).format( end );
+		} catch ( e ) {
+			return '';
+		}
+	}
+
+	/**
+	 * Photo de la bulle : sans image chez PIVOT, la bulle s'en passe. Sa place
+	 * est réservée (aspect-ratio) et la bulle est ancrée par le bas : rien à
+	 * recaler. Surtout pas popup.update(), qui réécrit le contenu et perd les
+	 * écouteurs (bouton du tracé).
+	 */
+	function bindPopupImage( node ) {
+		var img = node && node.querySelector( '.pivot-map-popup-media img' );
+
+		if ( ! img ) {
+			return;
+		}
+
+		img.addEventListener( 'error', function () {
+			var media = img.closest( '.pivot-map-popup-media' );
+			if ( media && media.parentNode ) {
+				media.parentNode.removeChild( media );
+			}
+		} );
 	}
 
 	function fitMap() {
@@ -1252,7 +1379,9 @@
 
 		track.code = item.c;
 		// La bulle reste ouverte au-dessus du pointeur : on lui garde sa
-		// hauteur en haut de la carte, sans quoi elle en sortirait.
+		// hauteur en haut de la carte, sans quoi elle en sortirait. Sa photo
+		// est masquée tant que le tracé est affiché, pour lui laisser la place.
+		trackingPopup( popupNode, true );
 		var top = popupNode && popupNode.offsetHeight ? popupNode.offsetHeight + 48 : 32;
 
 		map.fitBounds( track.layer.getBounds(), { paddingTopLeft: [ 32, top ], paddingBottomRight: [ 32, 32 ] } );
@@ -1276,6 +1405,12 @@
 		button.classList.toggle( 'is-error', key === 'noTrack' );
 	}
 
+	function trackingPopup( popupNode, on ) {
+		if ( popupNode && popupNode.classList ) {
+			popupNode.classList.toggle( 'pivot-map-popup-tracking', !! on );
+		}
+	}
+
 	function bindTrackButton( popupNode, item ) {
 		var button = popupNode && popupNode.querySelector( '[data-pivot-track]' );
 
@@ -1284,11 +1419,13 @@
 		}
 
 		setTrackButton( button, track.code === item.c ? 'hideTrack' : 'showTrack', false );
+		trackingPopup( popupNode, track.code === item.c );
 
 		button.addEventListener( 'click', function () {
 			if ( track.code === item.c ) {
 				hideTrack();
 				setTrackButton( button, 'showTrack', false );
+				trackingPopup( popupNode, false );
 				return;
 			}
 
@@ -1304,6 +1441,18 @@
 				}
 			);
 		} );
+	}
+
+	/* ------------------------------------------------ territoires de chasse */
+
+	/*
+	 * Territoires de chasse du SPW : assets/js/pivot-hunting.js
+	 * (Pivot_Hunting), chargé quand la page les montre.
+	 */
+	function initHunting() {
+		if ( config.hunting && window.PivotHunting ) {
+			window.PivotHunting.attach( map );
+		}
 	}
 
 	/* ------------------------------------------------------------ écouteurs */

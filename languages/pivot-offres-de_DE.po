@@ -1782,3 +1782,80 @@ msgstr "Angebot %1$s erneut bei PIVOT abrufen. Version im Cache seit %2$s."
 
 msgid "Redemander l'offre %s à PIVOT."
 msgstr "Angebot %s erneut bei PIVOT abrufen."
+
+msgid "Chasse"
+msgstr "Jagd"
+
+msgid "Territoires de chasse"
+msgstr "Jagdreviere"
+
+msgid "Date des chasses"
+msgstr "Jagddatum"
+
+msgid "Jour précédent"
+msgstr "Vorheriger Tag"
+
+msgid "Jour suivant"
+msgstr "Nächster Tag"
+
+msgid "Chargement des chasses…"
+msgstr "Jagden werden geladen…"
+
+#, php-format
+msgid "%1$d territoire(s) en chasse sur la carte, dont %2$d avec chemins fermés"
+msgstr "%1$d Jagdrevier(e) auf der Karte, davon %2$d mit gesperrten Wegen"
+
+msgid "Aucune chasse déclarée ce jour-là."
+msgstr "An diesem Tag ist keine Jagd gemeldet."
+
+msgid "Aucune chasse sur cette partie de la carte ce jour-là."
+msgstr "An diesem Tag keine Jagd in diesem Kartenausschnitt."
+
+msgid "Les territoires de chasse n'ont pas pu être chargés."
+msgstr "Die Jagdreviere konnten nicht geladen werden."
+
+msgid "Chasse avec fermeture : chemins fermés au public"
+msgstr "Jagd mit Sperrung: Wege für die Öffentlichkeit gesperrt"
+
+msgid "Chasse sans fermeture : prudence"
+msgstr "Jagd ohne Sperrung: Vorsicht"
+
+msgid "Battue"
+msgstr "Treibjagd"
+
+msgid "Chasse à l'affût"
+msgstr "Ansitzjagd"
+
+msgid "Autre chasse"
+msgstr "Andere Jagd"
+
+#, php-format
+msgid "Territoire n° %s"
+msgstr "Jagdrevier Nr. %s"
+
+msgid "Données du SPW (DNF), à titre indicatif. Respectez la signalisation sur place."
+msgstr "Daten des SPW (DNF), ohne Gewähr. Beachten Sie die Beschilderung vor Ort."
+
+msgid "Fermetures et conseils"
+msgstr "Sperrungen und Hinweise"
+
+msgid "Territoires de chasse © SPW"
+msgstr "Jagdreviere © SPW"
+
+msgid "Automatique : sur une page d'itinéraires"
+msgstr "Automatisch: auf einer Seite mit Routen"
+
+msgid "Toujours"
+msgstr "Immer"
+
+msgid "Jamais"
+msgstr "Nie"
+
+msgid "Sur la carte, les territoires où une chasse est déclarée, du jour ou d'une autre date choisie par le visiteur (Service public de Wallonie, mis à jour chaque jour). Automatique : quand la page contient des itinéraires."
+msgstr "Auf der Karte: die Reviere, in denen eine Jagd gemeldet ist, heute oder an einem vom Besucher gewählten Datum (Service public de Wallonie, täglich aktualisiert). Automatisch: wenn die Seite Routen enthält."
+
+msgid "Sur les cartes des listings, selon le réglage de chaque page (par défaut : les pages d'itinéraires)"
+msgstr "Auf den Karten der Listenseiten, je nach Einstellung der Seite (standardmäßig: Seiten mit Routen)"
+
+msgid "Sur les cartes des fiches d'itinéraire dessinées par le thème avec Leaflet"
+msgstr "Auf den Karten der Routenseiten, die das Theme mit Leaflet zeichnet"

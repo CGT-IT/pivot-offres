@@ -1782,3 +1782,80 @@ msgstr "Aanbod %1$s opnieuw opvragen bij PIVOT. Versie in de cache sinds %2$s."
 
 msgid "Redemander l'offre %s à PIVOT."
 msgstr "Aanbod %s opnieuw opvragen bij PIVOT."
+
+msgid "Chasse"
+msgstr "Jacht"
+
+msgid "Territoires de chasse"
+msgstr "Jachtterreinen"
+
+msgid "Date des chasses"
+msgstr "Jachtdatum"
+
+msgid "Jour précédent"
+msgstr "Vorige dag"
+
+msgid "Jour suivant"
+msgstr "Volgende dag"
+
+msgid "Chargement des chasses…"
+msgstr "Jachten worden geladen…"
+
+#, php-format
+msgid "%1$d territoire(s) en chasse sur la carte, dont %2$d avec chemins fermés"
+msgstr "%1$d jachtterrein(en) op de kaart, waarvan %2$d met afgesloten wegen"
+
+msgid "Aucune chasse déclarée ce jour-là."
+msgstr "Geen jacht aangegeven op die dag."
+
+msgid "Aucune chasse sur cette partie de la carte ce jour-là."
+msgstr "Geen jacht op dit deel van de kaart op die dag."
+
+msgid "Les territoires de chasse n'ont pas pu être chargés."
+msgstr "De jachtterreinen konden niet worden geladen."
+
+msgid "Chasse avec fermeture : chemins fermés au public"
+msgstr "Jacht met afsluiting: wegen gesloten voor het publiek"
+
+msgid "Chasse sans fermeture : prudence"
+msgstr "Jacht zonder afsluiting: wees voorzichtig"
+
+msgid "Battue"
+msgstr "Drijfjacht"
+
+msgid "Chasse à l'affût"
+msgstr "Aanzitjacht"
+
+msgid "Autre chasse"
+msgstr "Andere jacht"
+
+#, php-format
+msgid "Territoire n° %s"
+msgstr "Jachtterrein nr. %s"
+
+msgid "Données du SPW (DNF), à titre indicatif. Respectez la signalisation sur place."
+msgstr "Gegevens van de SPW (DNF), ter informatie. Respecteer de borden ter plaatse."
+
+msgid "Fermetures et conseils"
+msgstr "Afsluitingen en tips"
+
+msgid "Territoires de chasse © SPW"
+msgstr "Jachtterreinen © SPW"
+
+msgid "Automatique : sur une page d'itinéraires"
+msgstr "Automatisch: op een pagina met routes"
+
+msgid "Toujours"
+msgstr "Altijd"
+
+msgid "Jamais"
+msgstr "Nooit"
+
+msgid "Sur la carte, les territoires où une chasse est déclarée, du jour ou d'une autre date choisie par le visiteur (Service public de Wallonie, mis à jour chaque jour). Automatique : quand la page contient des itinéraires."
+msgstr "Op de kaart: de terreinen waar een jacht is aangegeven, vandaag of op een andere datum die de bezoeker kiest (Service public de Wallonie, dagelijks bijgewerkt). Automatisch: wanneer de pagina routes bevat."
+
+msgid "Sur les cartes des listings, selon le réglage de chaque page (par défaut : les pages d'itinéraires)"
+msgstr "Op de kaarten van de overzichtspagina's, volgens de instelling van elke pagina (standaard: pagina's met routes)"
+
+msgid "Sur les cartes des fiches d'itinéraire dessinées par le thème avec Leaflet"
+msgstr "Op de kaarten van routefiches die het thema met Leaflet tekent"

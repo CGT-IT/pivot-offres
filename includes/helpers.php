@@ -111,6 +111,8 @@ function pivot_settings( $key = null, $default = null ) {
 			'map_tiles'          => 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 			'map_attribution'    => '&copy; OpenStreetMap',
 			'map_cluster'        => 1,
+			'hunting_listing'    => 1,
+			'hunting_detail'     => 1,
 			'index_delivery'     => 'file',
 			'schema_org'         => 1,
 			'sitemap'            => 1,

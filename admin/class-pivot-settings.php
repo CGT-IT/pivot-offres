@@ -193,6 +193,16 @@ class Pivot_Settings {
 			'label' => __( 'Regrouper les points proches en grappes', 'pivot-offres' ),
 		) );
 
+		// Territoires de chasse du SPW (Pivot_Hunting) : panneau replié sur la
+		// carte, chasses du jour ou d'une autre date.
+		$this->field( 'hunting_listing', __( 'Territoires de chasse', 'pivot-offres' ), 'pivot_map', 'checkbox', array(
+			'label' => __( 'Sur les cartes des listings, selon le réglage de chaque page (par défaut : les pages d\'itinéraires)', 'pivot-offres' ),
+		) );
+
+		$this->field( 'hunting_detail', '', 'pivot_map', 'checkbox', array(
+			'label' => __( 'Sur les cartes des fiches d\'itinéraire dessinées par le thème avec Leaflet', 'pivot-offres' ),
+		) );
+
 		add_settings_section(
 			'pivot_logs',
 			__( 'Journalisation', 'pivot-offres' ),
@@ -462,7 +472,7 @@ class Pivot_Settings {
 		$clean['batch_size']     = isset( $input['batch_size'] ) ? max( 10, min( 500, (int) $input['batch_size'] ) ) : 100;
 		$clean['logs_retention'] = isset( $input['logs_retention'] ) ? max( 1, min( 90, (int) $input['logs_retention'] ) ) : 7;
 
-		foreach ( array( 'logs_enabled', 'map_cluster', 'schema_org', 'sitemap', 'llms_txt', 'hreflang', 'diff_enabled', 'legacy_redirect' ) as $key ) {
+		foreach ( array( 'logs_enabled', 'map_cluster', 'hunting_listing', 'hunting_detail', 'schema_org', 'sitemap', 'llms_txt', 'hreflang', 'diff_enabled', 'legacy_redirect' ) as $key ) {
 			$clean[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
 		}
 

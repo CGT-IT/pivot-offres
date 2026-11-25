@@ -151,6 +151,7 @@ Les éditeurs gèrent les pages de listing et le formulaire **Shortcode** ; les 
 | Offres par page | pagination navigateur |
 | Colonnes | vignettes par ligne à partir de 1200 px de large ; en dessous, trois au plus dès 992 px, deux sur tablette (dès 576 px), une sur mobile — les paliers de la grille Bootstrap |
 | Carte | pointe les offres géolocalisées de la page, chacune avec l'épingle PIVOT de son type d'offre (voir [Pictogrammes](#pictogrammes)). Sans centre saisi, elle se cadre sur les épingles et se recadre à chaque filtre sur celles qui restent, ainsi que quand sa taille change (fenêtre, carte dont la hauteur suit les vignettes), tant que le visiteur ne l'a pas déplacée ou zoomée. Avec un centre et un zoom, elle reste fixe |
+| Territoires de chasse | sur la carte, les territoires où une chasse est déclarée (voir [Territoires de chasse](#territoires-de-chasse-sur-la-carte-dun-listing)). **Automatique** : quand la page contient des itinéraires ; ou **Toujours**, **Jamais**. Sans effet si le réglage général *sur les cartes des listings* est décoché |
 | Image d'en-tête | bandeau au-dessus du titre, repris comme image de partage (`og:image`) |
 | Tri | urn d'un champ, croissant ou décroissant, appliqué à l'écriture de l'index : PIVOT ne le reçoit pas. Un champ de date (`urn:fld:date:datedeb`) range chaque offre sur sa première période pas encore terminée ; les offres terminées, puis celles sans valeur, passent en dernier. Vide : l'ordre de PIVOT |
 | Critères de recherche | voir ci-dessous |
@@ -688,6 +689,40 @@ Du 12/12/2026 au 20/12/2026          (reconstruit depuis l'intervalle consolidé
 
 Chaque période est une entrée de `values` ; `value` en donne la concaténation.
 
+### Territoires de chasse sur la carte d'un listing
+
+Les territoires où une chasse est déclarée **le jour même** sont dessinés sur la carte : en rouge plein quand la chasse ferme les chemins au public, en orange pointillé sans fermeture. Un panneau **replié** en haut à droite de la carte, le bouton **Chasse**, porte le nombre de territoires en chasse visibles. Déplié, il permet de masquer les territoires, de **choisir un autre jour** (jours précédent et suivant, ou calendrier, à partir d'aujourd'hui), et donne la légende et la source. Un clic sur un territoire donne le mode de chasse (battue, affût, autre), la fermeture et la date.
+
+**Où, et comment l'activer** — aucun gabarit n'a à s'en occuper :
+
+| Carte | Affichage | Réglage |
+| --- | --- | --- |
+| Listing (`#pivot-map`, gabarit du plugin ou du thème) | ajouté par le script du listing | **PIVOT → Réglages → Cartographie → Territoires de chasse** : *sur les cartes des listings*, puis le réglage **Territoires de chasse** de chaque page : *Automatique* (par défaut, quand la page contient des itinéraires, types de `pivot_track_offer_types`), *Toujours* ou *Jamais* |
+| Fiche d'itinéraire, carte dessinée par le thème avec Leaflet | ajouté à **toute carte Leaflet** de la fiche, sans code du thème | **PIVOT → Réglages → Cartographie** : *sur les cartes des fiches d'itinéraire* |
+
+Sur une fiche d'itinéraire, le plugin pose juste après Leaflet (handle `leaflet`, celui du plugin) un crochet `L.Map.addInitHook` : chaque carte créée sur la page reçoit le panneau. Le crochet ne s'imprime que si le thème charge `leaflet` ; Leaflet n'est pas chargé pour autant sur une fiche sans carte. Pour exclure une carte, mettez `data-pivot-hunting="off"` sur son conteneur. Ailleurs (une autre page, un autre handle de Leaflet), un thème peut l'ajouter lui-même à sa carte : `Pivot_Hunting::enqueue( $lang )` en PHP, puis `PivotHunting.attach( map )` en JavaScript.
+
+Les données viennent du Service public de Wallonie : [Chasse - Territoires et dates (version anonymisée)](https://geoportail.wallonie.be/catalogue/999ef018-235f-4a38-94c9-cc0c79da61b8.html) (DNF), synchronisées chaque jour avec les déclarations de chasse, sous licence CC-BY 4.0 : la carte cite la source dans son attribution. Elles n'ont pas de valeur légale ; le panneau le rappelle et renvoie vers [partageonslaforet.be](https://partageonslaforet.be/). Elles couvrent la saison en cours (1er juillet – 30 juin).
+
+C'est le **navigateur du visiteur** qui interroge le service ArcGIS du SPW (il accepte les autres domaines) : la table des dates (`/1/query`) donne les territoires du jour, la couche des territoires (`/0/query`, GeoJSON simplifié) leurs contours, environ 70 Ko un mardi, 300 Ko un samedi de novembre. Rien ne passe par WordPress ni par PIVOT, et chaque date lue reste en mémoire le temps de la page. Si le service ne répond pas, le panneau le dit et la carte reste utilisable. Le code est dans `assets/js/pivot-hunting.js` et `includes/class-pivot-hunting.php`.
+
+Filtres : `pivot_hunting_enabled` (afficher ou non : `$enabled`, la page ou l'offre, `listing` ou `detail`), `pivot_hunting_style` (options Leaflet des contours `closed` et `open` ; ils portent aussi les classes `pivot-hunting-closed` et `pivot-hunting-open`), `pivot_hunting_info_url` (lien sous la légende, vide pour l'ôter), `pivot_hunting_service` (adresse du service). Le panneau est `.pivot-hunting` dans `assets/css/pivot.css`.
+
+### Bulle d'une épingle sur la carte d'un listing
+
+Un clic sur une épingle ouvre un aperçu de l'offre : photo (masquée tant que le tracé GPX est affiché), type d'offre, nom, prochaine date pour un événement, localité, bouton **Voir la fiche** et, pour un itinéraire, **Afficher le tracé**. Rien à configurer : le rendu vit dans `assets/js/pivot-listing.js` et `assets/css/pivot.css`.
+
+Le thème règle la couleur du bouton par `--pivot-popup-accent` (texte blanc dessus ; gris foncé par défaut) et la police par `--pivot-popup-font` (à défaut celle de la page autour de la carte), par exemple `#pivot-map { --pivot-popup-accent: #6e217d; }`. Les éléments portent les classes `pivot-map-popup-*` dans `.pivot-map-popup-wrap`. Pour y ajouter une donnée du thème (prix, capacité…), écoutez l'événement `pivot:popup`, émis sur la carte à chaque ouverture avec `detail.item` (l'offre de l'index, `x` compris) et `detail.popup` (l'élément de la bulle) :
+
+```js
+document.getElementById( 'pivot-map' ).addEventListener( 'pivot:popup', function ( event ) {
+	var price = event.detail.item.x && event.detail.item.x.tarifind_pmin;
+	if ( price ) {
+		event.detail.popup.querySelector( '.pivot-map-popup-title' ).insertAdjacentHTML( 'afterend', '<p>' + price + ' €</p>' );
+	}
+} );
+```
+
 ### Tracé GPX sur la carte d'un listing
 
 Sur la carte d'une page de listing, la bulle d'un itinéraire propose **Afficher le tracé** : le fichier GPX de l'offre est chargé et dessiné sur la carte, qui se recadre dessus. Un seul tracé à la fois ; le bouton devient **Masquer le tracé**. Rien à configurer, et aucun gabarit à écrire : le comportement vit dans `assets/js/pivot-listing.js` et sert tous les thèmes qui gardent `#pivot-map`.
@@ -875,6 +910,10 @@ Le nombre de colonnes d'une page de listing se règle dans son écran d'édition
 | `pivot_card_fields` | champs supplémentaires embarqués dans les vignettes d'un type |
 | `pivot_track_offer_types` | types d'offre dont la carte propose le tracé GPX sans le connaître d'avance (8 par défaut) |
 | `pivot_track_style` | style du tracé GPX sur la carte d'un listing |
+| `pivot_hunting_enabled` | territoires de chasse sur une carte : oui ou non, par listing ou par fiche |
+| `pivot_hunting_style` | style des territoires de chasse (`closed`, `open`) |
+| `pivot_hunting_info_url` | lien d'information sous la légende des chasses |
+| `pivot_hunting_service` | service ArcGIS des territoires de chasse |
 | `pivot_map_pins` | épingles de la carte d'un listing, par type d'offre (`url`, `size`) ; vide pour les marqueurs de Leaflet |
 | `pivot_offer_gpx` | adresse du fichier GPX d'une offre (proxy, CDN) |
 | `pivot_closure_offer_types` | types d'offre lus comme des zones de fermeture (33 par défaut) |

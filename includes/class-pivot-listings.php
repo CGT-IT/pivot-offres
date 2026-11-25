@@ -45,6 +45,9 @@ class Pivot_Listings {
 			'show_map'         => 0,
 			'map_zoom'         => 9,
 			'map_center'       => '',
+			// Territoires de chasse sur la carte : auto (listing d'itinéraires),
+			// 1 (toujours), 0 (jamais). Voir Pivot_Hunting.
+			'hunting'          => 'auto',
 			'sort_field'       => '',
 			'sort_mode'        => 'ASC',
 			'search_enabled'   => 1,
@@ -410,6 +413,7 @@ class Pivot_Listings {
 			'show_map'         => empty( $config['show_map'] ) ? 0 : 1,
 			'map_zoom'         => max( 1, min( 18, (int) $config['map_zoom'] ) ),
 			'map_center'       => self::sanitize_latlng( $config['map_center'] ),
+			'hunting'          => in_array( (string) $config['hunting'], array( 'auto', '1', '0' ), true ) ? (string) $config['hunting'] : 'auto',
 			'sort_field'       => sanitize_text_field( $config['sort_field'] ),
 			'sort_mode'        => 'DESC' === strtoupper( (string) $config['sort_mode'] ) ? 'DESC' : 'ASC',
 			'search_enabled'   => empty( $config['search_enabled'] ) ? 0 : 1,

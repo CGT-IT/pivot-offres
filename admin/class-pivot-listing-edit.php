@@ -55,6 +55,7 @@ class Pivot_Listing_Edit {
 			'show_map'         => ! empty( $raw['show_map'] ),
 			'map_zoom'         => (int) pivot_get( $raw, 'map_zoom', 9 ),
 			'map_center'       => pivot_get( $raw, 'map_center', '' ),
+			'hunting'          => (string) pivot_get( $raw, 'hunting', 'auto' ),
 			'sort_field'       => pivot_get( $raw, 'sort_field', '' ),
 			'sort_mode'        => pivot_get( $raw, 'sort_mode', 'ASC' ),
 			'search_enabled'   => ! empty( $raw['search_enabled'] ),
@@ -622,6 +623,27 @@ class Pivot_Listing_Edit {
 				(int) $listing['map_zoom']
 			),
 			__( 'Latitude, longitude et niveau de zoom initial. Laissez le centre vide pour cadrer automatiquement sur les offres affichées.', 'pivot-offres' )
+		);
+
+		$hunting = '<select name="pivot_listing[hunting]">';
+		foreach ( array(
+			'auto' => __( 'Automatique : sur une page d\'itinéraires', 'pivot-offres' ),
+			'1'    => __( 'Toujours', 'pivot-offres' ),
+			'0'    => __( 'Jamais', 'pivot-offres' ),
+		) as $value => $label ) {
+			$hunting .= sprintf(
+				'<option value="%s"%s>%s</option>',
+				esc_attr( $value ),
+				selected( (string) pivot_get( $listing, 'hunting', 'auto' ), (string) $value, false ),
+				esc_html( $label )
+			);
+		}
+		$hunting .= '</select>';
+
+		self::row(
+			__( 'Territoires de chasse', 'pivot-offres' ),
+			$hunting,
+			__( 'Sur la carte, les territoires où une chasse est déclarée, du jour ou d\'une autre date choisie par le visiteur (Service public de Wallonie, mis à jour chaque jour). Automatique : quand la page contient des itinéraires.', 'pivot-offres' )
 		);
 
 		self::row(

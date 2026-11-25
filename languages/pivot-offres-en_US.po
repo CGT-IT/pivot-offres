@@ -1782,3 +1782,80 @@ msgstr "Fetch offer %1$s again from PIVOT. Cached version from %2$s ago."
 
 msgid "Redemander l'offre %s à PIVOT."
 msgstr "Fetch offer %s again from PIVOT."
+
+msgid "Chasse"
+msgstr "Hunting"
+
+msgid "Territoires de chasse"
+msgstr "Hunting grounds"
+
+msgid "Date des chasses"
+msgstr "Hunting date"
+
+msgid "Jour précédent"
+msgstr "Previous day"
+
+msgid "Jour suivant"
+msgstr "Next day"
+
+msgid "Chargement des chasses…"
+msgstr "Loading hunts…"
+
+#, php-format
+msgid "%1$d territoire(s) en chasse sur la carte, dont %2$d avec chemins fermés"
+msgstr "%1$d hunting ground(s) on the map, %2$d with closed paths"
+
+msgid "Aucune chasse déclarée ce jour-là."
+msgstr "No hunts declared on that day."
+
+msgid "Aucune chasse sur cette partie de la carte ce jour-là."
+msgstr "No hunts on this part of the map that day."
+
+msgid "Les territoires de chasse n'ont pas pu être chargés."
+msgstr "The hunting grounds could not be loaded."
+
+msgid "Chasse avec fermeture : chemins fermés au public"
+msgstr "Hunt with closure: paths closed to the public"
+
+msgid "Chasse sans fermeture : prudence"
+msgstr "Hunt without closure: take care"
+
+msgid "Battue"
+msgstr "Driven hunt"
+
+msgid "Chasse à l'affût"
+msgstr "Stalking"
+
+msgid "Autre chasse"
+msgstr "Other hunt"
+
+#, php-format
+msgid "Territoire n° %s"
+msgstr "Hunting ground no. %s"
+
+msgid "Données du SPW (DNF), à titre indicatif. Respectez la signalisation sur place."
+msgstr "Data from the SPW (DNF), for information only. Follow the signs on site."
+
+msgid "Fermetures et conseils"
+msgstr "Closures and advice"
+
+msgid "Territoires de chasse © SPW"
+msgstr "Hunting grounds © SPW"
+
+msgid "Automatique : sur une page d'itinéraires"
+msgstr "Automatic: on a page of itineraries"
+
+msgid "Toujours"
+msgstr "Always"
+
+msgid "Jamais"
+msgstr "Never"
+
+msgid "Sur la carte, les territoires où une chasse est déclarée, du jour ou d'une autre date choisie par le visiteur (Service public de Wallonie, mis à jour chaque jour). Automatique : quand la page contient des itinéraires."
+msgstr "On the map: the grounds where a hunt is declared, today or on another date chosen by the visitor (Service public de Wallonie, updated daily). Automatic: when the page contains itineraries."
+
+msgid "Sur les cartes des listings, selon le réglage de chaque page (par défaut : les pages d'itinéraires)"
+msgstr "On listing maps, according to each page's setting (by default: itinerary pages)"
+
+msgid "Sur les cartes des fiches d'itinéraire dessinées par le thème avec Leaflet"
+msgstr "On itinerary page maps drawn by the theme with Leaflet"
